@@ -471,6 +471,7 @@ const Admin = () => {
                 </motion.div>
               ))}
               {products.length === 0 && <EmptyState text="Nenhum produto cadastrado." />}
+              </div>
             </div>
           )}
 
