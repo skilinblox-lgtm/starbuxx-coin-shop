@@ -176,7 +176,7 @@ const Checkout = () => {
                   { label: "Nome Completo", value: fullName, onChange: setFullName, type: "text", placeholder: "Seu nome completo" },
                   { label: "CPF", value: cpf, onChange: (v: string) => setCpf(formatCPF(v)), type: "text", placeholder: "000.000.000-00" },
                   { label: "Usuário no Jogo", value: gameUsername, onChange: setGameUsername, type: "text", placeholder: "Seu nome no jogo" },
-                  { label: "E-mail", value: email, onChange: setEmail, type: "email", placeholder: "seu@email.com" },
+                  { label: "Discord", value: discord, onChange: setDiscord, type: "text", placeholder: "usuario#0000 ou @usuario" },
                 ].map(field => (
                   <div key={field.label}>
                     <label className="text-xs font-medium text-muted-foreground">{field.label}</label>
