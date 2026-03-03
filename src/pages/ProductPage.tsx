@@ -179,7 +179,7 @@ const ProductPage = () => {
             className="mt-12 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
             <h2 className="font-heading text-lg font-bold sm:text-xl">Detalhes do Produto</h2>
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              <p>Adquira <strong className="text-foreground">{product.currency}</strong> para <strong className="text-foreground">{gameLabel}</strong> de forma rápida e segura através da Starbuxx.</p>
+              <p>Adquira <strong className="text-foreground">{product.currency}</strong> para <strong className="text-foreground">{gameLabel}</strong> de forma rápida e segura através da StarBuxx.</p>
               <div className="flex items-start gap-2"><Zap className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Entrega realizada em até 20 minutos após confirmação do pagamento.</span></div>
               <div className="flex items-start gap-2"><Headphones className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Suporte dedicado via Discord com mais de 10.000 membros.</span></div>
               <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Garantia de reembolso integral caso ocorra qualquer problema.</span></div>
