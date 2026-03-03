@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, Eye, EyeOff, ShieldCheck, Users } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Users } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
