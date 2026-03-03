@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Star, ShieldCheck, ArrowLeft, Minus, Plus, ShoppingCart, Clock, Zap, CheckCircle, Truck, Award } from "lucide-react";
+import { Star, ShieldCheck, ArrowLeft, Minus, Plus, ShoppingCart, Clock, Zap, CheckCircle, Truck, Award, Headphones, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
