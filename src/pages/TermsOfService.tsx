@@ -59,7 +59,7 @@ const TermsOfService = () => {
             <section>
               <h2 className="text-base font-bold text-foreground">7. Isenção de Responsabilidade</h2>
               <p className="mt-2">
-                A Starbuxx não se responsabiliza por penalidades aplicadas pela Roblox Corporation ou pelos desenvolvedores dos jogos à conta do comprador. A utilização do serviço é de inteira responsabilidade do usuário.
+                A StarBuxx não se responsabiliza por penalidades aplicadas pela Roblox Corporation ou pelos desenvolvedores dos jogos à conta do comprador. A utilização do serviço é de inteira responsabilidade do usuário.
               </p>
             </section>
 
