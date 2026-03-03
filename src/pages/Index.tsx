@@ -4,17 +4,20 @@ import GameSelector from "@/components/GameSelector";
 import Advantages from "@/components/Advantages";
 import ReviewSection from "@/components/ReviewSection";
 import Footer from "@/components/Footer";
+import PageTransition from "@/components/PageTransition";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <HeroBanner />
-      <GameSelector />
-      <Advantages />
-      <ReviewSection />
-      <Footer />
-    </div>
+    <PageTransition>
+      <div className="min-h-screen">
+        <Navbar />
+        <HeroBanner />
+        <GameSelector />
+        <Advantages />
+        <ReviewSection />
+        <Footer />
+      </div>
+    </PageTransition>
   );
 };
 
