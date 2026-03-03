@@ -8,9 +8,8 @@ const Footer = () => {
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-8">
           <div className="col-span-2 sm:col-span-1">
             <Link to="/" className="flex items-center gap-2">
-              <Star className="h-5 w-5 fill-primary text-primary sm:h-6 sm:w-6" />
               <span className="font-heading text-base font-bold sm:text-lg">
-                Star<span className="text-gradient-gold">buxx</span>
+                Star<span className="text-gradient-gold">Buxx</span>
               </span>
             </Link>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:mt-3 sm:text-sm">
