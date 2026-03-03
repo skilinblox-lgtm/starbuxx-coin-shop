@@ -12,6 +12,7 @@ import Checkout from "./pages/Checkout";
 import MyOrders from "./pages/MyOrders";
 import Admin from "./pages/Admin";
 import ProductPage from "./pages/ProductPage";
+import GameCatalog from "./pages/GameCatalog";
 import Brainrot from "./pages/Brainrot";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/product/:productId" element={<ProductPage />} />
+          <Route path="/game/:gameId" element={<GameCatalog />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/admin" element={<Admin />} />
