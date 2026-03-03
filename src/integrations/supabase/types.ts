@@ -14,16 +14,230 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      moderator_permissions: {
+        Row: {
+          can_manage_products: boolean | null
+          can_manage_reviews: boolean | null
+          can_manage_users: boolean | null
+          can_process_deliveries: boolean | null
+          can_view_earnings: boolean | null
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          can_manage_products?: boolean | null
+          can_manage_reviews?: boolean | null
+          can_manage_users?: boolean | null
+          can_process_deliveries?: boolean | null
+          can_view_earnings?: boolean | null
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          can_manage_products?: boolean | null
+          can_manage_reviews?: boolean | null
+          can_manage_users?: boolean | null
+          can_process_deliveries?: boolean | null
+          can_view_earnings?: boolean | null
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          cpf: string
+          created_at: string
+          email: string
+          full_name: string
+          game_id: string
+          game_username: string
+          id: string
+          payment_approved_at: string | null
+          payment_method: string
+          product_id: string | null
+          quantity: number
+          status: string
+          total_price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cpf: string
+          created_at?: string
+          email: string
+          full_name: string
+          game_id: string
+          game_username: string
+          id?: string
+          payment_approved_at?: string | null
+          payment_method: string
+          product_id?: string | null
+          quantity: number
+          status?: string
+          total_price: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cpf?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          game_id?: string
+          game_username?: string
+          id?: string
+          payment_approved_at?: string | null
+          payment_method?: string
+          product_id?: string | null
+          quantity?: number
+          status?: string
+          total_price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          currency: string
+          game_id: string
+          id: string
+          image_url: string | null
+          name: string
+          price_per_unit: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          currency: string
+          game_id: string
+          id?: string
+          image_url?: string | null
+          name: string
+          price_per_unit: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          currency?: string
+          game_id?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          price_per_unit?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          author_name: string
+          comment: string
+          created_at: string
+          game_id: string
+          id: string
+          is_fake: boolean | null
+          rating: number
+          user_id: string | null
+        }
+        Insert: {
+          author_name: string
+          comment: string
+          created_at?: string
+          game_id: string
+          id?: string
+          is_fake?: boolean | null
+          rating: number
+          user_id?: string | null
+        }
+        Update: {
+          author_name?: string
+          comment?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          is_fake?: boolean | null
+          rating?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +364,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
