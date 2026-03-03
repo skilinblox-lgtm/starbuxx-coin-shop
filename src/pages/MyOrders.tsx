@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Star, ArrowLeft, Package, Gamepad2, Clock, CheckCircle, Truck, XCircle,
+  ArrowLeft, Package, Gamepad2, Clock, CheckCircle, Truck, XCircle,
   CreditCard, RefreshCw, Send, MessageCircle, ChevronDown, ChevronUp,
-  Monitor, Smartphone, Link2, Timer, AlertCircle
+  Monitor, Smartphone, Link2, Timer, AlertCircle, CalendarClock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
