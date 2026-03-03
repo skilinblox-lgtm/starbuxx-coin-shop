@@ -2,46 +2,50 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingCart, Gamepad2 } from "lucide-react";
+import { ArrowRight, Coins } from "lucide-react";
 import iconRoblox from "@/assets/icon-roblox.png";
 import iconClash from "@/assets/icon-clash-royale.png";
 import iconBrawl from "@/assets/icon-brawl-stars.png";
 
-const gameIcons: Record<string, string> = {
-  roblox: iconRoblox,
-  "clash-royale": iconClash,
-  "brawl-stars": iconBrawl,
-};
+const GAMES = [
+  { id: "roblox", name: "Roblox", icon: iconRoblox, currency: "Robux", desc: "O maior metaverso de jogos do mundo" },
+  { id: "clash-royale", name: "Clash Royale", icon: iconClash, currency: "Gemas", desc: "Batalhas estratégicas em tempo real" },
+  { id: "brawl-stars", name: "Brawl Stars", icon: iconBrawl, currency: "Gemas", desc: "Combates 3v3 frenéticos" },
+];
 
 const GameSelector = () => {
-  const [products, setProducts] = useState<any[]>([]);
+  const [prices, setPrices] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchPrices = async () => {
       const { data } = await supabase
-        .from("products").select("*").eq("active", true).order("name");
-      setProducts(data || []);
+        .from("products").select("game_id, price_per_unit").eq("active", true);
+      const mins: Record<string, number> = {};
+      (data || []).forEach(p => {
+        const price = Number(p.price_per_unit);
+        if (!mins[p.game_id] || price < mins[p.game_id]) mins[p.game_id] = price;
+      });
+      setPrices(mins);
       setLoading(false);
     };
-    fetchProducts();
+    fetchPrices();
   }, []);
 
   return (
-    <section id="jogos" className="bg-muted/50 py-12 sm:py-20">
+    <section id="jogos" className="bg-card py-12 sm:py-20">
       <div className="container px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.4 }}
           className="text-center"
         >
           <h2 className="font-heading text-2xl font-bold sm:text-3xl md:text-4xl">
-            Nossos <span className="text-gradient-gold">Produtos</span>
+            Escolha seu <span className="text-gradient-gold">Jogo</span>
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground sm:mt-3 sm:text-base">
-            Escolha o produto e veja todos os detalhes
+          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+            Selecione o jogo e veja os produtos disponíveis
           </p>
         </motion.div>
 
@@ -50,51 +54,49 @@ const GameSelector = () => {
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-12 sm:grid-cols-3 lg:grid-cols-4 sm:gap-4">
-            {products.map((product, i) => {
-              const gameIcon = gameIcons[product.game_id];
+          <div className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-3">
+            {GAMES.map((game, i) => {
+              const minPrice = prices[game.id];
               return (
                 <motion.div
-                  key={product.id}
+                  key={game.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.35, delay: i * 0.05 }}
+                  transition={{ delay: i * 0.1 }}
                 >
                   <Link
-                    to={`/product/${product.id}`}
-                    className="group block rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-all hover:border-primary/40 hover:shadow-lg sm:p-5"
+                    to={`/#jogos`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // Navigate to game products - scroll to section
+                      const el = document.getElementById(`game-${game.id}`);
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="group flex flex-col items-center rounded-2xl border border-border bg-background p-6 shadow-[var(--shadow-card)] transition-all hover:border-primary/40 hover:shadow-lg sm:p-8"
                   >
-                    <div className="flex h-24 items-center justify-center sm:h-32">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name}
-                          className="max-h-full w-auto object-contain drop-shadow-lg transition-transform group-hover:scale-105" />
-                      ) : (
-                        <ShoppingCart className="h-10 w-10 text-muted-foreground/30" />
-                      )}
+                    <img
+                      src={game.icon}
+                      alt={game.name}
+                      className="h-16 w-16 object-contain transition-transform group-hover:scale-110 sm:h-20 sm:w-20"
+                    />
+                    <h3 className="mt-4 font-heading text-base font-bold sm:text-lg">{game.name}</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">{game.desc}</p>
+                    <div className="mt-3 flex items-center gap-1.5">
+                      <Coins className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-bold text-gradient-gold">
+                        {minPrice ? `R$ ${minPrice.toFixed(2)}` : "—"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">/ {game.currency}</span>
                     </div>
-                    <div className="mt-3">
-                      <div className="flex items-center gap-1.5">
-                        {gameIcon && <img src={gameIcon} alt={product.game_id} className="h-4 w-4 object-contain" />}
-                        <p className="truncate font-heading text-sm font-bold sm:text-base">{product.name}</p>
-                      </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {product.currency} • {product.game_id.replace(/-/g, " ")}
-                      </p>
-                      <p className="mt-2 font-heading text-base font-bold text-gradient-gold sm:text-lg">
-                        R$ {Number(product.price_per_unit).toFixed(2)}
-                        <span className="text-xs font-normal text-muted-foreground"> /un</span>
-                      </p>
+                    <div className="mt-4 flex items-center gap-1.5 rounded-full bg-[hsl(var(--success))]/10 px-3 py-1.5 text-xs font-bold text-[hsl(var(--success))]">
+                      Ver Produtos <ArrowRight className="h-3 w-3" />
                     </div>
                   </Link>
                 </motion.div>
               );
             })}
           </div>
-        )}
-
-        {products.length === 0 && !loading && (
-          <p className="mt-12 text-center text-sm text-muted-foreground">Nenhum produto disponível no momento.</p>
         )}
       </div>
     </section>
