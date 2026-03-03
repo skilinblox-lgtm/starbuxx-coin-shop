@@ -141,8 +141,7 @@ const MyOrders = () => {
         <nav className="border-b border-border bg-card">
           <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
             <Link to="/" className="flex items-center gap-1.5">
-              <Star className="h-6 w-6 fill-primary text-primary" />
-              <span className="font-heading text-lg font-bold">Star<span className="text-gradient-gold">buxx</span></span>
+              <span className="font-heading text-lg font-bold">Star<span className="text-gradient-gold">Buxx</span></span>
             </Link>
             <Link to="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-3.5 w-3.5" /> Voltar
