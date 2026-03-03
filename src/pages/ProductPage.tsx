@@ -185,7 +185,7 @@ const ProductPage = () => {
               <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Garantia de reembolso integral caso ocorra qualquer problema.</span></div>
               <div className="flex items-start gap-2"><CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Aceitamos Pix (instantâneo), Cartão de Crédito/Débito e Boleto.</span></div>
               <div className="rounded-xl border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
-                <strong className="text-foreground">Aviso:</strong> A Starbuxx é um revendedor terceirizado independente. As moedas são adquiridas de forma legítima dentro dos próprios jogos. Não possuímos vínculo oficial com a Roblox Corporation.
+                <strong className="text-foreground">Aviso:</strong> A StarBuxx é um revendedor terceirizado independente. As moedas são adquiridas de forma legítima dentro dos próprios jogos. Não possuímos vínculo oficial com a Roblox Corporation.
               </div>
             </div>
           </motion.div>

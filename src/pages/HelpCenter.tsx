@@ -23,7 +23,7 @@ const faqs = [
   {
     icon: UserCheck,
     question: "Vocês são uma loja oficial?",
-    answer: "Não. A Starbuxx é um revendedor terceirizado independente. As moedas que vendemos são adquiridas de forma legítima dentro dos próprios jogos da plataforma Roblox. Não possuímos vínculo com a Roblox Corporation."
+    answer: "Não. A StarBuxx é um revendedor terceirizado independente. As moedas que vendemos são adquiridas de forma legítima dentro dos próprios jogos da plataforma Roblox. Não possuímos vínculo com a Roblox Corporation."
   },
   {
     icon: AlertTriangle,

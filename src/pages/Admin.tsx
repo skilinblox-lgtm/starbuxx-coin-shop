@@ -327,9 +327,8 @@ const Admin = () => {
       <nav className="border-b border-border/50 bg-background">
         <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-2">
-            <Star className="h-6 w-6 fill-primary text-primary sm:h-7 sm:w-7" />
             <span className="font-heading text-base font-bold text-[hsl(0,0%,100%)] sm:text-xl">
-              Star<span className="text-gradient-gold">buxx</span>
+              Star<span className="text-gradient-gold">Buxx</span>
               <span className="ml-1.5 text-xs font-normal text-muted-foreground sm:text-sm">Admin</span>
             </span>
           </Link>

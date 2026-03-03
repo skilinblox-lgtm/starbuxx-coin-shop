@@ -13,9 +13,9 @@ const TermsOfService = () => {
 
           <div className="mt-8 space-y-6 text-sm leading-relaxed text-muted-foreground">
             <section>
-              <h2 className="text-base font-bold text-foreground">1. Sobre a Starbuxx</h2>
+              <h2 className="text-base font-bold text-foreground">1. Sobre a StarBuxx</h2>
               <p className="mt-2">
-                A Starbuxx é um serviço terceirizado de revenda de moedas virtuais adquiridas em jogos populares da plataforma Roblox. <strong className="text-foreground">Não somos uma empresa oficial, nem possuímos qualquer vínculo, afiliação ou patrocínio com a Roblox Corporation ou seus desenvolvedores.</strong> As moedas comercializadas são adquiridas de forma legítima dentro dos próprios jogos e revendidas aos nossos clientes.
+                A StarBuxx é um serviço terceirizado de revenda de moedas virtuais adquiridas em jogos populares da plataforma Roblox. <strong className="text-foreground">Não somos uma empresa oficial, nem possuímos qualquer vínculo, afiliação ou patrocínio com a Roblox Corporation ou seus desenvolvedores.</strong> As moedas comercializadas são adquiridas de forma legítima dentro dos próprios jogos e revendidas aos nossos clientes.
               </p>
             </section>
 

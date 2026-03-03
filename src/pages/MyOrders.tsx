@@ -337,7 +337,7 @@ const MyOrders = () => {
                             {category === "chat" && o.status !== "cancelado" && (
                               <div className="mt-5">
                                 <h4 className="flex items-center gap-2 text-sm font-bold">
-                                  <MessageCircle className="h-4 w-4 text-[hsl(var(--info))]" /> Chat com a Starbuxx
+                                  <MessageCircle className="h-4 w-4 text-[hsl(var(--info))]" /> Chat com a StarBuxx
                                 </h4>
                                 <p className="mt-1 text-xs text-muted-foreground">Converse conosco para combinar a entrega</p>
                                 <div className="mt-3 flex max-h-64 min-h-[120px] flex-col gap-2 overflow-y-auto rounded-xl border border-border bg-background p-3">

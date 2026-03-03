@@ -29,7 +29,7 @@ const Advantages = () => {
           transition={{ duration: 0.4 }}
           className="text-center font-heading text-2xl font-bold sm:text-3xl md:text-4xl"
         >
-          Por que escolher a <span className="text-gradient-gold">Starbuxx</span>?
+          Por que escolher a <span className="text-gradient-gold">StarBuxx</span>?
         </motion.h2>
         <p className="mt-2 text-center text-sm text-muted-foreground sm:text-base">
           Revendedor terceirizado de moedas virtuais com entrega garantida

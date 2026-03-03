@@ -73,7 +73,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-4 text-center text-[10px] text-muted-foreground sm:mt-6 sm:text-xs">
-          <p>© 2026 Starbuxx — Todos os direitos reservados.</p>
+          <p>© 2026 StarBuxx — Todos os direitos reservados.</p>
           <p className="mt-1">Revendedor independente de moedas virtuais. Não possuímos vínculo oficial com Roblox Corporation ou seus desenvolvedores.</p>
         </div>
       </div>

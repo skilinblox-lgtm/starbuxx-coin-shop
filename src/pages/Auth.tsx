@@ -48,9 +48,8 @@ const Auth = () => {
           className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8"
         >
           <Link to="/" className="mb-6 flex items-center justify-center gap-2 sm:mb-8">
-            <Star className="h-6 w-6 fill-primary text-primary sm:h-7 sm:w-7" />
             <span className="font-heading text-lg font-bold sm:text-xl">
-              Star<span className="text-gradient-gold">buxx</span>
+              Star<span className="text-gradient-gold">Buxx</span>
             </span>
           </Link>
 
