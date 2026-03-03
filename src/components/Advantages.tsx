@@ -1,10 +1,13 @@
-import { Truck, ShieldCheck, Headphones } from "lucide-react";
+import { Truck, ShieldCheck, Headphones, Zap, RefreshCw, CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
 
 const advantages = [
-  { icon: Truck, title: "Entrega em até 48h", description: "Receba suas moedas de forma rápida e garantida após a confirmação do pagamento." },
-  { icon: ShieldCheck, title: "Pagamento Seguro", description: "Transações protegidas com certificado SSL e gateway de pagamento confiável." },
-  { icon: Headphones, title: "Suporte Online", description: "Equipe disponível para ajudar com suas dúvidas e acompanhar sua entrega." },
+  { icon: Zap, title: "Entrega Instantânea", description: "Receba suas moedas em minutos após a confirmação. A maioria dos pedidos é entregue em até 20 minutos." },
+  { icon: ShieldCheck, title: "Pagamento Seguro", description: "Transações protegidas com criptografia SSL. Seus dados estão sempre seguros conosco." },
+  { icon: Headphones, title: "Suporte Dedicado", description: "Nossa equipe está disponível para ajudar com dúvidas e acompanhar suas entregas." },
+  { icon: RefreshCw, title: "Garantia de Reembolso", description: "Se a entrega não for realizada, devolvemos 100% do valor pago. Compra sem risco." },
+  { icon: CreditCard, title: "Múltiplas Formas de Pagamento", description: "Pix, Cartão de Crédito/Débito, Boleto — escolha a forma que preferir." },
+  { icon: Truck, title: "Rastreamento em Tempo Real", description: "Acompanhe o status do seu pedido a cada etapa, do pagamento à entrega." },
 ];
 
 const cardVariants = {
@@ -12,7 +15,7 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, delay: i * 0.15, ease: "easeOut" as const },
+    transition: { duration: 0.4, delay: i * 0.1, ease: "easeOut" as const },
   }),
 };
 
@@ -29,7 +32,10 @@ const Advantages = () => {
         >
           Por que escolher a <span className="text-gradient-gold">Starbuxx</span>?
         </motion.h2>
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-3 sm:gap-6">
+        <p className="mt-2 text-center text-sm text-muted-foreground sm:text-base">
+          Revendedor terceirizado de moedas virtuais com entrega garantida
+        </p>
+        <div className="mt-8 grid grid-cols-1 gap-3 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
           {advantages.map((adv, i) => (
             <motion.div
               key={adv.title}
@@ -39,14 +45,14 @@ const Advantages = () => {
               whileInView="visible"
               viewport={{ once: true, margin: "-60px" }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/40 hover:shadow-[var(--shadow-gold)] sm:flex-col sm:items-center sm:p-8 sm:text-center"
+              className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/40 hover:shadow-[var(--shadow-gold)]"
             >
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:mx-auto sm:h-16 sm:w-16">
-                <adv.icon className="h-5 w-5 sm:h-7 sm:w-7" />
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <adv.icon className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-heading text-base font-bold sm:mt-5 sm:text-lg">{adv.title}</h3>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:mt-2 sm:text-sm">
+                <h3 className="font-heading text-sm font-bold sm:text-base">{adv.title}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
                   {adv.description}
                 </p>
               </div>

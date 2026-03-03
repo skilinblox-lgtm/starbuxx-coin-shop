@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Star, ShieldCheck, ArrowLeft, Minus, Plus, ShoppingCart, Clock, Zap, CheckCircle } from "lucide-react";
+import { Star, ShieldCheck, ArrowLeft, Minus, Plus, ShoppingCart, Clock, Zap, CheckCircle, Truck, Award, Headphones, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -28,7 +28,6 @@ const ProductPage = () => {
       if (!prod) { navigate("/"); return; }
       setProduct(prod);
 
-      // Fetch related products (same game, different product)
       const { data: related } = await supabase
         .from("products")
         .select("*")
@@ -38,7 +37,6 @@ const ProductPage = () => {
         .limit(4);
       setRelatedProducts(related || []);
 
-      // Also fetch products from other games
       if ((related || []).length < 3) {
         const { data: otherGames } = await supabase
           .from("products")
@@ -49,7 +47,6 @@ const ProductPage = () => {
         setRelatedProducts([...(related || []), ...(otherGames || [])].slice(0, 4));
       }
 
-      // Fetch reviews for this game
       const { data: revs } = await supabase
         .from("reviews")
         .select("*")
@@ -72,6 +69,7 @@ const ProductPage = () => {
   if (!product) return null;
 
   const totalPrice = (quantity * Number(product.price_per_unit)).toFixed(2);
+  const gameLabel = product.game_id.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
 
   const handleBuy = () => {
     navigate("/checkout", {
@@ -135,7 +133,7 @@ const ProductPage = () => {
               className="flex flex-col"
             >
               <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                <Zap className="h-3 w-3" /> Entrega Rápida
+                <Zap className="h-3 w-3" /> Entrega em até 20 minutos
               </div>
 
               <h1 className="mt-3 font-heading text-2xl font-bold sm:text-3xl lg:text-4xl">
@@ -167,40 +165,24 @@ const ProductPage = () => {
               <div className="mt-4">
                 <label className="text-sm font-medium text-muted-foreground">Quantidade de {product.currency}</label>
                 <div className="mt-2 flex items-center gap-3">
-                  <button
-                    onClick={() => setQuantity(q => Math.max(1, q - 100))}
-                    className="rounded-xl border border-border bg-card p-2.5 text-foreground transition-colors hover:border-primary"
-                  >
+                  <button onClick={() => setQuantity(q => Math.max(1, q - 100))} className="rounded-xl border border-border bg-card p-2.5 transition-colors hover:border-primary">
                     <Minus className="h-4 w-4" />
                   </button>
                   <input
-                    type="number"
-                    min={1}
-                    value={quantity}
+                    type="number" min={1} value={quantity}
                     onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-32 rounded-xl border border-border bg-card px-4 py-2.5 text-center text-lg font-bold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-32 rounded-xl border border-border bg-card px-4 py-2.5 text-center text-lg font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
-                  <button
-                    onClick={() => setQuantity(q => q + 100)}
-                    className="rounded-xl border border-border bg-card p-2.5 text-foreground transition-colors hover:border-primary"
-                  >
+                  <button onClick={() => setQuantity(q => q + 100)} className="rounded-xl border border-border bg-card p-2.5 transition-colors hover:border-primary">
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
-                {/* Quick amounts */}
                 <div className="mt-2 flex flex-wrap gap-2">
                   {[100, 500, 1000, 5000, 10000].map(amt => (
-                    <button
-                      key={amt}
-                      onClick={() => setQuantity(amt)}
+                    <button key={amt} onClick={() => setQuantity(amt)}
                       className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
-                        quantity === amt
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:border-primary/40"
-                      }`}
-                    >
-                      {amt.toLocaleString("pt-BR")}
-                    </button>
+                        quantity === amt ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"
+                      }`}>{amt.toLocaleString("pt-BR")}</button>
                   ))}
                 </div>
               </div>
@@ -209,35 +191,26 @@ const ProductPage = () => {
               <div className="mt-5 flex items-end justify-between rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
                 <div>
                   <p className="text-xs text-muted-foreground">Total</p>
-                  <p className="font-heading text-2xl font-bold text-gradient-gold sm:text-3xl">
-                    R$ {totalPrice}
-                  </p>
+                  <p className="font-heading text-2xl font-bold text-gradient-gold sm:text-3xl">R$ {totalPrice}</p>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleBuy}
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all hover:brightness-110 sm:px-8 sm:py-3.5 sm:text-base"
-                >
-                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Comprar Agora
+                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleBuy}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all hover:brightness-110 sm:px-8 sm:py-3.5 sm:text-base">
+                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" /> Comprar Agora
                 </motion.button>
               </div>
 
               {/* Trust badges */}
               <div className="mt-5 grid grid-cols-3 gap-2">
-                <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-card p-3 text-center">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">100% Seguro</span>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-card p-3 text-center">
-                  <Clock className="h-5 w-5 text-primary" />
-                  <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">Entrega Rápida</span>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-card p-3 text-center">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">Garantia Total</span>
-                </div>
+                {[
+                  { icon: ShieldCheck, label: "100% Seguro" },
+                  { icon: Clock, label: "Entrega Rápida" },
+                  { icon: Award, label: "Garantia Total" },
+                ].map(b => (
+                  <div key={b.label} className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-card p-3 text-center">
+                    <b.icon className="h-5 w-5 text-primary" />
+                    <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">{b.label}</span>
+                  </div>
+                ))}
               </div>
             </motion.div>
           </div>
@@ -251,22 +224,20 @@ const ProductPage = () => {
           >
             <h2 className="font-heading text-lg font-bold sm:text-xl">Detalhes do Produto</h2>
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              <p>Compre <strong className="text-foreground">{product.currency}</strong> para <strong className="text-foreground">{product.game_id.replace(/-/g, " ")}</strong> de forma rápida e segura.</p>
-              <p>✅ Entrega realizada em até 48 horas após confirmação do pagamento</p>
-              <p>✅ Suporte dedicado via chat durante todo o processo</p>
-              <p>✅ Garantia de reembolso caso ocorra qualquer problema</p>
-              <p>✅ Aceitamos Pix, Cartão de Crédito e Boleto</p>
+              <p>Adquira <strong className="text-foreground">{product.currency}</strong> para <strong className="text-foreground">{gameLabel}</strong> de forma rápida e segura através da Starbuxx.</p>
+              <div className="flex items-start gap-2"><Zap className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Entrega realizada em até 20 minutos após confirmação do pagamento na maioria dos casos.</span></div>
+              <div className="flex items-start gap-2"><Headphones className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Suporte dedicado via e-mail durante todo o processo de entrega.</span></div>
+              <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Garantia de reembolso integral caso ocorra qualquer problema com a entrega.</span></div>
+              <div className="flex items-start gap-2"><CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Aceitamos Pix (instantâneo), Cartão de Crédito/Débito e Boleto Bancário.</span></div>
+              <p className="rounded-xl border border-border bg-surface p-3 text-xs text-muted-foreground">
+                <strong className="text-foreground">Aviso:</strong> A Starbuxx é um revendedor terceirizado independente. As moedas comercializadas são adquiridas de forma legítima dentro dos próprios jogos. Não possuímos vínculo oficial com a Roblox Corporation.
+              </p>
             </div>
           </motion.div>
 
           {/* Reviews */}
           {reviews.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mt-12"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-12">
               <h2 className="font-heading text-lg font-bold sm:text-xl">
                 Avaliações <span className="text-muted-foreground font-normal text-sm">({reviews.length})</span>
               </h2>
@@ -278,7 +249,7 @@ const ProductPage = () => {
                         <Star key={i} className="h-3.5 w-3.5 fill-primary text-primary" />
                       ))}
                     </div>
-                    <p className="mt-2 text-xs leading-relaxed text-foreground sm:text-sm">"{r.comment}"</p>
+                    <p className="mt-2 text-xs leading-relaxed sm:text-sm">"{r.comment}"</p>
                     <div className="mt-3 flex items-center gap-2">
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                         {r.author_name[0]}
@@ -293,20 +264,12 @@ const ProductPage = () => {
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mt-12"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-12">
               <h2 className="font-heading text-lg font-bold sm:text-xl">Produtos Relacionados</h2>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
                 {relatedProducts.map(rp => (
-                  <Link
-                    key={rp.id}
-                    to={`/product/${rp.id}`}
-                    className="group rounded-2xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-[var(--shadow-card)]"
-                  >
+                  <Link key={rp.id} to={`/product/${rp.id}`}
+                    className="group rounded-2xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-[var(--shadow-card)]">
                     <div className="flex h-24 items-center justify-center sm:h-32">
                       {rp.image_url ? (
                         <img src={rp.image_url} alt={rp.name} className="max-h-full w-auto object-contain drop-shadow-lg" />
