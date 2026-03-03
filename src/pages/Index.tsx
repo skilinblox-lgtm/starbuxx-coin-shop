@@ -16,6 +16,7 @@ const Index = () => {
         <Navbar />
         <HeroBanner />
         <GameSelector />
+        <BrainrotBanner />
         <Advantages />
         <TrustSection />
         <ReviewSection />
