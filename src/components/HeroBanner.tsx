@@ -52,9 +52,10 @@ const HeroBanner = () => {
         >
           <video
             className="aspect-video w-full object-cover"
-            controls
-            preload="metadata"
+            autoPlay
+            muted
             playsInline
+            preload="auto"
           >
             <source src="/videos/starbuxx-promo.mp4" type="video/mp4" />
           </video>
