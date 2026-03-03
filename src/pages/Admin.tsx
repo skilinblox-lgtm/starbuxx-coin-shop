@@ -416,8 +416,13 @@ const Admin = () => {
 
           {/* ====== PRODUCTS ====== */}
           {tab === "products" && (
-            <div className="space-y-2 sm:space-y-3">
+            <div className="space-y-4 sm:space-y-6">
               <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciar Produtos</h2>
+              
+              {/* Create product */}
+              <CreateProductForm onCreated={fetchAll} />
+              
+              <div className="space-y-2 sm:space-y-3">
               {products.map(p => (
                 <motion.div key={p.id} layout className="rounded-2xl border border-border bg-background p-3 sm:p-5">
                   {editingProduct === p.id ? (
