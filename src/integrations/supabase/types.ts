@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      brainrot_posts: {
+        Row: {
+          created_at: string
+          current_price: number
+          description: string | null
+          id: string
+          image_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_price?: number
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_price?: number
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      brainrot_price_history: {
+        Row: {
+          brainrot_id: string
+          id: string
+          price: number
+          recorded_at: string
+        }
+        Insert: {
+          brainrot_id: string
+          id?: string
+          price: number
+          recorded_at?: string
+        }
+        Update: {
+          brainrot_id?: string
+          id?: string
+          price?: number
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brainrot_price_history_brainrot_id_fkey"
+            columns: ["brainrot_id"]
+            isOneToOne: false
+            referencedRelation: "brainrot_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           created_at: string
