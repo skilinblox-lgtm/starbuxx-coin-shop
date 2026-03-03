@@ -95,6 +95,7 @@ const Navbar = () => {
           >
             <div className="flex flex-col gap-4 p-4">
               <a href="/#jogos" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Jogos</a>
+              <Link to="/brainrot" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Brainrot</Link>
               <a href="/#vantagens" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Vantagens</a>
               <a href="/#depoimentos" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Depoimentos</a>
               <div className="border-t border-border/50 pt-4">

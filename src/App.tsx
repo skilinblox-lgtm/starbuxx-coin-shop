@@ -11,6 +11,8 @@ import ResetPassword from "./pages/ResetPassword";
 import Checkout from "./pages/Checkout";
 import MyOrders from "./pages/MyOrders";
 import Admin from "./pages/Admin";
+import ProductPage from "./pages/ProductPage";
+import Brainrot from "./pages/Brainrot";
 
 const queryClient = new QueryClient();
 
@@ -25,9 +27,11 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/product/:productId" element={<ProductPage />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/brainrot" element={<Brainrot />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
