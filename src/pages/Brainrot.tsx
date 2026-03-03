@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
@@ -23,7 +23,6 @@ const Brainrot = () => {
         .order("created_at", { ascending: false });
       setPosts(brainrots || []);
 
-      // Fetch price histories for all
       if (brainrots && brainrots.length > 0) {
         const { data: histories } = await supabase
           .from("brainrot_price_history")
@@ -66,7 +65,10 @@ const Brainrot = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="font-heading text-3xl font-bold sm:text-4xl">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+              <BarChart3 className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="mt-3 font-heading text-3xl font-bold sm:text-4xl">
               Mercado <span className="text-gradient-gold">Brainrot</span>
             </h1>
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">
@@ -156,7 +158,7 @@ const Brainrot = () => {
                 </motion.div>
               )}
 
-              {/* Grid of all brainrots */}
+              {/* Grid */}
               <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {posts.map((post, i) => {
                   const change = getChange(post);
@@ -176,7 +178,9 @@ const Brainrot = () => {
                       {post.image_url ? (
                         <img src={post.image_url} alt={post.title} className="h-12 w-12 rounded-xl object-cover" />
                       ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface text-2xl">🧠</div>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface">
+                          <BarChart3 className="h-5 w-5 text-muted-foreground" />
+                        </div>
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold">{post.title}</p>
@@ -185,7 +189,8 @@ const Brainrot = () => {
                           <span className={`flex items-center gap-0.5 text-[10px] font-bold ${
                             change > 0 ? "text-[hsl(140,60%,45%)]" : change < 0 ? "text-destructive" : "text-muted-foreground"
                           }`}>
-                            {change > 0 ? "▲" : change < 0 ? "▼" : "—"} {Math.abs(change).toFixed(1)}%
+                            {change > 0 ? <TrendingUp className="h-3 w-3" /> : change < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                            {Math.abs(change).toFixed(1)}%
                           </span>
                         </div>
                       </div>

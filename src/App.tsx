@@ -13,6 +13,10 @@ import MyOrders from "./pages/MyOrders";
 import Admin from "./pages/Admin";
 import ProductPage from "./pages/ProductPage";
 import Brainrot from "./pages/Brainrot";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
+import HelpCenter from "./pages/HelpCenter";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +36,10 @@ const App = () => (
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/brainrot" element={<Brainrot />} />
+          <Route path="/termos" element={<TermsOfService />} />
+          <Route path="/privacidade" element={<PrivacyPolicy />} />
+          <Route path="/reembolso" element={<RefundPolicy />} />
+          <Route path="/ajuda" element={<HelpCenter />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
