@@ -41,7 +41,7 @@ const Checkout = () => {
   const [fullName, setFullName] = useState("");
   const [cpf, setCpf] = useState("");
   const [gameUsername, setGameUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [discord, setDiscord] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("pix");
   const [knowsGamepass, setKnowsGamepass] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
