@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, Eye, EyeOff } from "lucide-react";
+import { Star, Eye, EyeOff, ShieldCheck, Users } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -30,7 +30,7 @@ const Auth = () => {
           options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        toast.success("Cadastro realizado com sucesso!");
+        toast.success("Cadastro realizado! Verifique seu e-mail.");
         navigate("/");
       }
     } catch (error: any) {
@@ -40,12 +40,12 @@ const Auth = () => {
 
   return (
     <PageTransition>
-      <div className="flex min-h-screen items-center justify-center bg-dark px-4 py-8">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.35 }}
-          className="w-full max-w-md rounded-2xl border border-border bg-background p-6 shadow-[var(--shadow-card)] sm:p-8"
+          className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8"
         >
           <Link to="/" className="mb-6 flex items-center justify-center gap-2 sm:mb-8">
             <Star className="h-6 w-6 fill-primary text-primary sm:h-7 sm:w-7" />
@@ -66,21 +66,21 @@ const Auth = () => {
               <div>
                 <label className="text-xs font-medium text-muted-foreground sm:text-sm">Nome Completo</label>
                 <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required
-                  className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 sm:px-4 sm:py-3"
+                  className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 sm:px-4 sm:py-3"
                   placeholder="Seu nome completo" />
               </div>
             )}
             <div>
               <label className="text-xs font-medium text-muted-foreground sm:text-sm">E-mail</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 sm:px-4 sm:py-3"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 sm:px-4 sm:py-3"
                 placeholder="seu@email.com" />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground sm:text-sm">Senha</label>
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-                  className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2.5 pr-10 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 sm:px-4 sm:py-3 sm:pr-12"
+                  className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 pr-10 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 sm:px-4 sm:py-3 sm:pr-12"
                   placeholder="Mínimo 6 caracteres" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground sm:right-3">
@@ -112,6 +112,11 @@ const Auth = () => {
               {isLogin ? "Cadastre-se" : "Entrar"}
             </button>
           </p>
+
+          <div className="mt-5 flex items-center justify-center gap-4 border-t border-border pt-4 text-[10px] text-muted-foreground sm:text-xs">
+            <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3 text-primary" /> SSL Seguro</span>
+            <span className="flex items-center gap-1"><Users className="h-3 w-3 text-primary" /> 10K+ membros</span>
+          </div>
         </motion.div>
       </div>
     </PageTransition>

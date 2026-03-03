@@ -4,17 +4,16 @@ import { motion } from "framer-motion";
 const advantages = [
   { icon: Zap, title: "Entrega Instantânea", description: "Receba suas moedas em minutos após a confirmação. A maioria dos pedidos é entregue em até 20 minutos." },
   { icon: ShieldCheck, title: "Pagamento Seguro", description: "Transações protegidas com criptografia SSL. Seus dados estão sempre seguros conosco." },
-  { icon: Headphones, title: "Suporte Dedicado", description: "Nossa equipe está disponível para ajudar com dúvidas e acompanhar suas entregas." },
+  { icon: Headphones, title: "Suporte no Discord", description: "Nossa comunidade de 10.000+ membros está pronta para ajudar a qualquer momento." },
   { icon: RefreshCw, title: "Garantia de Reembolso", description: "Se a entrega não for realizada, devolvemos 100% do valor pago. Compra sem risco." },
-  { icon: CreditCard, title: "Múltiplas Formas de Pagamento", description: "Pix, Cartão de Crédito/Débito, Boleto — escolha a forma que preferir." },
+  { icon: CreditCard, title: "Pix, Cartão e Boleto", description: "Pague da forma que preferir — Pix com aprovação instantânea é o mais popular." },
   { icon: Truck, title: "Rastreamento em Tempo Real", description: "Acompanhe o status do seu pedido a cada etapa, do pagamento à entrega." },
 ];
 
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
+    opacity: 1, y: 0,
     transition: { duration: 0.4, delay: i * 0.1, ease: "easeOut" as const },
   }),
 };
@@ -45,16 +44,14 @@ const Advantages = () => {
               whileInView="visible"
               viewport={{ once: true, margin: "-60px" }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/40 hover:shadow-[var(--shadow-gold)]"
+              className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-all duration-300 hover:border-primary/40 hover:shadow-lg"
             >
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <adv.icon className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="font-heading text-sm font-bold sm:text-base">{adv.title}</h3>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                  {adv.description}
-                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">{adv.description}</p>
               </div>
             </motion.div>
           ))}
