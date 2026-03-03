@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Star, Package, ShoppingCart, Users, MessageSquare, DollarSign,
   ArrowLeft, Truck, Shield, UserPlus, Send, Bot, Edit2, Save, X,
-  Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image
+  Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -13,7 +13,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 
-type Tab = "dashboard" | "products" | "deliveries" | "moderation" | "earnings" | "moderators";
+type Tab = "dashboard" | "products" | "deliveries" | "moderation" | "earnings" | "moderators" | "brainrot";
 
 const statusOptions = [
   { value: "aguardando_pagamento", label: "Aguardando", color: "hsl(45, 100%, 51%)" },
@@ -65,6 +65,13 @@ const Admin = () => {
     can_view_earnings: false,
   });
 
+  // Brainrot
+  const [brainrotPosts, setBrainrotPosts] = useState<any[]>([]);
+  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "" });
+  const [brainrotUploading, setBrainrotUploading] = useState(false);
+  const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
+  const [editBrainrotPrice, setEditBrainrotPrice] = useState("");
+
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -80,13 +87,14 @@ const Admin = () => {
   }, [navigate]);
 
   const fetchAll = useCallback(async () => {
-    const [o, p, r, u, roles, perms] = await Promise.all([
+    const [o, p, r, u, roles, perms, br] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("name"),
       supabase.from("reviews").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("*").eq("role", "moderator"),
       supabase.from("moderator_permissions").select("*"),
+      supabase.from("brainrot_posts").select("*").order("created_at", { ascending: false }),
     ]);
     setOrders(o.data || []);
     setProducts(p.data || []);
@@ -94,6 +102,7 @@ const Admin = () => {
     setProfiles(u.data || []);
     setModerators(roles.data || []);
     setModPermissions(perms.data || []);
+    setBrainrotPosts(br.data || []);
   }, []);
 
   // Chat realtime subscription
@@ -102,73 +111,40 @@ const Admin = () => {
     const channel = supabase
       .channel(`chat-${selectedOrder.id}`)
       .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "chat_messages",
+        event: "INSERT", schema: "public", table: "chat_messages",
         filter: `order_id=eq.${selectedOrder.id}`,
       }, (payload) => {
         setChatMessages(prev => [...prev, payload.new]);
-      })
-      .subscribe();
+      }).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [selectedOrder]);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages]);
 
   const fetchChatMessages = async (orderId: string) => {
-    const { data } = await supabase
-      .from("chat_messages")
-      .select("*")
-      .eq("order_id", orderId)
-      .order("created_at", { ascending: true });
+    const { data } = await supabase.from("chat_messages").select("*").eq("order_id", orderId).order("created_at", { ascending: true });
     setChatMessages(data || []);
   };
 
-  const openChat = (order: any) => {
-    setSelectedOrder(order);
-    fetchChatMessages(order.id);
-  };
+  const openChat = (order: any) => { setSelectedOrder(order); fetchChatMessages(order.id); };
 
   const sendChatMessage = async () => {
     if (!chatInput.trim() || !selectedOrder) return;
     setSendingChat(true);
     const msg = chatInput;
     setChatInput("");
-
     try {
-      // Save admin message
-      await supabase.from("chat_messages").insert({
-        order_id: selectedOrder.id,
-        sender_id: currentUserId,
-        sender_role: "admin",
-        message: msg,
-      });
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setSendingChat(false);
-    }
+      await supabase.from("chat_messages").insert({ order_id: selectedOrder.id, sender_id: currentUserId, sender_role: "admin", message: msg });
+    } catch (e: any) { toast.error(e.message); } finally { setSendingChat(false); }
   };
 
   const triggerAiResponse = async (orderId: string) => {
     if (!aiEnabled) return;
     const lastCustomerMsg = chatMessages.filter(m => m.sender_role === "customer").pop();
     if (!lastCustomerMsg) return;
-
     try {
-      const response = await supabase.functions.invoke("chat-ai", {
-        body: {
-          orderId,
-          message: lastCustomerMsg.message,
-          chatHistory: chatMessages.slice(-10),
-        },
-      });
-      if (response.error) throw response.error;
-    } catch (e: any) {
-      console.error("AI error:", e);
-    }
+      await supabase.functions.invoke("chat-ai", { body: { orderId, message: lastCustomerMsg.message, chatHistory: chatMessages.slice(-10) } });
+    } catch (e: any) { console.error("AI error:", e); }
   };
 
   const updateOrderStatus = async (orderId: string, status: string) => {
@@ -180,28 +156,17 @@ const Admin = () => {
     fetchAll();
   };
 
-  // Product editing
-  const startEditProduct = (p: any) => {
-    setEditingProduct(p.id);
-    setEditName(p.name);
-    setEditPrice(String(p.price_per_unit));
-  };
+  const startEditProduct = (p: any) => { setEditingProduct(p.id); setEditName(p.name); setEditPrice(String(p.price_per_unit)); };
 
   const saveProduct = async (id: string) => {
-    const { error } = await supabase.from("products").update({
-      name: editName,
-      price_per_unit: parseFloat(editPrice),
-    }).eq("id", id);
+    const { error } = await supabase.from("products").update({ name: editName, price_per_unit: parseFloat(editPrice) }).eq("id", id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Produto atualizado!");
-    setEditingProduct(null);
-    fetchAll();
+    toast.success("Produto atualizado!"); setEditingProduct(null); fetchAll();
   };
 
   const toggleProduct = async (id: string, active: boolean) => {
     await supabase.from("products").update({ active: !active }).eq("id", id);
-    toast.success("Produto atualizado!");
-    fetchAll();
+    toast.success("Produto atualizado!"); fetchAll();
   };
 
   const uploadProductImage = async (productId: string, file: File) => {
@@ -213,83 +178,85 @@ const Admin = () => {
       if (upErr) throw upErr;
       const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
       await supabase.from("products").update({ image_url: publicUrl }).eq("id", productId);
-      toast.success("Imagem atualizada!");
-      fetchAll();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setUploadingImage(false);
-    }
+      toast.success("Imagem atualizada!"); fetchAll();
+    } catch (e: any) { toast.error(e.message); } finally { setUploadingImage(false); }
   };
 
-  // Reviews
-  const deleteReview = async (id: string) => {
-    await supabase.from("reviews").delete().eq("id", id);
-    toast.success("Avaliação removida!");
-    fetchAll();
-  };
+  const deleteReview = async (id: string) => { await supabase.from("reviews").delete().eq("id", id); toast.success("Avaliação removida!"); fetchAll(); };
 
-  // Moderators
   const addModerator = async () => {
     if (!newModEmail.trim()) return;
     setAddingMod(true);
     try {
-      // Find user by email in profiles (we need to find user_id)
-      const { data: allProfiles } = await supabase.from("profiles").select("user_id, full_name");
-      // We can't search auth.users from client, so let's search orders for email
       const { data: userOrders } = await supabase.from("orders").select("user_id, email").eq("email", newModEmail).limit(1);
-      
       let userId: string | null = null;
-      if (userOrders && userOrders.length > 0) {
-        userId = userOrders[0].user_id;
-      }
-      
-      if (!userId) {
-        toast.error("Usuário não encontrado. O usuário precisa ter feito pelo menos um pedido.");
-        return;
-      }
-
-      // Add moderator role
-      const { error: roleErr } = await supabase.from("user_roles").insert({
-        user_id: userId,
-        role: "moderator",
-      });
-      if (roleErr) {
-        if (roleErr.message.includes("duplicate")) {
-          toast.error("Usuário já é moderador");
-        } else throw roleErr;
-        return;
-      }
-
-      // Add permissions
-      const { error: permErr } = await supabase.from("moderator_permissions").insert({
-        user_id: userId,
-        ...modPerms,
-      });
-      if (permErr) throw permErr;
-
+      if (userOrders && userOrders.length > 0) userId = userOrders[0].user_id;
+      if (!userId) { toast.error("Usuário não encontrado."); return; }
+      const { error: roleErr } = await supabase.from("user_roles").insert({ user_id: userId, role: "moderator" });
+      if (roleErr) { if (roleErr.message.includes("duplicate")) toast.error("Já é moderador"); else throw roleErr; return; }
+      await supabase.from("moderator_permissions").insert({ user_id: userId, ...modPerms });
       toast.success("Moderador adicionado!");
       setNewModEmail("");
-      setModPerms({
-        can_manage_products: false,
-        can_manage_reviews: false,
-        can_manage_users: false,
-        can_process_deliveries: false,
-        can_view_earnings: false,
-      });
+      setModPerms({ can_manage_products: false, can_manage_reviews: false, can_manage_users: false, can_process_deliveries: false, can_view_earnings: false });
       fetchAll();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setAddingMod(false);
-    }
+    } catch (e: any) { toast.error(e.message); } finally { setAddingMod(false); }
   };
 
   const removeModerator = async (userId: string) => {
     await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "moderator");
     await supabase.from("moderator_permissions").delete().eq("user_id", userId);
-    toast.success("Moderador removido!");
-    fetchAll();
+    toast.success("Moderador removido!"); fetchAll();
+  };
+
+  // Brainrot functions
+  const createBrainrot = async () => {
+    if (!newBrainrot.title || !newBrainrot.current_price) { toast.error("Preencha título e preço"); return; }
+    try {
+      const { data, error } = await supabase.from("brainrot_posts").insert({
+        title: newBrainrot.title,
+        description: newBrainrot.description,
+        current_price: parseFloat(newBrainrot.current_price),
+      }).select().single();
+      if (error) throw error;
+      // Add initial price history
+      await supabase.from("brainrot_price_history").insert({
+        brainrot_id: data.id,
+        price: parseFloat(newBrainrot.current_price),
+      });
+      toast.success("Brainrot publicado!");
+      setNewBrainrot({ title: "", description: "", current_price: "" });
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const uploadBrainrotImage = async (brainrotId: string, file: File) => {
+    setBrainrotUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${brainrotId}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("brainrot-images").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("brainrot-images").getPublicUrl(path);
+      await supabase.from("brainrot_posts").update({ image_url: publicUrl }).eq("id", brainrotId);
+      toast.success("Imagem atualizada!"); fetchAll();
+    } catch (e: any) { toast.error(e.message); } finally { setBrainrotUploading(false); }
+  };
+
+  const updateBrainrotPrice = async (id: string) => {
+    const price = parseFloat(editBrainrotPrice);
+    if (isNaN(price)) return;
+    try {
+      await supabase.from("brainrot_posts").update({ current_price: price }).eq("id", id);
+      await supabase.from("brainrot_price_history").insert({ brainrot_id: id, price });
+      toast.success("Preço atualizado!");
+      setEditingBrainrot(null);
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const deleteBrainrot = async (id: string) => {
+    await supabase.from("brainrot_posts").delete().eq("id", id);
+    toast.success("Brainrot removido!"); fetchAll();
   };
 
   if (loading) return (
@@ -323,16 +290,11 @@ const Admin = () => {
   const deliveredOrders = orders.filter(o => o.status === "entregue").length;
   const cancelledOrders = orders.filter(o => o.status === "cancelado").length;
 
-  // Chart data - last 7 days
   const chartData = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today.getTime() - (6 - i) * 86400000);
     const ds = d.toISOString().split("T")[0];
     const dayOrders = orders.filter(o => o.created_at.startsWith(ds) && o.status !== "cancelado");
-    return {
-      day: d.toLocaleDateString("pt-BR", { weekday: "short" }),
-      receita: dayOrders.reduce((s, o) => s + Number(o.total_price), 0),
-      pedidos: dayOrders.length,
-    };
+    return { day: d.toLocaleDateString("pt-BR", { weekday: "short" }), receita: dayOrders.reduce((s, o) => s + Number(o.total_price), 0), pedidos: dayOrders.length };
   });
 
   const pieData = [
@@ -349,6 +311,7 @@ const Admin = () => {
     { id: "dashboard" as Tab, label: "Dashboard", icon: BarChart3 },
     { id: "products" as Tab, label: "Produtos", icon: Package },
     { id: "deliveries" as Tab, label: "Entregas", icon: Truck },
+    { id: "brainrot" as Tab, label: "Brainrot", icon: Brain },
     { id: "moderation" as Tab, label: "Moderação", icon: Shield },
     { id: "earnings" as Tab, label: "Ganhos", icon: DollarSign },
     { id: "moderators" as Tab, label: "Moderadores", icon: UserPlus },
@@ -361,7 +324,6 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-dark">
-      {/* Navbar */}
       <nav className="border-b border-border/50 bg-dark">
         <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-2">
@@ -380,7 +342,6 @@ const Admin = () => {
       </nav>
 
       <div className="container px-4 py-4 sm:py-6">
-        {/* Tabs */}
         <div className="flex gap-1 overflow-x-auto pb-2 sm:gap-2">
           {tabs.map(t => (
             <button
@@ -396,24 +357,17 @@ const Admin = () => {
           ))}
         </div>
 
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="mt-4 sm:mt-6"
-        >
+        <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="mt-4 sm:mt-6">
+
           {/* ====== DASHBOARD ====== */}
           {tab === "dashboard" && (
             <div className="space-y-4 sm:space-y-6">
-              {/* Quick stats */}
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
                 <StatCard icon={DollarSign} label="Hoje" value={`R$ ${revenueToday.toFixed(2)}`} gradient />
                 <StatCard icon={TrendingUp} label="Semana" value={`R$ ${revenueWeek.toFixed(2)}`} />
                 <StatCard icon={BarChart3} label="Mês" value={`R$ ${revenueMonth.toFixed(2)}`} />
                 <StatCard icon={DollarSign} label="Total" value={`R$ ${totalRevenue.toFixed(2)}`} gradient />
               </div>
-
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-4">
                 <MiniStat label="Pendentes" value={pendingOrders} color="hsl(45, 100%, 51%)" />
                 <MiniStat label="Pagos" value={paidOrders} color="hsl(210, 80%, 55%)" />
@@ -421,8 +375,6 @@ const Admin = () => {
                 <MiniStat label="Entregues" value={deliveredOrders} color="hsl(140, 60%, 45%)" />
                 <MiniStat label="Cancelados" value={cancelledOrders} color="hsl(0, 70%, 55%)" />
               </div>
-
-              {/* Charts */}
               <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
                 <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                   <h3 className="font-heading text-sm font-bold sm:text-base">Receita - Últimos 7 dias</h3>
@@ -432,16 +384,12 @@ const Admin = () => {
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" />
                         <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(220, 10%, 60%)" }} />
                         <YAxis tick={{ fontSize: 11, fill: "hsl(220, 10%, 60%)" }} />
-                        <Tooltip
-                          contentStyle={{ background: "hsl(220, 20%, 14%)", border: "1px solid hsl(220, 15%, 20%)", borderRadius: 12, fontSize: 12 }}
-                          labelStyle={{ color: "hsl(0, 0%, 100%)" }}
-                        />
+                        <Tooltip contentStyle={{ background: "hsl(220, 20%, 14%)", border: "1px solid hsl(220, 15%, 20%)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "hsl(0, 0%, 100%)" }} />
                         <Bar dataKey="receita" fill="hsl(45, 100%, 51%)" radius={[6, 6, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
-
                 <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                   <h3 className="font-heading text-sm font-bold sm:text-base">Status dos Pedidos</h3>
                   <div className="mt-4 h-48 sm:h-64">
@@ -449,21 +397,15 @@ const Admin = () => {
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie data={pieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
-                            {pieData.map((_, i) => (
-                              <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                            ))}
+                            {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                           </Pie>
                           <Tooltip />
                         </PieChart>
                       </ResponsiveContainer>
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Sem dados</div>
-                    )}
+                    ) : <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Sem dados</div>}
                   </div>
                 </div>
               </div>
-
-              {/* Quick links */}
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
                 <QuickLink icon={Truck} label={`${deliveryQueue.length} entregas pendentes`} onClick={() => setTab("deliveries")} />
                 <QuickLink icon={Package} label={`${products.length} produtos`} onClick={() => setTab("products")} />
@@ -477,61 +419,43 @@ const Admin = () => {
             <div className="space-y-2 sm:space-y-3">
               <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciar Produtos</h2>
               {products.map(p => (
-                <motion.div
-                  key={p.id}
-                  layout
-                  className="rounded-2xl border border-border bg-background p-3 sm:p-5"
-                >
+                <motion.div key={p.id} layout className="rounded-2xl border border-border bg-background p-3 sm:p-5">
                   {editingProduct === p.id ? (
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        {p.image_url && <img src={p.image_url} alt="" className="h-12 w-12 rounded-lg object-cover" />}
+                        {p.image_url && <img src={p.image_url} alt="" className="h-12 w-12 rounded-lg object-contain" />}
                         <div className="flex-1 space-y-2">
-                          <input value={editName} onChange={e => setEditName(e.target.value)}
-                            className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Nome do produto" />
+                          <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Nome" />
                           <div className="flex gap-2">
-                            <input type="number" step="0.01" value={editPrice} onChange={e => setEditPrice(e.target.value)}
-                              className="w-32 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Preço" />
+                            <input type="number" step="0.01" value={editPrice} onChange={e => setEditPrice(e.target.value)} className="w-32 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Preço" />
                             <span className="flex items-center text-xs text-muted-foreground">/unidade</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
-                          <Upload className="h-3.5 w-3.5" />
-                          {uploadingImage ? "Enviando..." : "Trocar Imagem"}
-                          <input type="file" accept="image/*" className="hidden" onChange={e => {
-                            const f = e.target.files?.[0];
-                            if (f) uploadProductImage(p.id, f);
-                          }} />
+                          <Upload className="h-3.5 w-3.5" /> {uploadingImage ? "Enviando..." : "Trocar Imagem"}
+                          <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadProductImage(p.id, f); }} />
                         </label>
                         <div className="ml-auto flex gap-2">
-                          <button onClick={() => setEditingProduct(null)} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                          <button onClick={() => saveProduct(p.id)} className="rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground">
-                            <Save className="h-3.5 w-3.5" />
-                          </button>
+                          <button onClick={() => setEditingProduct(null)} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+                          <button onClick={() => saveProduct(p.id)} className="rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground"><Save className="h-3.5 w-3.5" /></button>
                         </div>
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
                       {p.image_url ? (
-                        <img src={p.image_url} alt={p.name} className="h-12 w-12 rounded-lg object-cover sm:h-14 sm:w-14" />
+                        <img src={p.image_url} alt={p.name} className="h-12 w-12 rounded-lg object-contain sm:h-14 sm:w-14" />
                       ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface text-muted-foreground sm:h-14 sm:w-14">
-                          <Image className="h-5 w-5" />
-                        </div>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface text-muted-foreground sm:h-14 sm:w-14"><Image className="h-5 w-5" /></div>
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold sm:text-base">{p.name}</p>
                         <p className="text-xs text-muted-foreground">{p.currency} • R$ {Number(p.price_per_unit).toFixed(2)}/un • {p.game_id}</p>
                       </div>
                       <div className="flex flex-shrink-0 items-center gap-2">
-                        <button onClick={() => startEditProduct(p)} className="rounded-lg border border-border p-2 text-muted-foreground hover:border-primary hover:text-primary">
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
+                        <button onClick={() => startEditProduct(p)} className="rounded-lg border border-border p-2 text-muted-foreground hover:border-primary hover:text-primary"><Edit2 className="h-3.5 w-3.5" /></button>
                         <button onClick={() => toggleProduct(p.id, p.active)}
                           className={`rounded-full px-3 py-1 text-[10px] font-bold sm:px-4 sm:py-1.5 sm:text-xs ${p.active ? "bg-[hsl(140,60%,45%)]/10 text-[hsl(140,60%,45%)]" : "bg-[hsl(0,70%,55%)]/10 text-[hsl(0,70%,55%)]"}`}>
                           {p.active ? "Ativo" : "Inativo"}
@@ -548,21 +472,14 @@ const Admin = () => {
           {/* ====== DELIVERIES + CHAT ====== */}
           {tab === "deliveries" && (
             <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
-              {/* Order list */}
               <div className={`space-y-2 sm:space-y-3 ${selectedOrder ? "hidden lg:block lg:w-1/2" : "w-full"}`}>
                 <div className="flex items-center justify-between">
                   <h2 className="font-heading text-lg font-bold sm:text-xl">Fila de Entregas</h2>
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{deliveryQueue.length} pendentes</span>
                 </div>
                 {deliveryQueue.map(o => (
-                  <motion.div
-                    key={o.id}
-                    whileHover={{ x: 2 }}
-                    onClick={() => openChat(o)}
-                    className={`cursor-pointer rounded-2xl border p-3 transition-all sm:p-4 ${
-                      selectedOrder?.id === o.id ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
-                    }`}
-                  >
+                  <motion.div key={o.id} whileHover={{ x: 2 }} onClick={() => openChat(o)}
+                    className={`cursor-pointer rounded-2xl border p-3 transition-all sm:p-4 ${selectedOrder?.id === o.id ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"}`}>
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-bold">{o.full_name}</p>
@@ -570,8 +487,7 @@ const Admin = () => {
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         <span className="text-xs font-bold text-gradient-gold">R$ {Number(o.total_price).toFixed(2)}</span>
-                        <select value={o.status} onChange={e => { e.stopPropagation(); updateOrderStatus(o.id, e.target.value); }}
-                          onClick={e => e.stopPropagation()}
+                        <select value={o.status} onChange={e => { e.stopPropagation(); updateOrderStatus(o.id, e.target.value); }} onClick={e => e.stopPropagation()}
                           className="rounded-lg border border-border bg-surface px-2 py-0.5 text-[10px] text-foreground sm:text-xs">
                           {statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>
@@ -582,36 +498,22 @@ const Admin = () => {
                 {deliveryQueue.length === 0 && <EmptyState text="Nenhuma entrega pendente." />}
               </div>
 
-              {/* Chat panel */}
               {selectedOrder && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex flex-col rounded-2xl border border-border bg-background lg:w-1/2"
-                  style={{ height: "calc(100vh - 200px)", minHeight: 400 }}
-                >
-                  {/* Chat header */}
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+                  className="flex flex-col rounded-2xl border border-border bg-background lg:w-1/2" style={{ height: "calc(100vh - 200px)", minHeight: 400 }}>
                   <div className="flex items-center justify-between border-b border-border p-3 sm:p-4">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-bold">{selectedOrder.full_name}</p>
                       <p className="text-xs text-muted-foreground">{selectedOrder.game_id} • {selectedOrder.quantity} un</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setAiEnabled(!aiEnabled)}
-                        className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium sm:text-xs ${
-                          aiEnabled ? "bg-primary/10 text-primary" : "bg-surface text-muted-foreground"
-                        }`}
-                      >
+                      <button onClick={() => setAiEnabled(!aiEnabled)}
+                        className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium sm:text-xs ${aiEnabled ? "bg-primary/10 text-primary" : "bg-surface text-muted-foreground"}`}>
                         <Bot className="h-3 w-3" /> IA {aiEnabled ? "ON" : "OFF"}
                       </button>
-                      <button onClick={() => setSelectedOrder(null)} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground lg:hidden">
-                        <X className="h-4 w-4" />
-                      </button>
+                      <button onClick={() => setSelectedOrder(null)} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground lg:hidden"><X className="h-4 w-4" /></button>
                     </div>
                   </div>
-
-                  {/* Messages */}
                   <div className="flex-1 overflow-y-auto p-3 sm:p-4">
                     <div className="space-y-3">
                       {chatMessages.length === 0 && (
@@ -619,10 +521,8 @@ const Admin = () => {
                           <MessageSquare className="h-8 w-8 text-muted-foreground/30" />
                           <p className="mt-2 text-xs text-muted-foreground">Nenhuma mensagem ainda</p>
                           {aiEnabled && (
-                            <button
-                              onClick={() => triggerAiResponse(selectedOrder.id)}
-                              className="mt-3 flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20"
-                            >
+                            <button onClick={() => triggerAiResponse(selectedOrder.id)}
+                              className="mt-3 flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20">
                               <Bot className="h-3.5 w-3.5" /> Enviar saudação IA
                             </button>
                           )}
@@ -631,47 +531,24 @@ const Admin = () => {
                       {chatMessages.map(m => (
                         <div key={m.id} className={`flex ${m.sender_role === "customer" ? "justify-start" : "justify-end"}`}>
                           <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-xs sm:text-sm ${
-                            m.sender_role === "customer"
-                              ? "bg-surface text-foreground"
-                              : m.sender_role === "ai"
-                              ? "bg-primary/10 text-foreground border border-primary/20"
+                            m.sender_role === "customer" ? "bg-surface text-foreground"
+                              : m.sender_role === "ai" ? "bg-primary/10 text-foreground border border-primary/20"
                               : "bg-primary text-primary-foreground"
                           }`}>
-                            {m.sender_role === "ai" && (
-                              <span className="mb-1 flex items-center gap-1 text-[10px] font-medium text-primary">
-                                <Bot className="h-3 w-3" /> IA
-                              </span>
-                            )}
-                            <div className="prose prose-sm max-w-none dark:prose-invert">
-                              <ReactMarkdown>{m.message}</ReactMarkdown>
-                            </div>
-                            <p className="mt-1 text-[10px] text-muted-foreground">
-                              {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                            </p>
+                            {m.sender_role === "ai" && <span className="mb-1 flex items-center gap-1 text-[10px] font-medium text-primary"><Bot className="h-3 w-3" /> IA</span>}
+                            <div className="prose prose-sm max-w-none dark:prose-invert"><ReactMarkdown>{m.message}</ReactMarkdown></div>
+                            <p className="mt-1 text-[10px] text-muted-foreground">{new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
                           </div>
                         </div>
                       ))}
                       <div ref={chatEndRef} />
                     </div>
                   </div>
-
-                  {/* Input */}
                   <div className="border-t border-border p-3 sm:p-4">
                     <div className="flex gap-2">
-                      <input
-                        value={chatInput}
-                        onChange={e => setChatInput(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendChatMessage()}
-                        placeholder="Digite sua mensagem..."
-                        className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-                      />
-                      <button
-                        onClick={sendChatMessage}
-                        disabled={sendingChat || !chatInput.trim()}
-                        className="rounded-xl bg-primary px-3 py-2 text-primary-foreground disabled:opacity-50"
-                      >
-                        <Send className="h-4 w-4" />
-                      </button>
+                      <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendChatMessage()}
+                        placeholder="Digite sua mensagem..." className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" />
+                      <button onClick={sendChatMessage} disabled={sendingChat || !chatInput.trim()} className="rounded-xl bg-primary px-3 py-2 text-primary-foreground disabled:opacity-50"><Send className="h-4 w-4" /></button>
                     </div>
                   </div>
                 </motion.div>
@@ -679,10 +556,74 @@ const Admin = () => {
             </div>
           )}
 
+          {/* ====== BRAINROT ====== */}
+          {tab === "brainrot" && (
+            <div className="space-y-6">
+              <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciar Brainrot</h2>
+
+              {/* Create new */}
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <h3 className="flex items-center gap-2 text-sm font-bold sm:text-base"><Plus className="h-4 w-4 text-primary" /> Publicar Novo Brainrot</h3>
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <input value={newBrainrot.title} onChange={e => setNewBrainrot(p => ({ ...p, title: e.target.value }))}
+                    placeholder="Título (ex: Italian Brainrot)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <input type="number" step="0.01" value={newBrainrot.current_price} onChange={e => setNewBrainrot(p => ({ ...p, current_price: e.target.value }))}
+                    placeholder="Preço inicial (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                </div>
+                <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
+                  placeholder="Descrição (opcional)" rows={2}
+                  className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                <button onClick={createBrainrot} className="mt-3 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground">Publicar</button>
+              </div>
+
+              {/* List */}
+              <div className="space-y-2 sm:space-y-3">
+                {brainrotPosts.map(post => (
+                  <div key={post.id} className="rounded-2xl border border-border bg-background p-3 sm:p-5">
+                    <div className="flex items-center gap-3">
+                      {post.image_url ? (
+                        <img src={post.image_url} alt={post.title} className="h-14 w-14 rounded-xl object-cover sm:h-16 sm:w-16" />
+                      ) : (
+                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-2xl sm:h-16 sm:w-16">🧠</div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                        <p className="text-xs text-muted-foreground">{post.description?.slice(0, 60) || "Sem descrição"}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          {editingBrainrot === post.id ? (
+                            <div className="flex items-center gap-1.5">
+                              <input type="number" step="0.01" value={editBrainrotPrice}
+                                onChange={e => setEditBrainrotPrice(e.target.value)}
+                                className="w-24 rounded-lg border border-border bg-surface px-2 py-1 text-xs text-foreground outline-none focus:border-primary" />
+                              <button onClick={() => updateBrainrotPrice(post.id)} className="rounded-lg bg-primary px-2 py-1 text-[10px] font-bold text-primary-foreground">Salvar</button>
+                              <button onClick={() => setEditingBrainrot(null)} className="text-xs text-muted-foreground">✕</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => { setEditingBrainrot(post.id); setEditBrainrotPrice(String(post.current_price)); }}
+                              className="text-sm font-bold text-gradient-gold hover:underline">R$ {Number(post.current_price).toFixed(2)}</button>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="flex cursor-pointer items-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
+                          <Upload className="h-3 w-3" /> {brainrotUploading ? "..." : "Foto"}
+                          <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadBrainrotImage(post.id, f); }} />
+                        </label>
+                        <button onClick={() => deleteBrainrot(post.id)} className="flex items-center justify-center gap-1 rounded-lg border border-destructive/30 px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {brainrotPosts.length === 0 && <EmptyState text="Nenhum brainrot publicado ainda." />}
+              </div>
+            </div>
+          )}
+
           {/* ====== MODERATION ====== */}
           {tab === "moderation" && (
             <div className="space-y-6">
-              {/* Users */}
               <div>
                 <h2 className="font-heading text-lg font-bold sm:text-xl">Usuários ({profiles.length})</h2>
                 <div className="mt-3 space-y-2">
@@ -690,20 +631,14 @@ const Admin = () => {
                     <div key={u.id} className="flex items-center justify-between rounded-2xl border border-border bg-background p-3 sm:p-4">
                       <div>
                         <p className="text-sm font-bold">{u.full_name || "Sem nome"}</p>
-                        <p className="text-[10px] text-muted-foreground sm:text-xs">
-                          ID: {u.user_id?.slice(0, 8)}... • {new Date(u.created_at).toLocaleDateString("pt-BR")}
-                        </p>
+                        <p className="text-[10px] text-muted-foreground sm:text-xs">ID: {u.user_id?.slice(0, 8)}... • {new Date(u.created_at).toLocaleDateString("pt-BR")}</p>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {orders.filter(o => o.user_id === u.user_id).length} pedidos
-                      </span>
+                      <span className="text-xs text-muted-foreground">{orders.filter(o => o.user_id === u.user_id).length} pedidos</span>
                     </div>
                   ))}
                   {profiles.length === 0 && <EmptyState text="Nenhum usuário cadastrado." />}
                 </div>
               </div>
-
-              {/* Reviews */}
               <div>
                 <h2 className="font-heading text-lg font-bold sm:text-xl">Avaliações ({reviews.length})</h2>
                 <div className="mt-3 space-y-2">
@@ -722,8 +657,6 @@ const Admin = () => {
                   ))}
                 </div>
               </div>
-
-              {/* All Orders */}
               <div>
                 <h2 className="font-heading text-lg font-bold sm:text-xl">Todos os Pedidos ({orders.length})</h2>
                 <div className="mt-3 space-y-2">
@@ -737,8 +670,7 @@ const Admin = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-bold text-gradient-gold">R$ {Number(o.total_price).toFixed(2)}</span>
-                          <select value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)}
-                            className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-foreground">
+                          <select value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)} className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-foreground">
                             {statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                           </select>
                         </div>
@@ -754,14 +686,12 @@ const Admin = () => {
           {tab === "earnings" && (
             <div className="space-y-4 sm:space-y-6">
               <h2 className="font-heading text-lg font-bold sm:text-xl">Relatório de Ganhos</h2>
-
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
                 <StatCard icon={Clock} label="Hoje" value={`R$ ${revenueToday.toFixed(2)}`} />
                 <StatCard icon={TrendingUp} label="7 dias" value={`R$ ${revenueWeek.toFixed(2)}`} />
                 <StatCard icon={BarChart3} label="30 dias" value={`R$ ${revenueMonth.toFixed(2)}`} />
                 <StatCard icon={DollarSign} label="Total Geral" value={`R$ ${totalRevenue.toFixed(2)}`} gradient />
               </div>
-
               <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                 <h3 className="font-heading text-sm font-bold sm:text-base">Receita por dia</h3>
                 <div className="mt-4 h-64 sm:h-80">
@@ -770,17 +700,13 @@ const Admin = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" />
                       <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(220, 10%, 60%)" }} />
                       <YAxis tick={{ fontSize: 11, fill: "hsl(220, 10%, 60%)" }} />
-                      <Tooltip
-                        contentStyle={{ background: "hsl(220, 20%, 14%)", border: "1px solid hsl(220, 15%, 20%)", borderRadius: 12, fontSize: 12 }}
-                      />
+                      <Tooltip contentStyle={{ background: "hsl(220, 20%, 14%)", border: "1px solid hsl(220, 15%, 20%)", borderRadius: 12, fontSize: 12 }} />
                       <Bar dataKey="receita" fill="hsl(45, 100%, 51%)" radius={[6, 6, 0, 0]} name="Receita (R$)" />
                       <Bar dataKey="pedidos" fill="hsl(210, 80%, 55%)" radius={[6, 6, 0, 0]} name="Pedidos" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
-
-              {/* Revenue by game */}
               <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                 <h3 className="font-heading text-sm font-bold sm:text-base">Receita por Jogo</h3>
                 <div className="mt-3 space-y-2">
@@ -806,42 +732,24 @@ const Admin = () => {
           {tab === "moderators" && (
             <div className="space-y-6">
               <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciar Moderadores</h2>
-
-              {/* Add moderator form */}
               <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                 <h3 className="text-sm font-bold sm:text-base">Adicionar Moderador</h3>
                 <div className="mt-3 space-y-3">
-                  <input
-                    type="email"
-                    value={newModEmail}
-                    onChange={e => setNewModEmail(e.target.value)}
-                    placeholder="E-mail do usuário"
-                    className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
-                  />
+                  <input type="email" value={newModEmail} onChange={e => setNewModEmail(e.target.value)} placeholder="E-mail do usuário"
+                    className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {Object.entries(modPerms).map(([key, val]) => (
                       <label key={key} className="flex items-center gap-2 rounded-lg border border-border p-2.5 text-xs sm:text-sm">
-                        <input
-                          type="checkbox"
-                          checked={val}
-                          onChange={() => setModPerms(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))}
-                          className="h-4 w-4 rounded border-border accent-primary"
-                        />
+                        <input type="checkbox" checked={val} onChange={() => setModPerms(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))} className="h-4 w-4 rounded border-border accent-primary" />
                         {key.replace("can_", "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
                       </label>
                     ))}
                   </div>
-                  <button
-                    onClick={addModerator}
-                    disabled={addingMod || !newModEmail}
-                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
-                  >
+                  <button onClick={addModerator} disabled={addingMod || !newModEmail} className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50">
                     {addingMod ? "Adicionando..." : "Adicionar Moderador"}
                   </button>
                 </div>
               </div>
-
-              {/* Current moderators */}
               <div>
                 <h3 className="text-sm font-bold sm:text-base">Moderadores Atuais ({moderators.length})</h3>
                 <div className="mt-3 space-y-2">
