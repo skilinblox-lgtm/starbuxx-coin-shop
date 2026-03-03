@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Star, Package, ShoppingCart, Users, MessageSquare, DollarSign,
+  Package, ShoppingCart, Users, MessageSquare, DollarSign,
   ArrowLeft, Truck, Shield, UserPlus, Send, Bot, Edit2, Save, X,
   Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2
 } from "lucide-react";
