@@ -15,10 +15,10 @@ const Index = () => {
     <PageTransition>
       <div className="min-h-screen">
         <Navbar />
-        <HeroBanner />
+        <PromoVideo />
         <GameSelector />
         <BrainrotBanner />
-        <PromoVideo />
+        <HeroBanner />
         <Advantages />
         <TrustSection />
         <ReviewSection />
