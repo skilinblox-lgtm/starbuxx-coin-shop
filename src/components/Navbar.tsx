@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Star, Menu, X, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
 import SearchBar from "./SearchBar";
 
 const Navbar = () => {
@@ -82,36 +83,44 @@ const Navbar = () => {
       </div>
 
       {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="border-t border-border/50 bg-dark p-4 sm:hidden">
-          <div className="flex flex-col gap-4">
-            <a href="/#jogos" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Jogos</a>
-            <a href="/#vantagens" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Vantagens</a>
-            <a href="/#depoimentos" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Depoimentos</a>
-            <div className="border-t border-border/50 pt-4">
-              {user ? (
-                <div className="flex flex-col gap-3">
-                  <Link to="/my-orders" onClick={() => setMobileOpen(false)} className="rounded-lg border border-border px-4 py-2.5 text-center text-sm font-medium text-[hsl(0,0%,100%)]">
-                    Meus Pedidos
-                  </Link>
-                  <button onClick={handleLogout} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)]">
-                    Sair
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <Link to="/auth" onClick={() => setMobileOpen(false)} className="rounded-lg border border-border px-4 py-2.5 text-center text-sm font-medium text-[hsl(0,0%,100%)]">
-                    Entrar
-                  </Link>
-                  <Link to="/auth" onClick={() => setMobileOpen(false)} className="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)]">
-                    Cadastrar
-                  </Link>
-                </div>
-              )}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden border-t border-border/50 bg-dark sm:hidden"
+          >
+            <div className="flex flex-col gap-4 p-4">
+              <a href="/#jogos" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Jogos</a>
+              <a href="/#vantagens" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Vantagens</a>
+              <a href="/#depoimentos" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[hsl(220,10%,70%)] hover:text-[hsl(0,0%,100%)]">Depoimentos</a>
+              <div className="border-t border-border/50 pt-4">
+                {user ? (
+                  <div className="flex flex-col gap-3">
+                    <Link to="/my-orders" onClick={() => setMobileOpen(false)} className="rounded-lg border border-border px-4 py-2.5 text-center text-sm font-medium text-[hsl(0,0%,100%)]">
+                      Meus Pedidos
+                    </Link>
+                    <button onClick={handleLogout} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)]">
+                      Sair
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <Link to="/auth" onClick={() => setMobileOpen(false)} className="rounded-lg border border-border px-4 py-2.5 text-center text-sm font-medium text-[hsl(0,0%,100%)]">
+                      Entrar
+                    </Link>
+                    <Link to="/auth" onClick={() => setMobileOpen(false)} className="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)]">
+                      Cadastrar
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
