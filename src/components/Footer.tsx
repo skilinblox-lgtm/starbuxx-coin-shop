@@ -1,4 +1,4 @@
-import { Star, ShieldCheck, Clock, Award, Users } from "lucide-react";
+import { ShieldCheck, Clock, Award, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
