@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
 
 const Brainrot = () => {
@@ -18,16 +19,12 @@ const Brainrot = () => {
   useEffect(() => {
     const fetchData = async () => {
       const { data: brainrots } = await supabase
-        .from("brainrot_posts")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .from("brainrot_posts").select("*").order("created_at", { ascending: false });
       setPosts(brainrots || []);
 
       if (brainrots && brainrots.length > 0) {
         const { data: histories } = await supabase
-          .from("brainrot_price_history")
-          .select("*")
-          .order("recorded_at", { ascending: true });
+          .from("brainrot_price_history").select("*").order("recorded_at", { ascending: true });
 
         const grouped: Record<string, any[]> = {};
         (histories || []).forEach(h => {
@@ -40,7 +37,6 @@ const Brainrot = () => {
         setPriceHistories(grouped);
         if (brainrots.length > 0) setSelectedPost(brainrots[0]);
       }
-
       setLoading(false);
     };
     fetchData();
@@ -58,13 +54,8 @@ const Brainrot = () => {
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Navbar />
-
         <div className="container px-4 pb-12 pt-20 sm:pt-24">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
               <BarChart3 className="h-6 w-6 text-primary" />
             </div>
@@ -86,14 +77,9 @@ const Brainrot = () => {
             </div>
           ) : (
             <>
-              {/* Selected brainrot chart */}
               {selectedPost && (
-                <motion.div
-                  key={selectedPost.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mx-auto mt-8 max-w-3xl rounded-3xl border border-border bg-card p-5 sm:p-8"
-                >
+                <motion.div key={selectedPost.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                  className="mx-auto mt-8 max-w-3xl rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-8">
                   <div className="flex items-start gap-4">
                     {selectedPost.image_url && (
                       <img src={selectedPost.image_url} alt={selectedPost.title} className="h-16 w-16 rounded-2xl object-cover sm:h-20 sm:w-20" />
@@ -108,7 +94,7 @@ const Brainrot = () => {
                           const change = getChange(selectedPost);
                           return (
                             <span className={`flex items-center gap-0.5 text-xs font-bold ${
-                              change > 0 ? "text-[hsl(140,60%,45%)]" : change < 0 ? "text-destructive" : "text-muted-foreground"
+                              change > 0 ? "text-[hsl(var(--success))]" : change < 0 ? "text-destructive" : "text-muted-foreground"
                             }`}>
                               {change > 0 ? <TrendingUp className="h-3.5 w-3.5" /> : change < 0 ? <TrendingDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                               {Math.abs(change).toFixed(1)}%
@@ -123,7 +109,6 @@ const Brainrot = () => {
                     <p className="mt-3 text-xs text-muted-foreground sm:text-sm">{selectedPost.description}</p>
                   )}
 
-                  {/* Chart */}
                   <div className="mt-5 h-48 sm:h-64">
                     {(priceHistories[selectedPost.id] || []).length > 1 ? (
                       <ResponsiveContainer width="100%" height="100%">
@@ -131,22 +116,12 @@ const Brainrot = () => {
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                           <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                           <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                          <Tooltip
-                            contentStyle={{
-                              background: "hsl(var(--card))",
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: 12,
-                              fontSize: 12,
-                            }}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="price"
-                            stroke="hsl(45, 100%, 51%)"
-                            strokeWidth={2.5}
-                            dot={{ fill: "hsl(45, 100%, 51%)", r: 3 }}
-                            name="Preço (R$)"
-                          />
+                          <Tooltip contentStyle={{
+                            background: "hsl(var(--card))", border: "1px solid hsl(var(--border))",
+                            borderRadius: 12, fontSize: 12,
+                          }} />
+                          <Line type="monotone" dataKey="price" stroke="hsl(45, 100%, 51%)" strokeWidth={2.5}
+                            dot={{ fill: "hsl(45, 100%, 51%)", r: 3 }} name="Preço (R$)" />
                         </LineChart>
                       </ResponsiveContainer>
                     ) : (
@@ -158,27 +133,19 @@ const Brainrot = () => {
                 </motion.div>
               )}
 
-              {/* Grid */}
               <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {posts.map((post, i) => {
                   const change = getChange(post);
                   return (
-                    <motion.button
-                      key={post.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      onClick={() => setSelectedPost(post)}
-                      className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all ${
-                        selectedPost?.id === post.id
-                          ? "border-primary bg-primary/5 shadow-[var(--shadow-gold)]"
-                          : "border-border bg-card hover:border-primary/40"
-                      }`}
-                    >
+                    <motion.button key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }} onClick={() => setSelectedPost(post)}
+                      className={`flex items-center gap-3 rounded-2xl border p-4 text-left shadow-[var(--shadow-card)] transition-all ${
+                        selectedPost?.id === post.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/40"
+                      }`}>
                       {post.image_url ? (
                         <img src={post.image_url} alt={post.title} className="h-12 w-12 rounded-xl object-cover" />
                       ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
                           <BarChart3 className="h-5 w-5 text-muted-foreground" />
                         </div>
                       )}
@@ -187,7 +154,7 @@ const Brainrot = () => {
                         <div className="mt-0.5 flex items-center gap-2">
                           <span className="text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</span>
                           <span className={`flex items-center gap-0.5 text-[10px] font-bold ${
-                            change > 0 ? "text-[hsl(140,60%,45%)]" : change < 0 ? "text-destructive" : "text-muted-foreground"
+                            change > 0 ? "text-[hsl(var(--success))]" : change < 0 ? "text-destructive" : "text-muted-foreground"
                           }`}>
                             {change > 0 ? <TrendingUp className="h-3 w-3" /> : change < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
                             {Math.abs(change).toFixed(1)}%
@@ -201,8 +168,8 @@ const Brainrot = () => {
             </>
           )}
         </div>
-
         <Footer />
+        <DiscordFloat />
       </div>
     </PageTransition>
   );
