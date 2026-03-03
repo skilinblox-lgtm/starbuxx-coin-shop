@@ -292,7 +292,4 @@ const ProductPage = () => {
   );
 };
 
-// Missing import used in description
-import { Headphones, CreditCard } from "lucide-react";
-
 export default ProductPage;
