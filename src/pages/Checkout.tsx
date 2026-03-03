@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { Star, ShieldCheck, ArrowLeft, ChevronRight, ChevronLeft, Clock, Lock, User, CreditCard, CheckCircle, Truck } from "lucide-react";
+import { Star, ShieldCheck, ArrowLeft, ChevronRight, ChevronLeft, Clock, Lock, User, CreditCard, CheckCircle, Truck, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -86,7 +86,7 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <nav className="border-b border-border">
+      <nav className="border-b border-border bg-card">
         <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-2">
             <Star className="h-6 w-6 fill-primary text-primary sm:h-7 sm:w-7" />
@@ -94,7 +94,7 @@ const Checkout = () => {
               Star<span className="text-gradient-gold">buxx</span>
             </span>
           </Link>
-          <div className="flex items-center gap-2 text-xs text-primary sm:text-sm">
+          <div className="flex items-center gap-2 text-xs text-[hsl(var(--success))] sm:text-sm">
             <Lock className="h-4 w-4" />
             <span className="font-medium">Checkout Seguro</span>
           </div>
@@ -113,8 +113,8 @@ const Checkout = () => {
             <div key={s.id} className="flex items-center">
               <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
                 step >= s.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface text-muted-foreground"
+                  ? "bg-primary text-primary-foreground shadow-[var(--shadow-gold)]"
+                  : "bg-muted text-muted-foreground"
               }`}>
                 <s.icon className="h-4 w-4" />
                 <span className="hidden sm:inline">{s.label}</span>
@@ -128,12 +128,12 @@ const Checkout = () => {
         </div>
 
         {/* Product summary */}
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4">
+        <div className="mb-6 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
           <div className="flex items-center gap-4">
             {order.imageUrl ? (
               <img src={order.imageUrl} alt={order.gameName} className="h-12 w-12 rounded-xl object-contain sm:h-14 sm:w-14" />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface text-xl font-bold text-primary">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-xl font-bold text-primary">
                 {order.gameName[0]}
               </div>
             )}
@@ -153,66 +153,39 @@ const Checkout = () => {
         {/* Steps content */}
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="rounded-2xl border border-border bg-card p-5 sm:p-6"
-            >
+            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
               <h3 className="font-heading text-base font-bold sm:text-lg">Dados Pessoais</h3>
               <p className="mt-1 text-xs text-muted-foreground">Preencha seus dados para prosseguir</p>
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground">Nome Completo</label>
-                  <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-                    className="mt-1.5 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    placeholder="Seu nome completo" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground">CPF</label>
-                  <input type="text" value={cpf} onChange={e => setCpf(formatCPF(e.target.value))}
-                    placeholder="000.000.000-00"
-                    className="mt-1.5 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground">Usuário no Jogo</label>
-                  <input type="text" value={gameUsername} onChange={e => setGameUsername(e.target.value)}
-                    placeholder="Seu nome no jogo"
-                    className="mt-1.5 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground">E-mail</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
-                    className="mt-1.5 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                </div>
+                {[
+                  { label: "Nome Completo", value: fullName, onChange: setFullName, type: "text", placeholder: "Seu nome completo" },
+                  { label: "CPF", value: cpf, onChange: (v: string) => setCpf(formatCPF(v)), type: "text", placeholder: "000.000.000-00" },
+                  { label: "Usuário no Jogo", value: gameUsername, onChange: setGameUsername, type: "text", placeholder: "Seu nome no jogo" },
+                  { label: "E-mail", value: email, onChange: setEmail, type: "email", placeholder: "seu@email.com" },
+                ].map(field => (
+                  <div key={field.label}>
+                    <label className="text-xs font-medium text-muted-foreground">{field.label}</label>
+                    <input type={field.type} value={field.value} onChange={e => field.onChange(e.target.value)}
+                      className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      placeholder={field.placeholder} />
+                  </div>
+                ))}
               </div>
             </motion.div>
           )}
 
           {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="rounded-2xl border border-border bg-card p-5 sm:p-6"
-            >
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
               <h3 className="font-heading text-base font-bold sm:text-lg">Método de Pagamento</h3>
               <p className="mt-1 text-xs text-muted-foreground">Escolha como deseja pagar</p>
               <div className="mt-5 space-y-3">
                 {paymentMethods.map(pm => (
-                  <button
-                    type="button"
-                    key={pm.id}
-                    onClick={() => setPaymentMethod(pm.id)}
+                  <button type="button" key={pm.id} onClick={() => setPaymentMethod(pm.id)}
                     className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
-                      paymentMethod === pm.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/30"
-                    }`}
-                  >
+                      paymentMethod === pm.id ? "border-primary bg-primary/5 shadow-[var(--shadow-gold)]" : "border-border hover:border-primary/30"
+                    }`}>
                     <div className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
                       paymentMethod === pm.id ? "border-primary" : "border-muted-foreground/30"
                     }`}>
@@ -233,37 +206,22 @@ const Checkout = () => {
           )}
 
           {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-4"
-            >
-              {/* Summary */}
-              <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+            <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
                 <h3 className="font-heading text-base font-bold sm:text-lg">Resumo do Pedido</h3>
                 <div className="mt-4 space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Produto</span>
-                    <span className="font-medium">{order.gameName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Quantidade</span>
-                    <span className="font-medium">{order.quantity.toLocaleString("pt-BR")}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Usuário no jogo</span>
-                    <span className="font-medium">{gameUsername}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Pagamento</span>
-                    <span className="font-medium capitalize">{paymentMethod}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Taxa</span>
-                    <span className="font-medium text-[hsl(140,60%,45%)]">Grátis</span>
-                  </div>
+                  {[
+                    { label: "Produto", value: order.gameName },
+                    { label: "Quantidade", value: order.quantity.toLocaleString("pt-BR") },
+                    { label: "Usuário no jogo", value: gameUsername },
+                    { label: "Pagamento", value: paymentMethod === "pix" ? "Pix" : paymentMethod === "cartao" ? "Cartão" : "Boleto" },
+                    { label: "Taxa", value: "Grátis", highlight: true },
+                  ].map(item => (
+                    <div key={item.label} className="flex justify-between">
+                      <span className="text-muted-foreground">{item.label}</span>
+                      <span className={`font-medium ${item.highlight ? "text-[hsl(var(--success))]" : ""}`}>{item.value}</span>
+                    </div>
+                  ))}
                   <div className="border-t border-border pt-3">
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
@@ -273,11 +231,10 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Trust */}
-              <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+              <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[hsl(140,60%,45%)]/10">
-                    <ShieldCheck className="h-5 w-5 text-[hsl(140,60%,45%)]" />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[hsl(var(--success))]/10">
+                    <ShieldCheck className="h-5 w-5 text-[hsl(var(--success))]" />
                   </div>
                   <div>
                     <p className="text-sm font-bold">Compra 100% Segura</p>
@@ -294,27 +251,19 @@ const Checkout = () => {
         {/* Navigation buttons */}
         <div className="mt-6 flex gap-3">
           {step > 1 && (
-            <button
-              onClick={() => setStep(step - 1)}
-              className="flex items-center gap-2 rounded-xl border border-border px-5 py-3 text-sm font-medium transition-all hover:border-primary/40"
-            >
+            <button onClick={() => setStep(step - 1)}
+              className="flex items-center gap-2 rounded-xl border border-border px-5 py-3 text-sm font-medium transition-all hover:border-primary/40">
               <ChevronLeft className="h-4 w-4" /> Voltar
             </button>
           )}
           {step < 3 ? (
-            <button
-              onClick={() => canAdvance() && setStep(step + 1)}
-              disabled={!canAdvance()}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all hover:brightness-110 disabled:opacity-40 sm:py-4"
-            >
+            <button onClick={() => canAdvance() && setStep(step + 1)} disabled={!canAdvance()}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all hover:brightness-110 disabled:opacity-40 sm:py-4">
               Continuar <ChevronRight className="h-4 w-4" />
             </button>
           ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all hover:brightness-110 disabled:opacity-50 sm:py-4 sm:text-base"
-            >
+            <button onClick={handleSubmit} disabled={loading}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all hover:brightness-110 disabled:opacity-50 sm:py-4 sm:text-base">
               {loading ? "Processando..." : "Finalizar Compra"}
               {!loading && <Lock className="h-4 w-4" />}
             </button>
@@ -323,15 +272,10 @@ const Checkout = () => {
 
         {/* Security footer */}
         <div className="mt-4 flex items-center justify-center gap-4 text-[10px] text-muted-foreground sm:text-xs">
-          <div className="flex items-center gap-1">
-            <Lock className="h-3 w-3" /> SSL Seguro
-          </div>
-          <div className="flex items-center gap-1">
-            <ShieldCheck className="h-3 w-3" /> Dados Protegidos
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3" /> Entrega Rápida
-          </div>
+          <span className="flex items-center gap-1"><Lock className="h-3 w-3" /> SSL Seguro</span>
+          <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Dados Protegidos</span>
+          <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Entrega Rápida</span>
+          <span className="flex items-center gap-1"><Users className="h-3 w-3" /> 10K+ Discord</span>
         </div>
       </div>
     </div>
