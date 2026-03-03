@@ -48,13 +48,16 @@ const HeroBanner = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-8 sm:mt-0"
+          className="mt-8 w-full max-w-md overflow-hidden rounded-2xl border border-border/30 shadow-2xl sm:mt-0"
         >
-          <img
-            src={heroBanner}
-            alt="Starbuxx - Moedas de jogos"
-            className="h-56 w-auto object-contain drop-shadow-2xl sm:h-72 lg:h-80"
-          />
+          <video
+            className="aspect-video w-full object-cover"
+            controls
+            preload="metadata"
+            playsInline
+          >
+            <source src="/videos/starbuxx-promo.mp4" type="video/mp4" />
+          </video>
         </motion.div>
       </div>
     </section>

@@ -1,5 +1,6 @@
-import { ShieldCheck, Zap, RefreshCw, Play } from "lucide-react";
+import { ShieldCheck, Zap, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import heroBanner from "@/assets/hero-banner.jpg";
 
 const PromoVideo = () => {
   return (
@@ -20,22 +21,18 @@ const PromoVideo = () => {
         </motion.div>
 
         <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 items-center gap-8 lg:grid-cols-2">
-          {/* Video */}
+          {/* Image */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="relative overflow-hidden rounded-2xl border border-[hsl(220,15%,20%)] shadow-2xl"
+            className="flex items-center justify-center"
           >
-            <video
-              className="aspect-video w-full object-cover"
-              controls
-              preload="metadata"
-              playsInline
-              poster=""
-            >
-              <source src="/videos/starbuxx-promo.mp4" type="video/mp4" />
-            </video>
+            <img
+              src={heroBanner}
+              alt="Starbuxx - Moedas de jogos"
+              className="h-56 w-auto object-contain drop-shadow-2xl sm:h-72 lg:h-80"
+            />
           </motion.div>
 
           {/* Benefits */}
