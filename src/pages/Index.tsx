@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import HeroBanner from "@/components/HeroBanner";
 import GameSelector from "@/components/GameSelector";
 import Advantages from "@/components/Advantages";
-import Testimonials from "@/components/Testimonials";
+import ReviewSection from "@/components/ReviewSection";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -12,7 +12,7 @@ const Index = () => {
       <HeroBanner />
       <GameSelector />
       <Advantages />
-      <Testimonials />
+      <ReviewSection />
       <Footer />
     </div>
   );

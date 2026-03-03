@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import iconRoblox from "@/assets/icon-roblox.png";
+import iconClashRoyale from "@/assets/icon-clash-royale.png";
+import iconBrawlStars from "@/assets/icon-brawl-stars.png";
 
 interface Game {
   id: string;
   name: string;
   currency: string;
   pricePerUnit: number;
-  emoji: string;
+  icon: string;
   color: string;
 }
 
@@ -16,7 +20,7 @@ const games: Game[] = [
     name: "Roblox",
     currency: "Robux",
     pricePerUnit: 0.07,
-    emoji: "🎮",
+    icon: iconRoblox,
     color: "from-[hsl(0,70%,55%)] to-[hsl(350,70%,45%)]",
   },
   {
@@ -24,7 +28,7 @@ const games: Game[] = [
     name: "Clash Royale",
     currency: "Gemas",
     pricePerUnit: 0.05,
-    emoji: "⚔️",
+    icon: iconClashRoyale,
     color: "from-[hsl(210,80%,50%)] to-[hsl(230,80%,40%)]",
   },
   {
@@ -32,7 +36,7 @@ const games: Game[] = [
     name: "Brawl Stars",
     currency: "Gemas",
     pricePerUnit: 0.04,
-    emoji: "💥",
+    icon: iconBrawlStars,
     color: "from-[hsl(130,60%,45%)] to-[hsl(150,60%,35%)]",
   },
 ];
@@ -40,8 +44,22 @@ const games: Game[] = [
 const GameSelector = () => {
   const [selectedGame, setSelectedGame] = useState<Game>(games[0]);
   const [quantity, setQuantity] = useState<number>(100);
+  const navigate = useNavigate();
 
   const totalPrice = (quantity * selectedGame.pricePerUnit).toFixed(2);
+
+  const handleBuy = () => {
+    navigate("/checkout", {
+      state: {
+        gameId: selectedGame.id,
+        gameName: selectedGame.name,
+        currency: selectedGame.currency,
+        quantity,
+        pricePerUnit: selectedGame.pricePerUnit,
+        totalPrice: parseFloat(totalPrice),
+      },
+    });
+  };
 
   return (
     <section id="jogos" className="bg-surface py-20">
@@ -55,7 +73,6 @@ const GameSelector = () => {
           </p>
         </div>
 
-        {/* Game Cards */}
         <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {games.map((game) => (
             <button
@@ -70,8 +87,8 @@ const GameSelector = () => {
                   : "border-border bg-background hover:border-primary/40 hover:shadow-[var(--shadow-card)]"
               }`}
             >
-              <div className={`inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${game.color} text-2xl shadow-lg`}>
-                {game.emoji}
+              <div className={`inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${game.color} shadow-lg overflow-hidden`}>
+                <img src={game.icon} alt={game.name} className="h-10 w-10 object-contain" />
               </div>
               <h3 className="mt-4 font-heading text-xl font-bold">{game.name}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -84,11 +101,10 @@ const GameSelector = () => {
           ))}
         </div>
 
-        {/* Quantity Calculator */}
         <div className="mx-auto mt-12 max-w-xl rounded-2xl border border-border bg-background p-8 shadow-[var(--shadow-card)]">
           <div className="flex items-center gap-3">
-            <div className={`inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${selectedGame.color} text-lg`}>
-              {selectedGame.emoji}
+            <div className={`inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${selectedGame.color} overflow-hidden`}>
+              <img src={selectedGame.icon} alt={selectedGame.name} className="h-7 w-7 object-contain" />
             </div>
             <div>
               <p className="font-heading font-bold">{selectedGame.name}</p>
@@ -116,7 +132,10 @@ const GameSelector = () => {
                 R$ {totalPrice}
               </p>
             </div>
-            <button className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all hover:brightness-110 hover:scale-105">
+            <button
+              onClick={handleBuy}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all hover:brightness-110 hover:scale-105"
+            >
               <ShoppingCart className="h-5 w-5" />
               Comprar
             </button>
