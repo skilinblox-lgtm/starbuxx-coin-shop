@@ -40,6 +40,7 @@ const Navbar = () => {
         {/* Desktop nav */}
         <div className="hidden items-center gap-6 lg:flex">
           <a href="/#jogos" className="text-sm font-medium text-[hsl(220,10%,70%)] transition-colors hover:text-[hsl(0,0%,100%)]">Jogos</a>
+          <Link to="/brainrot" className="text-sm font-medium text-[hsl(220,10%,70%)] transition-colors hover:text-[hsl(0,0%,100%)]">Brainrot</Link>
           <a href="/#vantagens" className="text-sm font-medium text-[hsl(220,10%,70%)] transition-colors hover:text-[hsl(0,0%,100%)]">Vantagens</a>
           <a href="/#depoimentos" className="text-sm font-medium text-[hsl(220,10%,70%)] transition-colors hover:text-[hsl(0,0%,100%)]">Depoimentos</a>
         </div>
