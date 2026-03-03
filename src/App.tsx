@@ -12,6 +12,7 @@ import Checkout from "./pages/Checkout";
 import MyOrders from "./pages/MyOrders";
 import Admin from "./pages/Admin";
 import ProductPage from "./pages/ProductPage";
+import GameCatalog from "./pages/GameCatalog";
 import Brainrot from "./pages/Brainrot";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
