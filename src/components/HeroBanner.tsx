@@ -1,19 +1,8 @@
 import { ShieldCheck, ArrowRight, Star, Clock, Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import bannerRoblox from "@/assets/banner-roblox.png";
-import bannerClash from "@/assets/banner-clash-royale.png";
-import bannerBrawl from "@/assets/banner-brawl-stars.png";
-
-const games = [
-  { id: "roblox", label: "Roblox", img: bannerRoblox },
-  { id: "clash-royale", label: "Clash Royale", img: bannerClash },
-  { id: "brawl-stars", label: "Brawl Stars", img: bannerBrawl },
-];
+import heroBanner from "@/assets/hero-banner.jpg";
 
 const HeroBanner = () => {
-  const [activeGame, setActiveGame] = useState(0);
-
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(220,20%,10%)] via-[hsl(220,20%,14%)] to-[hsl(220,20%,8%)] pt-14 sm:pt-16">
       <div className="container relative z-10 flex min-h-[440px] flex-col items-center justify-center px-4 py-12 sm:min-h-[520px] sm:flex-row sm:justify-between sm:py-16">
@@ -54,44 +43,21 @@ const HeroBanner = () => {
           </motion.a>
         </motion.div>
 
-        {/* Game images */}
+        {/* Hero image */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-8 flex flex-col items-center sm:mt-0"
+          className="mt-8 sm:mt-0"
         >
-          <div className="relative h-56 w-56 sm:h-72 sm:w-72 lg:h-80 lg:w-80">
-            {games.map((game, i) => (
-              <motion.img
-                key={game.id}
-                src={game.img}
-                alt={game.label}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: activeGame === i ? 1 : 0, scale: activeGame === i ? 1 : 0.8 }}
-                transition={{ duration: 0.4 }}
-                className="absolute inset-0 h-full w-full object-contain drop-shadow-2xl"
-              />
-            ))}
-          </div>
-          <div className="mt-3 flex gap-2">
-            {games.map((game, i) => (
-              <button
-                key={game.id}
-                onClick={() => setActiveGame(i)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                  activeGame === i
-                    ? "bg-[hsl(45,100%,51%)] text-[hsl(220,20%,10%)]"
-                    : "bg-[hsl(220,15%,18%)] text-[hsl(220,10%,65%)] hover:bg-[hsl(220,15%,22%)]"
-                }`}
-              >
-                {game.label}
-              </button>
-            ))}
-          </div>
+          <img
+            src={heroBanner}
+            alt="Starbuxx - Moedas de jogos"
+            className="h-56 w-auto object-contain drop-shadow-2xl sm:h-72 lg:h-80"
+          />
         </motion.div>
       </div>
-      {/* Bottom gradient fade to white */}
+      {/* Bottom gradient fade */}
       <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
