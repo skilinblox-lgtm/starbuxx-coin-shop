@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import HeroBanner from "@/components/HeroBanner";
 import GameSelector from "@/components/GameSelector";
+import BrainrotBanner from "@/components/BrainrotBanner";
 import Advantages from "@/components/Advantages";
 import TrustSection from "@/components/TrustSection";
 import ReviewSection from "@/components/ReviewSection";
