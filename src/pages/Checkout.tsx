@@ -71,7 +71,7 @@ const Checkout = () => {
   const getConfirmStepIndex = () => isRobux ? 4 : 3;
 
   const canAdvance = () => {
-    if (step === 1) return fullName.trim() && cpf.replace(/\D/g, "").length === 11 && gameUsername.trim() && email.trim();
+    if (step === 1) return fullName.trim() && cpf.replace(/\D/g, "").length === 11 && gameUsername.trim() && discord.trim();
     if (isRobux && step === 2) return knowsGamepass !== null;
     if (step === getPaymentStepIndex()) return !!paymentMethod;
     return true;
