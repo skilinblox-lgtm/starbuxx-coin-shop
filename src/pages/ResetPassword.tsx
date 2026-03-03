@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Star } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
