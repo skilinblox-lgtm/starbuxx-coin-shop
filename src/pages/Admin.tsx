@@ -188,7 +188,7 @@ const Admin = () => {
     if (!newModEmail.trim()) return;
     setAddingMod(true);
     try {
-      const { data: userOrders } = await supabase.from("orders").select("user_id, email").eq("email", newModEmail).limit(1);
+      const { data: userOrders } = await supabase.from("orders").select("user_id, discord_username").eq("discord_username", newModEmail).limit(1);
       let userId: string | null = null;
       if (userOrders && userOrders.length > 0) userId = userOrders[0].user_id;
       if (!userId) { toast.error("Usuário não encontrado."); return; }
