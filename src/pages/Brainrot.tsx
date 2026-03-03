@@ -1,173 +1,240 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
+import { ChevronDown, ChevronUp, ShoppingCart, Star, Zap, ShieldCheck, Gamepad2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { motion } from "framer-motion";
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-} from "recharts";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
+import bannerBrainrot from "@/assets/banner-brainrot.png";
+import iconRoblox from "@/assets/icon-roblox.png";
+import iconClash from "@/assets/icon-clash-royale.png";
+import iconBrawl from "@/assets/icon-brawl-stars.png";
+
+const GAMES = [
+  {
+    id: "roblox",
+    name: "Roblox",
+    icon: iconRoblox,
+    description: "O maior metaverso de jogos do mundo. Compre Robux e itens exclusivos para personalizar seu avatar e desbloquear experiências incríveis.",
+    currency: "Robux",
+  },
+  {
+    id: "clash-royale",
+    name: "Clash Royale",
+    icon: iconClash,
+    description: "Batalhas estratégicas em tempo real. Adquira gemas e recursos para evoluir suas cartas e dominar a arena.",
+    currency: "Gemas",
+  },
+  {
+    id: "brawl-stars",
+    name: "Brawl Stars",
+    icon: iconBrawl,
+    description: "Combates 3v3 rápidos e frenéticos. Consiga gemas para desbloquear brawlers lendários e skins raras.",
+    currency: "Gemas",
+  },
+];
 
 const Brainrot = () => {
-  const [posts, setPosts] = useState<any[]>([]);
-  const [priceHistories, setPriceHistories] = useState<Record<string, any[]>>({});
-  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [products, setProducts] = useState<Record<string, any[]>>({});
+  const [expandedGame, setExpandedGame] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const { data: brainrots } = await supabase
-        .from("brainrot_posts").select("*").order("created_at", { ascending: false });
-      setPosts(brainrots || []);
+    const fetchProducts = async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("*")
+        .eq("active", true)
+        .order("price_per_unit", { ascending: true });
 
-      if (brainrots && brainrots.length > 0) {
-        const { data: histories } = await supabase
-          .from("brainrot_price_history").select("*").order("recorded_at", { ascending: true });
-
-        const grouped: Record<string, any[]> = {};
-        (histories || []).forEach(h => {
-          if (!grouped[h.brainrot_id]) grouped[h.brainrot_id] = [];
-          grouped[h.brainrot_id].push({
-            date: new Date(h.recorded_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
-            price: Number(h.price),
-          });
-        });
-        setPriceHistories(grouped);
-        if (brainrots.length > 0) setSelectedPost(brainrots[0]);
-      }
+      const grouped: Record<string, any[]> = {};
+      (data || []).forEach((p) => {
+        if (!grouped[p.game_id]) grouped[p.game_id] = [];
+        grouped[p.game_id].push(p);
+      });
+      setProducts(grouped);
       setLoading(false);
     };
-    fetchData();
+    fetchProducts();
   }, []);
 
-  const getChange = (post: any) => {
-    const history = priceHistories[post.id];
-    if (!history || history.length < 2) return 0;
-    const prev = history[history.length - 2].price;
-    const curr = history[history.length - 1].price;
-    return prev === 0 ? 0 : ((curr - prev) / prev) * 100;
+  const getAvgPrice = (gameId: string) => {
+    const prods = products[gameId];
+    if (!prods || prods.length === 0) return null;
+    const avg = prods.reduce((s, p) => s + Number(p.price_per_unit), 0) / prods.length;
+    return avg.toFixed(2);
+  };
+
+  const toggleGame = (gameId: string) => {
+    setExpandedGame((prev) => (prev === gameId ? null : gameId));
   };
 
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container px-4 pb-12 pt-20 sm:pt-24">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
-              <BarChart3 className="h-6 w-6 text-primary" />
-            </div>
-            <h1 className="mt-3 font-heading text-3xl font-bold sm:text-4xl">
-              Mercado <span className="text-gradient-gold">Brainrot</span>
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-              Acompanhe as tendências e cotações do universo brainrot
-            </p>
-          </motion.div>
 
+        {/* Hero Banner */}
+        <div className="relative mt-14 overflow-hidden sm:mt-16">
+          <img
+            src={bannerBrainrot}
+            alt="Brainrot Marketplace"
+            className="h-40 w-full object-cover sm:h-56 lg:h-64"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(220,20%,7%)]/80 to-transparent" />
+          <div className="absolute inset-0 flex items-center">
+            <div className="container px-4">
+              <h1 className="font-heading text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
+                Encontre suas <span className="text-gradient-gold">Moedas</span>
+              </h1>
+              <p className="mt-1 max-w-md text-xs text-white/70 sm:text-sm">
+                Marketplace de moedas virtuais dos jogos mais populares. Escolha o jogo e veja os produtos disponíveis.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Trust bar */}
+        <div className="border-b border-border bg-card">
+          <div className="container flex items-center justify-center gap-6 px-4 py-3 sm:gap-10">
+            {[
+              { icon: Zap, text: "Entrega Rápida" },
+              { icon: ShieldCheck, text: "100% Seguro" },
+              { icon: Star, text: "10mil+ no Discord" },
+            ].map((t) => (
+              <div key={t.text} className="flex items-center gap-1.5 text-xs text-muted-foreground sm:text-sm">
+                <t.icon className="h-3.5 w-3.5 text-primary sm:h-4 sm:w-4" />
+                <span className="font-medium">{t.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Games list */}
+        <div className="container px-4 py-8 sm:py-12">
           {loading ? (
-            <div className="mt-12 flex justify-center">
+            <div className="flex justify-center py-16">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
-          ) : posts.length === 0 ? (
-            <div className="mt-16 text-center text-sm text-muted-foreground">
-              Nenhum brainrot publicado ainda. Fique ligado!
-            </div>
           ) : (
-            <>
-              {selectedPost && (
-                <motion.div key={selectedPost.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                  className="mx-auto mt-8 max-w-3xl rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-8">
-                  <div className="flex items-start gap-4">
-                    {selectedPost.image_url && (
-                      <img src={selectedPost.image_url} alt={selectedPost.title} className="h-16 w-16 rounded-2xl object-cover sm:h-20 sm:w-20" />
-                    )}
-                    <div className="flex-1">
-                      <h2 className="font-heading text-xl font-bold sm:text-2xl">{selectedPost.title}</h2>
-                      <div className="mt-1 flex items-center gap-3">
-                        <span className="font-heading text-lg font-bold text-gradient-gold sm:text-xl">
-                          R$ {Number(selectedPost.current_price).toFixed(2)}
-                        </span>
-                        {(() => {
-                          const change = getChange(selectedPost);
-                          return (
-                            <span className={`flex items-center gap-0.5 text-xs font-bold ${
-                              change > 0 ? "text-[hsl(var(--success))]" : change < 0 ? "text-destructive" : "text-muted-foreground"
-                            }`}>
-                              {change > 0 ? <TrendingUp className="h-3.5 w-3.5" /> : change < 0 ? <TrendingDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-                              {Math.abs(change).toFixed(1)}%
-                            </span>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </div>
+            <div className="mx-auto max-w-3xl space-y-4">
+              {GAMES.map((game, i) => {
+                const isExpanded = expandedGame === game.id;
+                const gameProducts = products[game.id] || [];
+                const avgPrice = getAvgPrice(game.id);
 
-                  {selectedPost.description && (
-                    <p className="mt-3 text-xs text-muted-foreground sm:text-sm">{selectedPost.description}</p>
-                  )}
-
-                  <div className="mt-5 h-48 sm:h-64">
-                    {(priceHistories[selectedPost.id] || []).length > 1 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={priceHistories[selectedPost.id]}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                          <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                          <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                          <Tooltip contentStyle={{
-                            background: "hsl(var(--card))", border: "1px solid hsl(var(--border))",
-                            borderRadius: 12, fontSize: 12,
-                          }} />
-                          <Line type="monotone" dataKey="price" stroke="hsl(45, 100%, 51%)" strokeWidth={2.5}
-                            dot={{ fill: "hsl(45, 100%, 51%)", r: 3 }} name="Preço (R$)" />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                        Dados insuficientes para gerar gráfico
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
-              <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {posts.map((post, i) => {
-                  const change = getChange(post);
-                  return (
-                    <motion.button key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }} onClick={() => setSelectedPost(post)}
-                      className={`flex items-center gap-3 rounded-2xl border p-4 text-left shadow-[var(--shadow-card)] transition-all ${
-                        selectedPost?.id === post.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/40"
-                      }`}>
-                      {post.image_url ? (
-                        <img src={post.image_url} alt={post.title} className="h-12 w-12 rounded-xl object-cover" />
-                      ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
-                          <BarChart3 className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                      )}
+                return (
+                  <motion.div
+                    key={game.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]"
+                  >
+                    {/* Game header - clickable */}
+                    <button
+                      onClick={() => toggleGame(game.id)}
+                      className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-muted/50 sm:p-5"
+                    >
+                      <img
+                        src={game.icon}
+                        alt={game.name}
+                        className="h-14 w-14 rounded-xl object-contain sm:h-16 sm:w-16"
+                      />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold">{post.title}</p>
-                        <div className="mt-0.5 flex items-center gap-2">
-                          <span className="text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</span>
-                          <span className={`flex items-center gap-0.5 text-[10px] font-bold ${
-                            change > 0 ? "text-[hsl(var(--success))]" : change < 0 ? "text-destructive" : "text-muted-foreground"
-                          }`}>
-                            {change > 0 ? <TrendingUp className="h-3 w-3" /> : change < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
-                            {Math.abs(change).toFixed(1)}%
-                          </span>
+                        <div className="flex items-center gap-2">
+                          <h2 className="font-heading text-base font-bold sm:text-lg">{game.name}</h2>
+                          {gameProducts.length > 0 && (
+                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                              {gameProducts.length} {gameProducts.length === 1 ? "produto" : "produtos"}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
+                          {game.description}
+                        </p>
+                        <div className="mt-1.5 flex items-center gap-3">
+                          {avgPrice && (
+                            <span className="text-xs font-bold text-gradient-gold sm:text-sm">
+                              A partir de R$ {avgPrice}/{game.currency}
+                            </span>
+                          )}
                         </div>
                       </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </>
+                      <div className="flex-shrink-0 rounded-lg border border-border p-1.5">
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Expandable products */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="border-t border-border px-4 py-4 sm:px-5">
+                            {gameProducts.length === 0 ? (
+                              <p className="py-6 text-center text-sm text-muted-foreground">
+                                Nenhum produto disponível no momento. Fique ligado!
+                              </p>
+                            ) : (
+                              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                {gameProducts.map((product) => (
+                                  <Link
+                                    key={product.id}
+                                    to={`/product/${product.id}`}
+                                    className="group flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition-all hover:border-primary/40 hover:shadow-md sm:p-4"
+                                  >
+                                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-muted sm:h-14 sm:w-14">
+                                      {product.image_url ? (
+                                        <img
+                                          src={product.image_url}
+                                          alt={product.name}
+                                          className="h-10 w-10 object-contain transition-transform group-hover:scale-110 sm:h-12 sm:w-12"
+                                        />
+                                      ) : (
+                                        <Gamepad2 className="h-5 w-5 text-muted-foreground" />
+                                      )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="truncate text-sm font-bold">{product.name}</p>
+                                      <p className="mt-0.5 text-xs text-muted-foreground">
+                                        {product.currency}
+                                      </p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-1">
+                                      <span className="text-sm font-bold text-gradient-gold">
+                                        R$ {Number(product.price_per_unit).toFixed(2)}
+                                      </span>
+                                      <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                                        <ShoppingCart className="h-3 w-3" /> Comprar
+                                      </span>
+                                    </div>
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
           )}
         </div>
+
         <Footer />
         <DiscordFloat />
       </div>
