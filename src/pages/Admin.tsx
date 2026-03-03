@@ -323,7 +323,7 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark">
+    <div className="admin-dark min-h-screen bg-background">
       <nav className="border-b border-border/50 bg-dark">
         <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-2">
