@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import {
-  Star, ShieldCheck, ArrowLeft, ChevronRight, ChevronLeft, Clock, Lock, User,
-  CreditCard, CheckCircle, Truck, Users, HelpCircle, Play, Gamepad2
+  ShieldCheck, ArrowLeft, ChevronRight, ChevronLeft, Clock, Lock, User,
+  CreditCard, CheckCircle, Truck, Users, HelpCircle, Play, Gamepad2,
+  Smartphone, QrCode, Landmark, CalendarClock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import iconPix from "@/assets/icon-pix.png";
-import iconCard from "@/assets/icon-card.png";
-import iconBoleto from "@/assets/icon-boleto.png";
 
 const Checkout = () => {
   const location = useLocation();
@@ -35,11 +33,8 @@ const Checkout = () => {
         { id: 3, label: "Confirmação", icon: CheckCircle },
       ];
 
-  const totalSteps = STEPS.length;
-
   const [step, setStep] = useState(1);
   const [fullName, setFullName] = useState("");
-  const [cpf, setCpf] = useState("");
   const [gameUsername, setGameUsername] = useState("");
   const [discord, setDiscord] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("pix");
@@ -59,19 +54,11 @@ const Checkout = () => {
 
   if (!order) return null;
 
-  const formatCPF = (value: string) => {
-    const d = value.replace(/\D/g, "").slice(0, 11);
-    if (d.length <= 3) return d;
-    if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
-    if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
-    return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
-  };
-
   const getPaymentStepIndex = () => isRobux ? 3 : 2;
   const getConfirmStepIndex = () => isRobux ? 4 : 3;
 
   const canAdvance = () => {
-    if (step === 1) return fullName.trim() && cpf.replace(/\D/g, "").length === 11 && gameUsername.trim() && discord.trim();
+    if (step === 1) return fullName.trim() && gameUsername.trim() && discord.trim();
     if (isRobux && step === 2) return knowsGamepass !== null;
     if (step === getPaymentStepIndex()) return !!paymentMethod;
     return true;
@@ -84,7 +71,7 @@ const Checkout = () => {
       const { error } = await supabase.from("orders").insert({
         user_id: user.id, game_id: order.gameId, quantity: order.quantity,
         total_price: order.totalPrice, payment_method: paymentMethod,
-        game_username: gameUsername, full_name: fullName, cpf, discord_username: discord,
+        game_username: gameUsername, full_name: fullName, cpf: "N/A", discord_username: discord,
         product_id: order.productId || null,
       });
       if (error) throw error;
@@ -96,9 +83,9 @@ const Checkout = () => {
   };
 
   const paymentMethods = [
-    { id: "pix", label: "Pix", icon: iconPix, desc: "Aprovação instantânea", badge: "Recomendado", badgeColor: "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" },
-    { id: "cartao", label: "Cartão de Crédito/Débito", icon: iconCard, desc: "Visa, Master, Elo e mais", badge: null, badgeColor: "" },
-    { id: "boleto", label: "Boleto Bancário", icon: iconBoleto, desc: "Até 3 dias úteis", badge: null, badgeColor: "" },
+    { id: "pix", label: "Pix", icon: QrCode, desc: "Aprovação instantânea", badge: "Recomendado", badgeColor: "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" },
+    { id: "cartao", label: "Cartão de Crédito/Débito", icon: CreditCard, desc: "Visa, Master, Elo e mais", badge: null, badgeColor: "" },
+    { id: "boleto", label: "Boleto Bancário", icon: Landmark, desc: "Até 3 dias úteis", badge: null, badgeColor: "" },
   ];
 
   const isPaymentStep = step === getPaymentStepIndex();
@@ -110,8 +97,7 @@ const Checkout = () => {
       <nav className="border-b border-border bg-card">
         <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
           <Link to="/" className="flex items-center gap-1.5">
-            <Star className="h-6 w-6 fill-primary text-primary" />
-            <span className="font-heading text-lg font-bold">Star<span className="text-gradient-gold">buxx</span></span>
+            <span className="font-heading text-lg font-bold">Star<span className="text-gradient-gold">Buxx</span></span>
           </Link>
           <div className="flex items-center gap-2 text-xs text-[hsl(var(--success))] sm:text-sm">
             <Lock className="h-4 w-4" />
@@ -155,7 +141,7 @@ const Checkout = () => {
             <div className="flex-1">
               <h2 className="font-heading text-sm font-bold sm:text-base">{order.gameName}</h2>
               <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                <Truck className="h-3 w-3" /> Entrega: até 20 min
+                <Truck className="h-3 w-3" /> {isRobux ? "Prazo: 2-7 dias úteis" : "Entrega: até 20 min"}
                 <span className="text-border">|</span>
                 {order.quantity.toLocaleString("pt-BR")} un
               </div>
@@ -169,18 +155,17 @@ const Checkout = () => {
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
-              <h3 className="font-heading text-base font-bold sm:text-lg">Dados Pessoais</h3>
+              <h3 className="font-heading text-base font-bold sm:text-lg">Seus Dados</h3>
               <p className="mt-1 text-xs text-muted-foreground">Preencha seus dados para prosseguir</p>
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {[
-                  { label: "Nome Completo", value: fullName, onChange: setFullName, type: "text", placeholder: "Seu nome completo" },
-                  { label: "CPF", value: cpf, onChange: (v: string) => setCpf(formatCPF(v)), type: "text", placeholder: "000.000.000-00" },
-                  { label: "Usuário no Jogo", value: gameUsername, onChange: setGameUsername, type: "text", placeholder: "Seu nome no jogo" },
-                  { label: "Discord", value: discord, onChange: setDiscord, type: "text", placeholder: "usuario#0000 ou @usuario" },
+                  { label: "Nome Completo", value: fullName, onChange: setFullName, placeholder: "Seu nome completo" },
+                  { label: "Usuário no Jogo", value: gameUsername, onChange: setGameUsername, placeholder: "Seu nome no jogo" },
+                  { label: "Discord", value: discord, onChange: setDiscord, placeholder: "usuario#0000 ou @usuario", colSpan: true },
                 ].map(field => (
-                  <div key={field.label}>
+                  <div key={field.label} className={(field as any).colSpan ? "sm:col-span-2" : ""}>
                     <label className="text-xs font-medium text-muted-foreground">{field.label}</label>
-                    <input type={field.type} value={field.value} onChange={e => field.onChange(e.target.value)}
+                    <input type="text" value={field.value} onChange={e => field.onChange(e.target.value)}
                       className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-all focus:border-[hsl(var(--info))] focus:ring-2 focus:ring-[hsl(var(--info))]/20"
                       placeholder={field.placeholder} />
                   </div>
@@ -255,7 +240,11 @@ const Checkout = () => {
                     }`}>
                       {paymentMethod === pm.id && <div className="h-2.5 w-2.5 rounded-full bg-[hsl(var(--success))]" />}
                     </div>
-                    <img src={pm.icon} alt={pm.label} className="h-8 w-8 object-contain" />
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                      paymentMethod === pm.id ? "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" : "bg-muted text-muted-foreground"
+                    }`}>
+                      <pm.icon className="h-5 w-5" />
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-bold">{pm.label}</p>
@@ -279,6 +268,7 @@ const Checkout = () => {
                     { label: "Produto", value: order.gameName },
                     { label: "Quantidade", value: order.quantity.toLocaleString("pt-BR") },
                     { label: "Usuário no jogo", value: gameUsername },
+                    { label: "Discord", value: discord },
                     { label: "Pagamento", value: paymentMethod === "pix" ? "Pix" : paymentMethod === "cartao" ? "Cartão" : "Boleto" },
                     { label: "Taxa", value: "Grátis", color: "text-[hsl(var(--success))]" },
                   ].map(item => (
@@ -295,6 +285,33 @@ const Checkout = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Robux delivery timeline */}
+              {isRobux && (
+                <div className="rounded-2xl border border-[hsl(var(--warning))]/20 bg-[hsl(var(--warning))]/5 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[hsl(var(--warning))]/10">
+                      <CalendarClock className="h-5 w-5 text-[hsl(var(--warning))]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">Prazo de Entrega — Robux</p>
+                      <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
+                        <li className="flex items-start gap-2">
+                          <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[hsl(var(--info))]/10 text-[9px] font-bold text-[hsl(var(--info))]">1</span>
+                          Nossa equipe paga a gamepass em <strong className="text-foreground">até 48 horas</strong> após a confirmação do pagamento.
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[hsl(var(--info))]/10 text-[9px] font-bold text-[hsl(var(--info))]">2</span>
+                          O Roblox demora de <strong className="text-foreground">2 a 7 dias úteis</strong> para enviar os Robux à sua conta após o gamepass ser pago.
+                        </li>
+                      </ul>
+                      <p className="mt-2 rounded-lg bg-muted/60 px-3 py-1.5 text-[10px] text-muted-foreground">
+                        ⏳ Você poderá solicitar reembolso após 48h caso haja algum problema.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="rounded-2xl border border-[hsl(var(--success))]/20 bg-[hsl(var(--success))]/5 p-4">
                 <div className="flex items-center gap-3">
@@ -320,7 +337,7 @@ const Checkout = () => {
                     <p className="mt-0.5 text-[10px] text-muted-foreground sm:text-xs">
                       Após finalizar, entre no Discord para acompanhar seu pedido e receber suporte.
                     </p>
-                    <a href="https://discord.gg/lovable-dev" target="_blank" rel="noopener noreferrer"
+                    <a href="https://discord.gg/EQTankyt8R" target="_blank" rel="noopener noreferrer"
                       className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[hsl(var(--info))] px-3 py-1.5 text-xs font-bold text-white transition-all hover:brightness-110">
                       Entrar no Discord
                     </a>

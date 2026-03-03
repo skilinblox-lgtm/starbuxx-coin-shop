@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Star, Package, ShoppingCart, Users, MessageSquare, DollarSign,
+  Package, ShoppingCart, Users, MessageSquare, DollarSign,
   ArrowLeft, Truck, Shield, UserPlus, Send, Bot, Edit2, Save, X,
   Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2
 } from "lucide-react";
@@ -262,7 +262,7 @@ const Admin = () => {
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center bg-dark">
       <div className="flex flex-col items-center gap-3">
-        <Star className="h-8 w-8 animate-pulse fill-primary text-primary" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         <p className="text-sm text-muted-foreground">Carregando painel...</p>
       </div>
     </div>
@@ -327,9 +327,8 @@ const Admin = () => {
       <nav className="border-b border-border/50 bg-background">
         <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-2">
-            <Star className="h-6 w-6 fill-primary text-primary sm:h-7 sm:w-7" />
             <span className="font-heading text-base font-bold text-[hsl(0,0%,100%)] sm:text-xl">
-              Star<span className="text-gradient-gold">buxx</span>
+              Star<span className="text-gradient-gold">Buxx</span>
               <span className="ml-1.5 text-xs font-normal text-muted-foreground sm:text-sm">Admin</span>
             </span>
           </Link>

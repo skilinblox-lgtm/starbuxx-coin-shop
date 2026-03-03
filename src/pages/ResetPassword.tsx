@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Star } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -36,9 +35,8 @@ const ResetPassword = () => {
     <div className="flex min-h-screen items-center justify-center bg-dark px-4">
       <div className="w-full max-w-md rounded-2xl border border-border bg-background p-8 shadow-[var(--shadow-card)]">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
-          <Star className="h-7 w-7 fill-primary text-primary" />
           <span className="font-heading text-xl font-bold">
-            Star<span className="text-gradient-gold">buxx</span>
+            Star<span className="text-gradient-gold">Buxx</span>
           </span>
         </Link>
         <h2 className="text-center font-heading text-2xl font-bold">Nova Senha</h2>

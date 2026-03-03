@@ -14,7 +14,7 @@ const PrivacyPolicy = () => {
           <div className="mt-8 space-y-6 text-sm leading-relaxed text-muted-foreground">
             <section>
               <h2 className="text-base font-bold text-foreground">1. Dados Coletados</h2>
-              <p className="mt-2">Coletamos apenas os dados necessários para processar sua compra: nome completo, CPF, e-mail e nome de usuário no jogo. Não compartilhamos seus dados com terceiros.</p>
+              <p className="mt-2">Coletamos apenas os dados necessários para processar sua compra: nome completo, Discord e nome de usuário no jogo. Não compartilhamos seus dados com terceiros.</p>
             </section>
 
             <section>

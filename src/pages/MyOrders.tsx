@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Star, ArrowLeft, Package, Gamepad2, Clock, CheckCircle, Truck, XCircle,
+  ArrowLeft, Package, Gamepad2, Clock, CheckCircle, Truck, XCircle,
   CreditCard, RefreshCw, Send, MessageCircle, ChevronDown, ChevronUp,
-  Monitor, Smartphone, Link2, Timer, AlertCircle
+  Monitor, Smartphone, Link2, Timer, AlertCircle, CalendarClock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -124,7 +124,7 @@ const MyOrders = () => {
           <div className={`max-w-[80%] rounded-xl px-3 py-2 text-xs ${
             msg.sender_role === "customer" ? "bg-[hsl(var(--info))]/10 text-foreground" : "bg-muted text-foreground"
           }`}>
-            {msg.sender_role !== "customer" && <span className="mb-1 block text-[10px] font-bold text-[hsl(var(--info))]">Starbuxx</span>}
+            {msg.sender_role !== "customer" && <span className="mb-1 block text-[10px] font-bold text-[hsl(var(--info))]">StarBuxx</span>}
             <p className="break-words">{msg.message}</p>
             <span className="mt-1 block text-[9px] text-muted-foreground">
               {new Date(msg.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
@@ -141,8 +141,7 @@ const MyOrders = () => {
         <nav className="border-b border-border bg-card">
           <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
             <Link to="/" className="flex items-center gap-1.5">
-              <Star className="h-6 w-6 fill-primary text-primary" />
-              <span className="font-heading text-lg font-bold">Star<span className="text-gradient-gold">buxx</span></span>
+              <span className="font-heading text-lg font-bold">Star<span className="text-gradient-gold">Buxx</span></span>
             </Link>
             <Link to="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-3.5 w-3.5" /> Voltar
@@ -254,19 +253,35 @@ const MyOrders = () => {
                               <div><span className="text-muted-foreground">Total</span><p className="mt-0.5 font-bold text-gradient-gold">R$ {Number(o.total_price).toFixed(2)}</p></div>
                             </div>
 
-                            {/* Refund */}
-                            <div className="mt-4 flex items-center gap-3">
-                              {showRefund ? (
-                                <button onClick={() => requestRefund(o.id)}
-                                  className="flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-destructive/90">
-                                  <RefreshCw className="h-3.5 w-3.5" /> Solicitar Reembolso
-                                </button>
-                              ) : countdown ? (
-                                <div className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/5 px-3 py-2 text-xs text-[hsl(var(--warning))]">
-                                  <Timer className="h-3.5 w-3.5" />
-                                  Reembolso em <span className="font-bold">{countdown}</span>
+                            {/* Refund + Robux Info */}
+                            <div className="mt-4 space-y-3">
+                              {/* Robux delivery timeline */}
+                              {category === "robux" && o.status !== "cancelado" && (
+                                <div className="rounded-xl border border-[hsl(var(--warning))]/20 bg-[hsl(var(--warning))]/5 p-3">
+                                  <div className="flex items-start gap-2">
+                                    <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-[hsl(var(--warning))]" />
+                                    <div className="text-xs text-muted-foreground">
+                                      <p className="font-bold text-foreground">Prazo de entrega Robux</p>
+                                      <p className="mt-1">Nossa equipe paga a gamepass em <strong className="text-foreground">até 48h</strong>. Após isso, o Roblox demora de <strong className="text-foreground">2 a 7 dias úteis</strong> para enviar os Robux.</p>
+                                    </div>
+                                  </div>
                                 </div>
-                              ) : null}
+                              )}
+
+                              {/* Refund */}
+                              <div className="flex items-center gap-3">
+                                {showRefund ? (
+                                  <button onClick={() => requestRefund(o.id)}
+                                    className="flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-destructive/90">
+                                    <RefreshCw className="h-3.5 w-3.5" /> Solicitar Reembolso
+                                  </button>
+                                ) : countdown ? (
+                                  <div className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/5 px-3 py-2 text-xs text-[hsl(var(--warning))]">
+                                    <Timer className="h-3.5 w-3.5" />
+                                    Reembolso disponível em <span className="font-bold">{countdown}</span>
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
 
                             {/* ROBUX: Gamepass */}
@@ -338,7 +353,7 @@ const MyOrders = () => {
                             {category === "chat" && o.status !== "cancelado" && (
                               <div className="mt-5">
                                 <h4 className="flex items-center gap-2 text-sm font-bold">
-                                  <MessageCircle className="h-4 w-4 text-[hsl(var(--info))]" /> Chat com a Starbuxx
+                                  <MessageCircle className="h-4 w-4 text-[hsl(var(--info))]" /> Chat com a StarBuxx
                                 </h4>
                                 <p className="mt-1 text-xs text-muted-foreground">Converse conosco para combinar a entrega</p>
                                 <div className="mt-3 flex max-h-64 min-h-[120px] flex-col gap-2 overflow-y-auto rounded-xl border border-border bg-background p-3">

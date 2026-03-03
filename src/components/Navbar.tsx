@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Star, Menu, X, User, ShoppingBag } from "lucide-react";
+import { Menu, X, User, ShoppingBag } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,9 +36,8 @@ const Navbar = () => {
     }`}>
       <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
         <Link to="/" className="flex items-center gap-1.5 sm:gap-2">
-          <Star className={`h-6 w-6 fill-primary text-primary sm:h-7 sm:w-7`} />
           <span className={`font-heading text-lg font-bold sm:text-xl ${scrolled ? "text-foreground" : "text-[hsl(0,0%,100%)]"}`}>
-            Star<span className="text-gradient-gold">buxx</span>
+            Star<span className="text-gradient-gold">Buxx</span>
           </span>
         </Link>
 
