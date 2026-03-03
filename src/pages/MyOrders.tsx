@@ -253,19 +253,35 @@ const MyOrders = () => {
                               <div><span className="text-muted-foreground">Total</span><p className="mt-0.5 font-bold text-gradient-gold">R$ {Number(o.total_price).toFixed(2)}</p></div>
                             </div>
 
-                            {/* Refund */}
-                            <div className="mt-4 flex items-center gap-3">
-                              {showRefund ? (
-                                <button onClick={() => requestRefund(o.id)}
-                                  className="flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-destructive/90">
-                                  <RefreshCw className="h-3.5 w-3.5" /> Solicitar Reembolso
-                                </button>
-                              ) : countdown ? (
-                                <div className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/5 px-3 py-2 text-xs text-[hsl(var(--warning))]">
-                                  <Timer className="h-3.5 w-3.5" />
-                                  Reembolso em <span className="font-bold">{countdown}</span>
+                            {/* Refund + Robux Info */}
+                            <div className="mt-4 space-y-3">
+                              {/* Robux delivery timeline */}
+                              {category === "robux" && o.status !== "cancelado" && (
+                                <div className="rounded-xl border border-[hsl(var(--warning))]/20 bg-[hsl(var(--warning))]/5 p-3">
+                                  <div className="flex items-start gap-2">
+                                    <CalendarClock className="mt-0.5 h-4 w-4 flex-shrink-0 text-[hsl(var(--warning))]" />
+                                    <div className="text-xs text-muted-foreground">
+                                      <p className="font-bold text-foreground">Prazo de entrega Robux</p>
+                                      <p className="mt-1">Nossa equipe paga a gamepass em <strong className="text-foreground">até 48h</strong>. Após isso, o Roblox demora de <strong className="text-foreground">2 a 7 dias úteis</strong> para enviar os Robux.</p>
+                                    </div>
+                                  </div>
                                 </div>
-                              ) : null}
+                              )}
+
+                              {/* Refund */}
+                              <div className="flex items-center gap-3">
+                                {showRefund ? (
+                                  <button onClick={() => requestRefund(o.id)}
+                                    className="flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-destructive/90">
+                                    <RefreshCw className="h-3.5 w-3.5" /> Solicitar Reembolso
+                                  </button>
+                                ) : countdown ? (
+                                  <div className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/5 px-3 py-2 text-xs text-[hsl(var(--warning))]">
+                                    <Timer className="h-3.5 w-3.5" />
+                                    Reembolso disponível em <span className="font-bold">{countdown}</span>
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
 
                             {/* ROBUX: Gamepass */}
