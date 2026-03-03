@@ -84,11 +84,11 @@ const Checkout = () => {
       const { error } = await supabase.from("orders").insert({
         user_id: user.id, game_id: order.gameId, quantity: order.quantity,
         total_price: order.totalPrice, payment_method: paymentMethod,
-        game_username: gameUsername, full_name: fullName, cpf, email,
+        game_username: gameUsername, full_name: fullName, cpf, discord_username: discord,
         product_id: order.productId || null,
       });
       if (error) throw error;
-      toast.success("Pedido criado com sucesso!");
+      toast.success("Pedido criado! Entre no nosso Discord para suporte.");
       navigate("/my-orders");
     } catch (error: any) {
       toast.error(error.message || "Erro ao criar pedido");
