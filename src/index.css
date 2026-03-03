@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
+    --background: 220 15% 96%;
     --foreground: 220 20% 14%;
 
     --card: 0 0% 100%;
@@ -18,10 +18,10 @@
     --primary: 45 100% 51%;
     --primary-foreground: 220 20% 10%;
 
-    --secondary: 220 10% 94%;
+    --secondary: 220 12% 91%;
     --secondary-foreground: 220 20% 20%;
 
-    --muted: 220 10% 94%;
+    --muted: 220 12% 91%;
     --muted-foreground: 220 10% 46%;
 
     --accent: 45 100% 51%;
@@ -30,8 +30,8 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 10% 90%;
-    --input: 220 10% 90%;
+    --border: 220 12% 88%;
+    --input: 220 12% 88%;
     --ring: 45 100% 51%;
 
     --radius: 0.75rem;
@@ -52,14 +52,21 @@
     --dark: 220 20% 7%;
     --dark-card: 220 20% 11%;
     --dark-muted: 220 10% 25%;
-    --surface: 220 10% 96%;
-    --surface-hover: 220 10% 92%;
-    --success: 140 60% 40%;
+    --surface: 220 12% 94%;
+    --surface-hover: 220 12% 90%;
+    --success: 145 63% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 52%;
+    --warning-foreground: 0 0% 100%;
+    --info: 210 80% 55%;
+    --info-foreground: 0 0% 100%;
+    --promo: 145 63% 42%;
+    --discount: 0 84% 60%;
 
     --gradient-gold: linear-gradient(135deg, hsl(45, 100%, 51%), hsl(38, 100%, 45%));
     --gradient-dark: linear-gradient(180deg, hsl(220, 20%, 10%), hsl(220, 20%, 6%));
     --shadow-gold: 0 4px 20px -4px hsl(45 100% 51% / 0.3);
-    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.06);
+    --shadow-card: 0 1px 8px -1px hsl(220 15% 50% / 0.08);
   }
 
   /* Admin panel keeps dark theme */
