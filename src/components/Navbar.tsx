@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Star, Menu, X, User, ShoppingBag } from "lucide-react";
+import { Menu, X, User, ShoppingBag } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
