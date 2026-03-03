@@ -1,34 +1,75 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Star, Package, ShoppingCart, Users, MessageSquare, DollarSign, ArrowLeft } from "lucide-react";
+import {
+  Star, Package, ShoppingCart, Users, MessageSquare, DollarSign,
+  ArrowLeft, Truck, Shield, UserPlus, Send, Bot, Edit2, Save, X,
+  Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
+} from "recharts";
 
-type Tab = "orders" | "products" | "users" | "reviews";
+type Tab = "dashboard" | "products" | "deliveries" | "moderation" | "earnings" | "moderators";
 
 const statusOptions = [
-  { value: "aguardando_pagamento", label: "Aguardando" },
-  { value: "pago", label: "Pago" },
-  { value: "em_entrega", label: "Em Entrega" },
-  { value: "entregue", label: "Entregue" },
-  { value: "cancelado", label: "Cancelado" },
+  { value: "aguardando_pagamento", label: "Aguardando", color: "hsl(45, 100%, 51%)" },
+  { value: "pago", label: "Pago", color: "hsl(210, 80%, 55%)" },
+  { value: "em_entrega", label: "Em Entrega", color: "hsl(30, 90%, 55%)" },
+  { value: "entregue", label: "Entregue", color: "hsl(140, 60%, 45%)" },
+  { value: "cancelado", label: "Cancelado", color: "hsl(0, 70%, 55%)" },
 ];
 
+const PIE_COLORS = ["hsl(45, 100%, 51%)", "hsl(210, 80%, 55%)", "hsl(30, 90%, 55%)", "hsl(140, 60%, 45%)", "hsl(0, 70%, 55%)"];
+
 const Admin = () => {
-  const [tab, setTab] = useState<Tab>("orders");
+  const [tab, setTab] = useState<Tab>("dashboard");
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState("");
   const navigate = useNavigate();
 
+  // Data
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
+  const [moderators, setModerators] = useState<any[]>([]);
+  const [modPermissions, setModPermissions] = useState<any[]>([]);
+
+  // Product editing
+  const [editingProduct, setEditingProduct] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Chat
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [sendingChat, setSendingChat] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(true);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Moderator adding
+  const [newModEmail, setNewModEmail] = useState("");
+  const [addingMod, setAddingMod] = useState(false);
+  const [modPerms, setModPerms] = useState({
+    can_manage_products: false,
+    can_manage_reviews: false,
+    can_manage_users: false,
+    can_process_deliveries: false,
+    can_view_earnings: false,
+  });
 
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/auth"); return; }
+      setCurrentUserId(session.user.id);
       const { data } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
       if (!data) { toast.error("Acesso negado"); navigate("/"); return; }
       setIsAdmin(true);
@@ -38,15 +79,96 @@ const Admin = () => {
     checkAdmin();
   }, [navigate]);
 
-  const fetchAll = async () => {
-    const [o, p, r, u] = await Promise.all([
+  const fetchAll = useCallback(async () => {
+    const [o, p, r, u, roles, perms] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("name"),
       supabase.from("reviews").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("*").eq("role", "moderator"),
+      supabase.from("moderator_permissions").select("*"),
     ]);
-    setOrders(o.data || []); setProducts(p.data || []);
-    setReviews(r.data || []); setProfiles(u.data || []);
+    setOrders(o.data || []);
+    setProducts(p.data || []);
+    setReviews(r.data || []);
+    setProfiles(u.data || []);
+    setModerators(roles.data || []);
+    setModPermissions(perms.data || []);
+  }, []);
+
+  // Chat realtime subscription
+  useEffect(() => {
+    if (!selectedOrder) return;
+    const channel = supabase
+      .channel(`chat-${selectedOrder.id}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "chat_messages",
+        filter: `order_id=eq.${selectedOrder.id}`,
+      }, (payload) => {
+        setChatMessages(prev => [...prev, payload.new]);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedOrder]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  const fetchChatMessages = async (orderId: string) => {
+    const { data } = await supabase
+      .from("chat_messages")
+      .select("*")
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: true });
+    setChatMessages(data || []);
+  };
+
+  const openChat = (order: any) => {
+    setSelectedOrder(order);
+    fetchChatMessages(order.id);
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || !selectedOrder) return;
+    setSendingChat(true);
+    const msg = chatInput;
+    setChatInput("");
+
+    try {
+      // Save admin message
+      await supabase.from("chat_messages").insert({
+        order_id: selectedOrder.id,
+        sender_id: currentUserId,
+        sender_role: "admin",
+        message: msg,
+      });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSendingChat(false);
+    }
+  };
+
+  const triggerAiResponse = async (orderId: string) => {
+    if (!aiEnabled) return;
+    const lastCustomerMsg = chatMessages.filter(m => m.sender_role === "customer").pop();
+    if (!lastCustomerMsg) return;
+
+    try {
+      const response = await supabase.functions.invoke("chat-ai", {
+        body: {
+          orderId,
+          message: lastCustomerMsg.message,
+          chatHistory: chatMessages.slice(-10),
+        },
+      });
+      if (response.error) throw response.error;
+    } catch (e: any) {
+      console.error("AI error:", e);
+    }
   };
 
   const updateOrderStatus = async (orderId: string, status: string) => {
@@ -54,167 +176,731 @@ const Admin = () => {
     if (status === "pago") updateData.payment_approved_at = new Date().toISOString();
     const { error } = await supabase.from("orders").update(updateData).eq("id", orderId);
     if (error) { toast.error(error.message); return; }
-    toast.success("Status atualizado!"); fetchAll();
+    toast.success("Status atualizado!");
+    fetchAll();
+  };
+
+  // Product editing
+  const startEditProduct = (p: any) => {
+    setEditingProduct(p.id);
+    setEditName(p.name);
+    setEditPrice(String(p.price_per_unit));
+  };
+
+  const saveProduct = async (id: string) => {
+    const { error } = await supabase.from("products").update({
+      name: editName,
+      price_per_unit: parseFloat(editPrice),
+    }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Produto atualizado!");
+    setEditingProduct(null);
+    fetchAll();
   };
 
   const toggleProduct = async (id: string, active: boolean) => {
     await supabase.from("products").update({ active: !active }).eq("id", id);
-    toast.success("Produto atualizado!"); fetchAll();
+    toast.success("Produto atualizado!");
+    fetchAll();
   };
 
+  const uploadProductImage = async (productId: string, file: File) => {
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${productId}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
+      await supabase.from("products").update({ image_url: publicUrl }).eq("id", productId);
+      toast.success("Imagem atualizada!");
+      fetchAll();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Reviews
   const deleteReview = async (id: string) => {
     await supabase.from("reviews").delete().eq("id", id);
-    toast.success("Avaliação removida!"); fetchAll();
+    toast.success("Avaliação removida!");
+    fetchAll();
   };
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-dark text-[hsl(0,0%,100%)]">Carregando...</div>;
+  // Moderators
+  const addModerator = async () => {
+    if (!newModEmail.trim()) return;
+    setAddingMod(true);
+    try {
+      // Find user by email in profiles (we need to find user_id)
+      const { data: allProfiles } = await supabase.from("profiles").select("user_id, full_name");
+      // We can't search auth.users from client, so let's search orders for email
+      const { data: userOrders } = await supabase.from("orders").select("user_id, email").eq("email", newModEmail).limit(1);
+      
+      let userId: string | null = null;
+      if (userOrders && userOrders.length > 0) {
+        userId = userOrders[0].user_id;
+      }
+      
+      if (!userId) {
+        toast.error("Usuário não encontrado. O usuário precisa ter feito pelo menos um pedido.");
+        return;
+      }
+
+      // Add moderator role
+      const { error: roleErr } = await supabase.from("user_roles").insert({
+        user_id: userId,
+        role: "moderator",
+      });
+      if (roleErr) {
+        if (roleErr.message.includes("duplicate")) {
+          toast.error("Usuário já é moderador");
+        } else throw roleErr;
+        return;
+      }
+
+      // Add permissions
+      const { error: permErr } = await supabase.from("moderator_permissions").insert({
+        user_id: userId,
+        ...modPerms,
+      });
+      if (permErr) throw permErr;
+
+      toast.success("Moderador adicionado!");
+      setNewModEmail("");
+      setModPerms({
+        can_manage_products: false,
+        can_manage_reviews: false,
+        can_manage_users: false,
+        can_process_deliveries: false,
+        can_view_earnings: false,
+      });
+      fetchAll();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setAddingMod(false);
+    }
+  };
+
+  const removeModerator = async (userId: string) => {
+    await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "moderator");
+    await supabase.from("moderator_permissions").delete().eq("user_id", userId);
+    toast.success("Moderador removido!");
+    fetchAll();
+  };
+
+  if (loading) return (
+    <div className="flex min-h-screen items-center justify-center bg-dark">
+      <div className="flex flex-col items-center gap-3">
+        <Star className="h-8 w-8 animate-pulse fill-primary text-primary" />
+        <p className="text-sm text-muted-foreground">Carregando painel...</p>
+      </div>
+    </div>
+  );
   if (!isAdmin) return null;
 
+  // Dashboard data
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const weekAgo = new Date(today.getTime() - 7 * 86400000);
+  const monthAgo = new Date(today.getTime() - 30 * 86400000);
+
+  const ordersToday = orders.filter(o => o.created_at.startsWith(todayStr));
+  const ordersWeek = orders.filter(o => new Date(o.created_at) >= weekAgo);
+  const ordersMonth = orders.filter(o => new Date(o.created_at) >= monthAgo);
+
+  const revenueToday = ordersToday.filter(o => o.status !== "cancelado").reduce((s, o) => s + Number(o.total_price), 0);
+  const revenueWeek = ordersWeek.filter(o => o.status !== "cancelado").reduce((s, o) => s + Number(o.total_price), 0);
+  const revenueMonth = ordersMonth.filter(o => o.status !== "cancelado").reduce((s, o) => s + Number(o.total_price), 0);
+  const totalRevenue = orders.filter(o => o.status !== "cancelado").reduce((s, o) => s + Number(o.total_price), 0);
+
+  const pendingOrders = orders.filter(o => o.status === "aguardando_pagamento").length;
+  const paidOrders = orders.filter(o => o.status === "pago").length;
+  const deliveryOrders = orders.filter(o => o.status === "em_entrega").length;
+  const deliveredOrders = orders.filter(o => o.status === "entregue").length;
+  const cancelledOrders = orders.filter(o => o.status === "cancelado").length;
+
+  // Chart data - last 7 days
+  const chartData = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today.getTime() - (6 - i) * 86400000);
+    const ds = d.toISOString().split("T")[0];
+    const dayOrders = orders.filter(o => o.created_at.startsWith(ds) && o.status !== "cancelado");
+    return {
+      day: d.toLocaleDateString("pt-BR", { weekday: "short" }),
+      receita: dayOrders.reduce((s, o) => s + Number(o.total_price), 0),
+      pedidos: dayOrders.length,
+    };
+  });
+
+  const pieData = [
+    { name: "Aguardando", value: pendingOrders },
+    { name: "Pago", value: paidOrders },
+    { name: "Em Entrega", value: deliveryOrders },
+    { name: "Entregue", value: deliveredOrders },
+    { name: "Cancelado", value: cancelledOrders },
+  ].filter(d => d.value > 0);
+
+  const deliveryQueue = orders.filter(o => o.status === "pago" || o.status === "em_entrega");
+
   const tabs = [
-    { id: "orders" as Tab, label: "Pedidos", shortLabel: "Pedidos", icon: ShoppingCart, count: orders.length },
-    { id: "products" as Tab, label: "Produtos", shortLabel: "Prod.", icon: Package, count: products.length },
-    { id: "users" as Tab, label: "Usuários", shortLabel: "Users", icon: Users, count: profiles.length },
-    { id: "reviews" as Tab, label: "Avaliações", shortLabel: "Aval.", icon: MessageSquare, count: reviews.length },
+    { id: "dashboard" as Tab, label: "Dashboard", icon: BarChart3 },
+    { id: "products" as Tab, label: "Produtos", icon: Package },
+    { id: "deliveries" as Tab, label: "Entregas", icon: Truck },
+    { id: "moderation" as Tab, label: "Moderação", icon: Shield },
+    { id: "earnings" as Tab, label: "Ganhos", icon: DollarSign },
+    { id: "moderators" as Tab, label: "Moderadores", icon: UserPlus },
   ];
 
-  const totalRevenue = orders.filter(o => o.status !== "cancelado").reduce((sum, o) => sum + Number(o.total_price), 0);
+  const getProfileName = (userId: string) => {
+    const p = profiles.find(p => p.user_id === userId);
+    return p?.full_name || "Sem nome";
+  };
 
   return (
     <div className="min-h-screen bg-dark">
+      {/* Navbar */}
       <nav className="border-b border-border/50 bg-dark">
         <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-2">
             <Star className="h-6 w-6 fill-primary text-primary sm:h-7 sm:w-7" />
             <span className="font-heading text-base font-bold text-[hsl(0,0%,100%)] sm:text-xl">
               Star<span className="text-gradient-gold">buxx</span>
-              <span className="ml-1.5 text-xs font-normal text-muted-foreground sm:text-sm"> Admin</span>
+              <span className="ml-1.5 text-xs font-normal text-muted-foreground sm:text-sm">Admin</span>
             </span>
           </Link>
           <Link to="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-[hsl(0,0%,100%)] sm:gap-2 sm:text-sm">
-            <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Voltar ao Site</span><span className="sm:hidden">Voltar</span>
+            <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Voltar ao Site</span>
+            <span className="sm:hidden">Voltar</span>
           </Link>
         </div>
       </nav>
 
-      <div className="container px-4 py-4 sm:py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-5">
-          <div className="col-span-2 rounded-2xl border border-border bg-background p-4 sm:col-span-1 sm:p-5">
-            <DollarSign className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
-            <p className="mt-1.5 text-xl font-bold text-gradient-gold sm:mt-2 sm:text-2xl">R$ {totalRevenue.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground sm:text-xs">Receita Total</p>
-          </div>
-          {tabs.map(t => (
-            <div key={t.id} className="rounded-2xl border border-border bg-background p-3 sm:p-5">
-              <t.icon className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
-              <p className="mt-1 text-xl font-bold sm:mt-2 sm:text-2xl">{t.count}</p>
-              <p className="text-[10px] text-muted-foreground sm:text-xs">{t.shortLabel}</p>
-            </div>
-          ))}
-        </div>
-
+      <div className="container px-4 py-4 sm:py-6">
         {/* Tabs */}
-        <div className="mt-4 flex gap-1.5 overflow-x-auto sm:mt-8 sm:gap-2">
+        <div className="flex gap-1 overflow-x-auto pb-2 sm:gap-2">
           {tabs.map(t => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => { setTab(t.id); setSelectedOrder(null); }}
               className={`flex flex-shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-all sm:gap-2 sm:px-4 sm:py-2 sm:text-sm ${
                 tab === t.id ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-surface"
               }`}
             >
               <t.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">{t.label}</span>
-              <span className="sm:hidden">{t.shortLabel}</span>
+              {t.label}
             </button>
           ))}
         </div>
 
-        {/* Content */}
-        <div className="mt-4 sm:mt-6">
-          {tab === "orders" && (
-            <div className="space-y-2 sm:space-y-3">
-              {orders.map(o => (
-                <div key={o.id} className="rounded-2xl border border-border bg-background p-3 sm:p-5">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-bold sm:text-base">{o.full_name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {o.game_id} • {o.quantity} un • {o.game_username}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground sm:text-xs">{new Date(o.created_at).toLocaleString("pt-BR")}</p>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <span className="text-sm font-bold text-gradient-gold">R$ {Number(o.total_price).toFixed(2)}</span>
-                      <select
-                        value={o.status}
-                        onChange={(e) => updateOrderStatus(o.id, e.target.value)}
-                        className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-foreground sm:px-3 sm:py-1.5 sm:text-sm"
-                      >
-                        {statusOptions.map(s => (<option key={s.value} value={s.value}>{s.label}</option>))}
-                      </select>
-                    </div>
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="mt-4 sm:mt-6"
+        >
+          {/* ====== DASHBOARD ====== */}
+          {tab === "dashboard" && (
+            <div className="space-y-4 sm:space-y-6">
+              {/* Quick stats */}
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+                <StatCard icon={DollarSign} label="Hoje" value={`R$ ${revenueToday.toFixed(2)}`} gradient />
+                <StatCard icon={TrendingUp} label="Semana" value={`R$ ${revenueWeek.toFixed(2)}`} />
+                <StatCard icon={BarChart3} label="Mês" value={`R$ ${revenueMonth.toFixed(2)}`} />
+                <StatCard icon={DollarSign} label="Total" value={`R$ ${totalRevenue.toFixed(2)}`} gradient />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-4">
+                <MiniStat label="Pendentes" value={pendingOrders} color="hsl(45, 100%, 51%)" />
+                <MiniStat label="Pagos" value={paidOrders} color="hsl(210, 80%, 55%)" />
+                <MiniStat label="Entrega" value={deliveryOrders} color="hsl(30, 90%, 55%)" />
+                <MiniStat label="Entregues" value={deliveredOrders} color="hsl(140, 60%, 45%)" />
+                <MiniStat label="Cancelados" value={cancelledOrders} color="hsl(0, 70%, 55%)" />
+              </div>
+
+              {/* Charts */}
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+                <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                  <h3 className="font-heading text-sm font-bold sm:text-base">Receita - Últimos 7 dias</h3>
+                  <div className="mt-4 h-48 sm:h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" />
+                        <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(220, 10%, 60%)" }} />
+                        <YAxis tick={{ fontSize: 11, fill: "hsl(220, 10%, 60%)" }} />
+                        <Tooltip
+                          contentStyle={{ background: "hsl(220, 20%, 14%)", border: "1px solid hsl(220, 15%, 20%)", borderRadius: 12, fontSize: 12 }}
+                          labelStyle={{ color: "hsl(0, 0%, 100%)" }}
+                        />
+                        <Bar dataKey="receita" fill="hsl(45, 100%, 51%)" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
-              ))}
-              {orders.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground sm:py-8 sm:text-sm">Nenhum pedido ainda.</p>}
+
+                <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                  <h3 className="font-heading text-sm font-bold sm:text-base">Status dos Pedidos</h3>
+                  <div className="mt-4 h-48 sm:h-64">
+                    {pieData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={pieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+                            {pieData.map((_, i) => (
+                              <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Sem dados</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick links */}
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+                <QuickLink icon={Truck} label={`${deliveryQueue.length} entregas pendentes`} onClick={() => setTab("deliveries")} />
+                <QuickLink icon={Package} label={`${products.length} produtos`} onClick={() => setTab("products")} />
+                <QuickLink icon={Users} label={`${profiles.length} clientes`} onClick={() => setTab("moderation")} />
+              </div>
             </div>
           )}
 
+          {/* ====== PRODUCTS ====== */}
           {tab === "products" && (
             <div className="space-y-2 sm:space-y-3">
+              <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciar Produtos</h2>
               {products.map(p => (
-                <div key={p.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background p-3 sm:p-5">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold sm:text-base">{p.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">{p.currency} • R$ {Number(p.price_per_unit).toFixed(2)}/un</p>
+                <motion.div
+                  key={p.id}
+                  layout
+                  className="rounded-2xl border border-border bg-background p-3 sm:p-5"
+                >
+                  {editingProduct === p.id ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        {p.image_url && <img src={p.image_url} alt="" className="h-12 w-12 rounded-lg object-cover" />}
+                        <div className="flex-1 space-y-2">
+                          <input value={editName} onChange={e => setEditName(e.target.value)}
+                            className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Nome do produto" />
+                          <div className="flex gap-2">
+                            <input type="number" step="0.01" value={editPrice} onChange={e => setEditPrice(e.target.value)}
+                              className="w-32 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Preço" />
+                            <span className="flex items-center text-xs text-muted-foreground">/unidade</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
+                          <Upload className="h-3.5 w-3.5" />
+                          {uploadingImage ? "Enviando..." : "Trocar Imagem"}
+                          <input type="file" accept="image/*" className="hidden" onChange={e => {
+                            const f = e.target.files?.[0];
+                            if (f) uploadProductImage(p.id, f);
+                          }} />
+                        </label>
+                        <div className="ml-auto flex gap-2">
+                          <button onClick={() => setEditingProduct(null)} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={() => saveProduct(p.id)} className="rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground">
+                            <Save className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      {p.image_url ? (
+                        <img src={p.image_url} alt={p.name} className="h-12 w-12 rounded-lg object-cover sm:h-14 sm:w-14" />
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface text-muted-foreground sm:h-14 sm:w-14">
+                          <Image className="h-5 w-5" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold sm:text-base">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">{p.currency} • R$ {Number(p.price_per_unit).toFixed(2)}/un • {p.game_id}</p>
+                      </div>
+                      <div className="flex flex-shrink-0 items-center gap-2">
+                        <button onClick={() => startEditProduct(p)} className="rounded-lg border border-border p-2 text-muted-foreground hover:border-primary hover:text-primary">
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => toggleProduct(p.id, p.active)}
+                          className={`rounded-full px-3 py-1 text-[10px] font-bold sm:px-4 sm:py-1.5 sm:text-xs ${p.active ? "bg-[hsl(140,60%,45%)]/10 text-[hsl(140,60%,45%)]" : "bg-[hsl(0,70%,55%)]/10 text-[hsl(0,70%,55%)]"}`}>
+                          {p.active ? "Ativo" : "Inativo"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+              {products.length === 0 && <EmptyState text="Nenhum produto cadastrado." />}
+            </div>
+          )}
+
+          {/* ====== DELIVERIES + CHAT ====== */}
+          {tab === "deliveries" && (
+            <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
+              {/* Order list */}
+              <div className={`space-y-2 sm:space-y-3 ${selectedOrder ? "hidden lg:block lg:w-1/2" : "w-full"}`}>
+                <div className="flex items-center justify-between">
+                  <h2 className="font-heading text-lg font-bold sm:text-xl">Fila de Entregas</h2>
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{deliveryQueue.length} pendentes</span>
+                </div>
+                {deliveryQueue.map(o => (
+                  <motion.div
+                    key={o.id}
+                    whileHover={{ x: 2 }}
+                    onClick={() => openChat(o)}
+                    className={`cursor-pointer rounded-2xl border p-3 transition-all sm:p-4 ${
+                      selectedOrder?.id === o.id ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold">{o.full_name}</p>
+                        <p className="text-xs text-muted-foreground">{o.game_id} • {o.quantity} un • {o.game_username}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-bold text-gradient-gold">R$ {Number(o.total_price).toFixed(2)}</span>
+                        <select value={o.status} onChange={e => { e.stopPropagation(); updateOrderStatus(o.id, e.target.value); }}
+                          onClick={e => e.stopPropagation()}
+                          className="rounded-lg border border-border bg-surface px-2 py-0.5 text-[10px] text-foreground sm:text-xs">
+                          {statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+                {deliveryQueue.length === 0 && <EmptyState text="Nenhuma entrega pendente." />}
+              </div>
+
+              {/* Chat panel */}
+              {selectedOrder && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex flex-col rounded-2xl border border-border bg-background lg:w-1/2"
+                  style={{ height: "calc(100vh - 200px)", minHeight: 400 }}
+                >
+                  {/* Chat header */}
+                  <div className="flex items-center justify-between border-b border-border p-3 sm:p-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold">{selectedOrder.full_name}</p>
+                      <p className="text-xs text-muted-foreground">{selectedOrder.game_id} • {selectedOrder.quantity} un</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setAiEnabled(!aiEnabled)}
+                        className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium sm:text-xs ${
+                          aiEnabled ? "bg-primary/10 text-primary" : "bg-surface text-muted-foreground"
+                        }`}
+                      >
+                        <Bot className="h-3 w-3" /> IA {aiEnabled ? "ON" : "OFF"}
+                      </button>
+                      <button onClick={() => setSelectedOrder(null)} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground lg:hidden">
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Messages */}
+                  <div className="flex-1 overflow-y-auto p-3 sm:p-4">
+                    <div className="space-y-3">
+                      {chatMessages.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                          <MessageSquare className="h-8 w-8 text-muted-foreground/30" />
+                          <p className="mt-2 text-xs text-muted-foreground">Nenhuma mensagem ainda</p>
+                          {aiEnabled && (
+                            <button
+                              onClick={() => triggerAiResponse(selectedOrder.id)}
+                              className="mt-3 flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20"
+                            >
+                              <Bot className="h-3.5 w-3.5" /> Enviar saudação IA
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      {chatMessages.map(m => (
+                        <div key={m.id} className={`flex ${m.sender_role === "customer" ? "justify-start" : "justify-end"}`}>
+                          <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-xs sm:text-sm ${
+                            m.sender_role === "customer"
+                              ? "bg-surface text-foreground"
+                              : m.sender_role === "ai"
+                              ? "bg-primary/10 text-foreground border border-primary/20"
+                              : "bg-primary text-primary-foreground"
+                          }`}>
+                            {m.sender_role === "ai" && (
+                              <span className="mb-1 flex items-center gap-1 text-[10px] font-medium text-primary">
+                                <Bot className="h-3 w-3" /> IA
+                              </span>
+                            )}
+                            <div className="prose prose-sm max-w-none dark:prose-invert">
+                              <ReactMarkdown>{m.message}</ReactMarkdown>
+                            </div>
+                            <p className="mt-1 text-[10px] text-muted-foreground">
+                              {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={chatEndRef} />
+                    </div>
+                  </div>
+
+                  {/* Input */}
+                  <div className="border-t border-border p-3 sm:p-4">
+                    <div className="flex gap-2">
+                      <input
+                        value={chatInput}
+                        onChange={e => setChatInput(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendChatMessage()}
+                        placeholder="Digite sua mensagem..."
+                        className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+                      />
+                      <button
+                        onClick={sendChatMessage}
+                        disabled={sendingChat || !chatInput.trim()}
+                        className="rounded-xl bg-primary px-3 py-2 text-primary-foreground disabled:opacity-50"
+                      >
+                        <Send className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          )}
+
+          {/* ====== MODERATION ====== */}
+          {tab === "moderation" && (
+            <div className="space-y-6">
+              {/* Users */}
+              <div>
+                <h2 className="font-heading text-lg font-bold sm:text-xl">Usuários ({profiles.length})</h2>
+                <div className="mt-3 space-y-2">
+                  {profiles.map(u => (
+                    <div key={u.id} className="flex items-center justify-between rounded-2xl border border-border bg-background p-3 sm:p-4">
+                      <div>
+                        <p className="text-sm font-bold">{u.full_name || "Sem nome"}</p>
+                        <p className="text-[10px] text-muted-foreground sm:text-xs">
+                          ID: {u.user_id?.slice(0, 8)}... • {new Date(u.created_at).toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {orders.filter(o => o.user_id === u.user_id).length} pedidos
+                      </span>
+                    </div>
+                  ))}
+                  {profiles.length === 0 && <EmptyState text="Nenhum usuário cadastrado." />}
+                </div>
+              </div>
+
+              {/* Reviews */}
+              <div>
+                <h2 className="font-heading text-lg font-bold sm:text-xl">Avaliações ({reviews.length})</h2>
+                <div className="mt-3 space-y-2">
+                  {reviews.map(r => (
+                    <div key={r.id} className="flex items-start justify-between gap-3 rounded-2xl border border-border bg-background p-3 sm:p-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold">{r.author_name}</p>
+                          {r.is_fake && <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">Fake</span>}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{r.game_id} • {"⭐".repeat(r.rating)}</p>
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{r.comment}</p>
+                      </div>
+                      <button onClick={() => deleteReview(r.id)} className="flex-shrink-0 text-xs text-destructive hover:underline">Remover</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* All Orders */}
+              <div>
+                <h2 className="font-heading text-lg font-bold sm:text-xl">Todos os Pedidos ({orders.length})</h2>
+                <div className="mt-3 space-y-2">
+                  {orders.slice(0, 20).map(o => (
+                    <div key={o.id} className="rounded-2xl border border-border bg-background p-3 sm:p-4">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold">{o.full_name}</p>
+                          <p className="text-xs text-muted-foreground">{o.game_id} • {o.quantity} un • {o.game_username}</p>
+                          <p className="text-[10px] text-muted-foreground">{new Date(o.created_at).toLocaleString("pt-BR")}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-gradient-gold">R$ {Number(o.total_price).toFixed(2)}</span>
+                          <select value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)}
+                            className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-foreground">
+                            {statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ====== EARNINGS ====== */}
+          {tab === "earnings" && (
+            <div className="space-y-4 sm:space-y-6">
+              <h2 className="font-heading text-lg font-bold sm:text-xl">Relatório de Ganhos</h2>
+
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+                <StatCard icon={Clock} label="Hoje" value={`R$ ${revenueToday.toFixed(2)}`} />
+                <StatCard icon={TrendingUp} label="7 dias" value={`R$ ${revenueWeek.toFixed(2)}`} />
+                <StatCard icon={BarChart3} label="30 dias" value={`R$ ${revenueMonth.toFixed(2)}`} />
+                <StatCard icon={DollarSign} label="Total Geral" value={`R$ ${totalRevenue.toFixed(2)}`} gradient />
+              </div>
+
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <h3 className="font-heading text-sm font-bold sm:text-base">Receita por dia</h3>
+                <div className="mt-4 h-64 sm:h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" />
+                      <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(220, 10%, 60%)" }} />
+                      <YAxis tick={{ fontSize: 11, fill: "hsl(220, 10%, 60%)" }} />
+                      <Tooltip
+                        contentStyle={{ background: "hsl(220, 20%, 14%)", border: "1px solid hsl(220, 15%, 20%)", borderRadius: 12, fontSize: 12 }}
+                      />
+                      <Bar dataKey="receita" fill="hsl(45, 100%, 51%)" radius={[6, 6, 0, 0]} name="Receita (R$)" />
+                      <Bar dataKey="pedidos" fill="hsl(210, 80%, 55%)" radius={[6, 6, 0, 0]} name="Pedidos" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Revenue by game */}
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <h3 className="font-heading text-sm font-bold sm:text-base">Receita por Jogo</h3>
+                <div className="mt-3 space-y-2">
+                  {["roblox", "clash-royale", "brawl-stars"].map(game => {
+                    const gameOrders = orders.filter(o => o.game_id === game && o.status !== "cancelado");
+                    const gameRevenue = gameOrders.reduce((s, o) => s + Number(o.total_price), 0);
+                    return (
+                      <div key={game} className="flex items-center justify-between rounded-xl bg-surface p-3">
+                        <span className="text-sm font-medium capitalize">{game.replace("-", " ")}</span>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-gradient-gold">R$ {gameRevenue.toFixed(2)}</p>
+                          <p className="text-[10px] text-muted-foreground">{gameOrders.length} pedidos</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ====== MODERATORS ====== */}
+          {tab === "moderators" && (
+            <div className="space-y-6">
+              <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciar Moderadores</h2>
+
+              {/* Add moderator form */}
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <h3 className="text-sm font-bold sm:text-base">Adicionar Moderador</h3>
+                <div className="mt-3 space-y-3">
+                  <input
+                    type="email"
+                    value={newModEmail}
+                    onChange={e => setNewModEmail(e.target.value)}
+                    placeholder="E-mail do usuário"
+                    className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+                  />
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {Object.entries(modPerms).map(([key, val]) => (
+                      <label key={key} className="flex items-center gap-2 rounded-lg border border-border p-2.5 text-xs sm:text-sm">
+                        <input
+                          type="checkbox"
+                          checked={val}
+                          onChange={() => setModPerms(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))}
+                          className="h-4 w-4 rounded border-border accent-primary"
+                        />
+                        {key.replace("can_", "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                      </label>
+                    ))}
                   </div>
                   <button
-                    onClick={() => toggleProduct(p.id, p.active)}
-                    className={`flex-shrink-0 rounded-full px-3 py-1 text-[10px] font-bold sm:px-4 sm:py-1.5 sm:text-xs ${p.active ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
+                    onClick={addModerator}
+                    disabled={addingMod || !newModEmail}
+                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
                   >
-                    {p.active ? "Ativo" : "Inativo"}
+                    {addingMod ? "Adicionando..." : "Adicionar Moderador"}
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
 
-          {tab === "users" && (
-            <div className="space-y-2 sm:space-y-3">
-              {profiles.map(u => (
-                <div key={u.id} className="rounded-2xl border border-border bg-background p-3 sm:p-5">
-                  <p className="text-sm font-bold sm:text-base">{u.full_name || "Sem nome"}</p>
-                  <p className="text-[10px] text-muted-foreground sm:text-xs">
-                    ID: {u.user_id?.slice(0, 8)}... • {new Date(u.created_at).toLocaleDateString("pt-BR")}
-                  </p>
+              {/* Current moderators */}
+              <div>
+                <h3 className="text-sm font-bold sm:text-base">Moderadores Atuais ({moderators.length})</h3>
+                <div className="mt-3 space-y-2">
+                  {moderators.map(m => {
+                    const perms = modPermissions.find(p => p.user_id === m.user_id);
+                    return (
+                      <div key={m.id} className="flex items-center justify-between rounded-2xl border border-border bg-background p-3 sm:p-4">
+                        <div>
+                          <p className="text-sm font-bold">{getProfileName(m.user_id)}</p>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {perms && Object.entries(perms).filter(([k, v]) => v === true && k.startsWith("can_")).map(([k]) => (
+                              <span key={k} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
+                                {k.replace("can_", "").replace(/_/g, " ")}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <button onClick={() => removeModerator(m.user_id)} className="text-xs text-destructive hover:underline">Remover</button>
+                      </div>
+                    );
+                  })}
+                  {moderators.length === 0 && <EmptyState text="Nenhum moderador adicionado." />}
                 </div>
-              ))}
-              {profiles.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground sm:py-8 sm:text-sm">Nenhum usuário ainda.</p>}
+              </div>
             </div>
           )}
-
-          {tab === "reviews" && (
-            <div className="space-y-2 sm:space-y-3">
-              {reviews.map(r => (
-                <div key={r.id} className="flex items-start justify-between gap-3 rounded-2xl border border-border bg-background p-3 sm:p-5">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <p className="text-sm font-bold sm:text-base">{r.author_name}</p>
-                      {r.is_fake && <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary sm:px-2 sm:text-xs">Fake</span>}
-                    </div>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground sm:mt-1 sm:text-sm">{r.game_id} • {"⭐".repeat(r.rating)}</p>
-                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{r.comment}</p>
-                  </div>
-                  <button onClick={() => deleteReview(r.id)} className="flex-shrink-0 text-xs text-destructive hover:underline">Remover</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
 };
+
+// Sub-components
+const StatCard = ({ icon: Icon, label, value, gradient }: { icon: any; label: string; value: string; gradient?: boolean }) => (
+  <div className="rounded-2xl border border-border bg-background p-3 sm:p-5">
+    <Icon className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
+    <p className={`mt-1.5 text-lg font-bold sm:mt-2 sm:text-2xl ${gradient ? "text-gradient-gold" : ""}`}>{value}</p>
+    <p className="text-[10px] text-muted-foreground sm:text-xs">{label}</p>
+  </div>
+);
+
+const MiniStat = ({ label, value, color }: { label: string; value: number; color: string }) => (
+  <div className="rounded-xl border border-border bg-background p-2.5 text-center sm:p-3">
+    <p className="text-lg font-bold sm:text-xl" style={{ color }}>{value}</p>
+    <p className="text-[10px] text-muted-foreground">{label}</p>
+  </div>
+);
+
+const QuickLink = ({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) => (
+  <button onClick={onClick} className="flex items-center gap-2 rounded-xl border border-border bg-background p-3 text-left text-xs font-medium text-foreground transition-all hover:border-primary/40 sm:p-4 sm:text-sm">
+    <Icon className="h-4 w-4 flex-shrink-0 text-primary" />
+    {label}
+  </button>
+);
+
+const EmptyState = ({ text }: { text: string }) => (
+  <div className="rounded-2xl border border-dashed border-border py-8 text-center text-xs text-muted-foreground sm:py-12 sm:text-sm">
+    {text}
+  </div>
+);
 
 export default Admin;
