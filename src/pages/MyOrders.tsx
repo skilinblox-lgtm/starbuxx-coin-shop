@@ -124,7 +124,7 @@ const MyOrders = () => {
           <div className={`max-w-[80%] rounded-xl px-3 py-2 text-xs ${
             msg.sender_role === "customer" ? "bg-[hsl(var(--info))]/10 text-foreground" : "bg-muted text-foreground"
           }`}>
-            {msg.sender_role !== "customer" && <span className="mb-1 block text-[10px] font-bold text-[hsl(var(--info))]">Starbuxx</span>}
+            {msg.sender_role !== "customer" && <span className="mb-1 block text-[10px] font-bold text-[hsl(var(--info))]">StarBuxx</span>}
             <p className="break-words">{msg.message}</p>
             <span className="mt-1 block text-[9px] text-muted-foreground">
               {new Date(msg.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
