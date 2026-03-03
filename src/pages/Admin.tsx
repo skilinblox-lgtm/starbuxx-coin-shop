@@ -735,7 +735,7 @@ const Admin = () => {
               <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                 <h3 className="text-sm font-bold sm:text-base">Adicionar Moderador</h3>
                 <div className="mt-3 space-y-3">
-                  <input type="email" value={newModEmail} onChange={e => setNewModEmail(e.target.value)} placeholder="E-mail do usuário"
+                  <input type="text" value={newModEmail} onChange={e => setNewModEmail(e.target.value)} placeholder="Discord do usuário"
                     className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {Object.entries(modPerms).map(([key, val]) => (
