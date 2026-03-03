@@ -52,7 +52,6 @@ const Checkout = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user);
-        setEmail(session.user.email || "");
         setFullName(session.user.user_metadata?.full_name || "");
       }
     });
