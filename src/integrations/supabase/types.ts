@@ -145,7 +145,7 @@ export type Database = {
         Row: {
           cpf: string
           created_at: string
-          email: string
+          discord_username: string
           full_name: string
           game_id: string
           game_username: string
@@ -162,7 +162,7 @@ export type Database = {
         Insert: {
           cpf: string
           created_at?: string
-          email: string
+          discord_username: string
           full_name: string
           game_id: string
           game_username: string
@@ -179,7 +179,7 @@ export type Database = {
         Update: {
           cpf?: string
           created_at?: string
-          email?: string
+          discord_username?: string
           full_name?: string
           game_id?: string
           game_username?: string

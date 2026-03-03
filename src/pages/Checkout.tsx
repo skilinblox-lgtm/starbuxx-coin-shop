@@ -41,7 +41,7 @@ const Checkout = () => {
   const [fullName, setFullName] = useState("");
   const [cpf, setCpf] = useState("");
   const [gameUsername, setGameUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [discord, setDiscord] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("pix");
   const [knowsGamepass, setKnowsGamepass] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,7 +52,6 @@ const Checkout = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user);
-        setEmail(session.user.email || "");
         setFullName(session.user.user_metadata?.full_name || "");
       }
     });
@@ -72,7 +71,7 @@ const Checkout = () => {
   const getConfirmStepIndex = () => isRobux ? 4 : 3;
 
   const canAdvance = () => {
-    if (step === 1) return fullName.trim() && cpf.replace(/\D/g, "").length === 11 && gameUsername.trim() && email.trim();
+    if (step === 1) return fullName.trim() && cpf.replace(/\D/g, "").length === 11 && gameUsername.trim() && discord.trim();
     if (isRobux && step === 2) return knowsGamepass !== null;
     if (step === getPaymentStepIndex()) return !!paymentMethod;
     return true;
@@ -85,11 +84,11 @@ const Checkout = () => {
       const { error } = await supabase.from("orders").insert({
         user_id: user.id, game_id: order.gameId, quantity: order.quantity,
         total_price: order.totalPrice, payment_method: paymentMethod,
-        game_username: gameUsername, full_name: fullName, cpf, email,
+        game_username: gameUsername, full_name: fullName, cpf, discord_username: discord,
         product_id: order.productId || null,
       });
       if (error) throw error;
-      toast.success("Pedido criado com sucesso!");
+      toast.success("Pedido criado! Entre no nosso Discord para suporte.");
       navigate("/my-orders");
     } catch (error: any) {
       toast.error(error.message || "Erro ao criar pedido");
@@ -177,7 +176,7 @@ const Checkout = () => {
                   { label: "Nome Completo", value: fullName, onChange: setFullName, type: "text", placeholder: "Seu nome completo" },
                   { label: "CPF", value: cpf, onChange: (v: string) => setCpf(formatCPF(v)), type: "text", placeholder: "000.000.000-00" },
                   { label: "Usuário no Jogo", value: gameUsername, onChange: setGameUsername, type: "text", placeholder: "Seu nome no jogo" },
-                  { label: "E-mail", value: email, onChange: setEmail, type: "email", placeholder: "seu@email.com" },
+                  { label: "Discord", value: discord, onChange: setDiscord, type: "text", placeholder: "usuario#0000 ou @usuario" },
                 ].map(field => (
                   <div key={field.label}>
                     <label className="text-xs font-medium text-muted-foreground">{field.label}</label>
@@ -307,6 +306,24 @@ const Checkout = () => {
                     <p className="mt-0.5 text-[10px] text-muted-foreground sm:text-xs">
                       Dados criptografados • Garantia de reembolso • <Link to="/reembolso" className="text-[hsl(var(--info))] underline">Ver política</Link>
                     </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-[hsl(var(--info))]/20 bg-[hsl(var(--info))]/5 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[hsl(var(--info))]/10">
+                    <Users className="h-5 w-5 text-[hsl(var(--info))]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">Entre no nosso Discord</p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground sm:text-xs">
+                      Após finalizar, entre no Discord para acompanhar seu pedido e receber suporte.
+                    </p>
+                    <a href="https://discord.gg/lovable-dev" target="_blank" rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[hsl(var(--info))] px-3 py-1.5 text-xs font-bold text-white transition-all hover:brightness-110">
+                      Entrar no Discord
+                    </a>
                   </div>
                 </div>
               </div>

@@ -188,7 +188,7 @@ const Admin = () => {
     if (!newModEmail.trim()) return;
     setAddingMod(true);
     try {
-      const { data: userOrders } = await supabase.from("orders").select("user_id, email").eq("email", newModEmail).limit(1);
+      const { data: userOrders } = await supabase.from("orders").select("user_id, discord_username").eq("discord_username", newModEmail).limit(1);
       let userId: string | null = null;
       if (userOrders && userOrders.length > 0) userId = userOrders[0].user_id;
       if (!userId) { toast.error("Usuário não encontrado."); return; }
@@ -416,8 +416,13 @@ const Admin = () => {
 
           {/* ====== PRODUCTS ====== */}
           {tab === "products" && (
-            <div className="space-y-2 sm:space-y-3">
+            <div className="space-y-4 sm:space-y-6">
               <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciar Produtos</h2>
+              
+              {/* Create product */}
+              <CreateProductForm onCreated={fetchAll} />
+              
+              <div className="space-y-2 sm:space-y-3">
               {products.map(p => (
                 <motion.div key={p.id} layout className="rounded-2xl border border-border bg-background p-3 sm:p-5">
                   {editingProduct === p.id ? (
@@ -466,6 +471,7 @@ const Admin = () => {
                 </motion.div>
               ))}
               {products.length === 0 && <EmptyState text="Nenhum produto cadastrado." />}
+              </div>
             </div>
           )}
 
@@ -735,7 +741,7 @@ const Admin = () => {
               <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                 <h3 className="text-sm font-bold sm:text-base">Adicionar Moderador</h3>
                 <div className="mt-3 space-y-3">
-                  <input type="email" value={newModEmail} onChange={e => setNewModEmail(e.target.value)} placeholder="E-mail do usuário"
+                  <input type="text" value={newModEmail} onChange={e => setNewModEmail(e.target.value)} placeholder="Discord do usuário"
                     className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {Object.entries(modPerms).map(([key, val]) => (
@@ -810,5 +816,75 @@ const EmptyState = ({ text }: { text: string }) => (
     {text}
   </div>
 );
+
+const CreateProductForm = ({ onCreated }: { onCreated: () => void }) => {
+  const [name, setName] = useState("");
+  const [gameId, setGameId] = useState("roblox");
+  const [currency, setCurrency] = useState("Robux");
+  const [price, setPrice] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  const gameOptions = [
+    { id: "roblox", currencies: ["Robux", "Gamepass", "Frutas"] },
+    { id: "clash-royale", currencies: ["Gemas", "Passe Royale", "Evolução", "Heroicos", "Ouro"] },
+    { id: "brawl-stars", currencies: ["Gemas"] },
+  ];
+
+  const handleCreate = async () => {
+    if (!name.trim() || !price) { toast.error("Preencha nome e preço"); return; }
+    setCreating(true);
+    try {
+      const { data, error } = await supabase.from("products").insert({
+        name, game_id: gameId, currency, price_per_unit: parseFloat(price), active: true,
+      }).select().single();
+      if (error) throw error;
+
+      if (imageFile && data) {
+        const ext = imageFile.name.split(".").pop();
+        const path = `${data.id}.${ext}`;
+        await supabase.storage.from("product-images").upload(path, imageFile, { upsert: true });
+        const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
+        await supabase.from("products").update({ image_url: publicUrl }).eq("id", data.id);
+      }
+
+      toast.success("Produto criado!");
+      setName(""); setPrice(""); setImageFile(null);
+      onCreated();
+    } catch (e: any) { toast.error(e.message); } finally { setCreating(false); }
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+      <h3 className="flex items-center gap-2 text-sm font-bold sm:text-base"><Plus className="h-4 w-4 text-primary" /> Criar Novo Produto</h3>
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <input value={name} onChange={e => setName(e.target.value)} placeholder="Nome do produto"
+          className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+        <select value={gameId} onChange={e => {
+          setGameId(e.target.value);
+          setCurrency(gameOptions.find(g => g.id === e.target.value)?.currencies[0] || "");
+        }} className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
+          {gameOptions.map(g => <option key={g.id} value={g.id}>{g.id.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</option>)}
+        </select>
+        <select value={currency} onChange={e => setCurrency(e.target.value)}
+          className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
+          {gameOptions.find(g => g.id === gameId)?.currencies.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="Preço por unidade (R$)"
+          className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
+          <Upload className="h-4 w-4" /> {imageFile ? imageFile.name : "Imagem do produto"}
+          <input type="file" accept="image/*" className="hidden" onChange={e => setImageFile(e.target.files?.[0] || null)} />
+        </label>
+        <button onClick={handleCreate} disabled={creating}
+          className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50">
+          {creating ? "Criando..." : "Criar Produto"}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default Admin;
