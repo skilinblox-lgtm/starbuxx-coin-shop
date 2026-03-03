@@ -309,6 +309,24 @@ const Checkout = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="rounded-2xl border border-[hsl(var(--info))]/20 bg-[hsl(var(--info))]/5 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[hsl(var(--info))]/10">
+                    <Users className="h-5 w-5 text-[hsl(var(--info))]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">Entre no nosso Discord</p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground sm:text-xs">
+                      Após finalizar, entre no Discord para acompanhar seu pedido e receber suporte.
+                    </p>
+                    <a href="https://discord.gg/lovable-dev" target="_blank" rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[hsl(var(--info))] px-3 py-1.5 text-xs font-bold text-white transition-all hover:brightness-110">
+                      Entrar no Discord
+                    </a>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
