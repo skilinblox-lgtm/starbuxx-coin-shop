@@ -633,7 +633,9 @@ const Admin = () => {
                           <input type="number" step="0.01" value={editBrainrotData.current_price} onChange={e => setEditBrainrotData(p => ({ ...p, current_price: e.target.value }))}
                             placeholder="Preço (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                         </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          <input type="number" value={editBrainrotData.stock} onChange={e => setEditBrainrotData(p => ({ ...p, stock: e.target.value }))}
+                            placeholder="Estoque (qtd)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                           <select value={editBrainrotData.rarity} onChange={e => setEditBrainrotData(p => ({ ...p, rarity: e.target.value }))}
                             className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
                             {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
