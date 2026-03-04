@@ -532,8 +532,51 @@ const Admin = () => {
         <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="mt-4 sm:mt-6">
 
           {/* ====== DASHBOARD ====== */}
-          {tab === "dashboard" && (
+          {tab === "dashboard" && (() => {
+            const totalAccounts = profiles.length;
+            const buyerUserIds = new Set(orders.filter(o => o.status !== "cancelado").map(o => o.user_id));
+            const totalBuyers = buyerUserIds.size;
+            
+            return (
             <div className="space-y-4 sm:space-y-6">
+              {/* User stats row */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                <div className="rounded-2xl border border-[hsl(210,80%,55%)]/20 bg-[hsl(210,80%,55%)]/5 p-3 sm:p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[hsl(210,80%,55%)]/10">
+                      <Users className="h-4 w-4 text-[hsl(210,80%,55%)]" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground sm:text-xs">Contas Criadas</p>
+                      <p className="text-lg font-bold text-[hsl(210,80%,55%)] sm:text-xl">{totalAccounts}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-[hsl(140,60%,45%)]/20 bg-[hsl(140,60%,45%)]/5 p-3 sm:p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[hsl(140,60%,45%)]/10">
+                      <ShoppingCart className="h-4 w-4 text-[hsl(140,60%,45%)]" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground sm:text-xs">Clientes (Compraram)</p>
+                      <p className="text-lg font-bold text-[hsl(140,60%,45%)] sm:text-xl">{totalBuyers}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3 sm:p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+                      <Zap className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground sm:text-xs">Online Agora</p>
+                      <p className="text-lg font-bold text-primary sm:text-xl">—</p>
+                      <p className="text-[8px] text-muted-foreground">Tempo real indisponível</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
                 <StatCard icon={DollarSign} label="Hoje" value={`R$ ${revenueToday.toFixed(2)}`} gradient />
                 <StatCard icon={TrendingUp} label="Semana" value={`R$ ${revenueWeek.toFixed(2)}`} />
@@ -581,10 +624,11 @@ const Admin = () => {
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
                 <QuickLink icon={Truck} label={`${deliveryQueue.length} entregas pendentes`} onClick={() => setTab("deliveries")} />
                 <QuickLink icon={Package} label={`${products.length} produtos`} onClick={() => setTab("products")} />
-                <QuickLink icon={Users} label={`${profiles.length} clientes`} onClick={() => setTab("moderation")} />
+                <QuickLink icon={Users} label={`${totalAccounts} contas | ${totalBuyers} clientes`} onClick={() => setTab("moderation")} />
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* ====== PRODUCTS ====== */}
           {tab === "products" && (
