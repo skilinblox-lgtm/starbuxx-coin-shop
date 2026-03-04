@@ -6,7 +6,7 @@ import {
   Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2, Star, FileText, Settings,
   ChevronUp, ChevronDown, GripVertical, Sparkles
 } from "lucide-react";
-import RarityBadge, { RARITY_CONFIG, SPECIAL_FLAGS, SpecialFlagBadge } from "@/components/RarityBadge";
+import RarityBadge, { RARITY_CONFIG, SpecialFlagBadge } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
 import iconBrainrot from "@/assets/icon-brainrot-game.png";
 import iconBloxFruits from "@/assets/icon-bloxfruits-game.png";
@@ -71,11 +71,16 @@ const Admin = () => {
 
   // Brainrot
   const [brainrotPosts, setBrainrotPosts] = useState<any[]>([]);
+  const [brainrotFlags, setBrainrotFlags] = useState<any[]>([]);
   const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[], special_flags: [] as string[] });
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
   const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[], special_flags: [] as string[] });
   const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
+  // Flag management
+  const [newFlagName, setNewFlagName] = useState("");
+  const [newFlagImage, setNewFlagImage] = useState<File | null>(null);
+  const [creatingFlag, setCreatingFlag] = useState(false);
 
   // Blog
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
@@ -106,7 +111,7 @@ const Admin = () => {
   }, [navigate]);
 
   const fetchAll = useCallback(async () => {
-    const [o, p, r, u, roles, perms, br, bl, bc] = await Promise.all([
+    const [o, p, r, u, roles, perms, br, bl, bc, flags] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("display_order", { ascending: true }),
       supabase.from("reviews").select("*").order("created_at", { ascending: false }),
@@ -116,6 +121,7 @@ const Admin = () => {
       supabase.from("brainrot_posts").select("*").order("created_at", { ascending: false }),
       supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
       supabase.from("blog_comments").select("*").order("created_at", { ascending: false }),
+      supabase.from("brainrot_flags").select("*").order("created_at", { ascending: true }),
     ]);
     setOrders(o.data || []);
     setProducts(p.data || []);
@@ -126,6 +132,7 @@ const Admin = () => {
     setBrainrotPosts(br.data || []);
     setBlogPosts(bl.data || []);
     setBlogComments(bc.data || []);
+    setBrainrotFlags(flags.data || []);
   }, []);
 
   const fetchSettings = async () => {
@@ -830,21 +837,22 @@ const Admin = () => {
                 <div className="mt-3">
                   <p className="text-xs font-bold text-muted-foreground mb-1.5">Bandeiras especiais (exibidas ao lado do nome)</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {Object.entries(SPECIAL_FLAGS).map(([key, cfg]) => (
-                      <button key={key} type="button"
+                    {brainrotFlags.map((flag: any) => (
+                      <button key={flag.id} type="button"
                         onClick={() => setNewBrainrot(p => ({
                           ...p,
-                          special_flags: p.special_flags.includes(key) ? p.special_flags.filter(t => t !== key) : [...p.special_flags, key]
+                          special_flags: p.special_flags.includes(flag.id) ? p.special_flags.filter(t => t !== flag.id) : [...p.special_flags, flag.id]
                         }))}
                         className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-bold transition-all ${
-                          newBrainrot.special_flags.includes(key)
+                          newBrainrot.special_flags.includes(flag.id)
                             ? "border-primary bg-primary/15 text-primary"
                             : "border-border bg-surface text-muted-foreground hover:border-primary/30"
                         }`}
                       >
-                        <span className="text-sm">{cfg.emoji}</span> {cfg.label}
+                        <img src={flag.image_url} alt={flag.name} className="h-4 w-4 object-contain" /> {flag.name}
                       </button>
                     ))}
+                    {brainrotFlags.length === 0 && <span className="text-[10px] text-muted-foreground">Nenhuma bandeira criada. Crie abaixo na seção de bandeiras.</span>}
                   </div>
                 </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
@@ -907,19 +915,19 @@ const Admin = () => {
                         <div>
                           <p className="text-xs font-bold text-muted-foreground mb-1">Bandeiras especiais</p>
                           <div className="flex flex-wrap gap-1.5">
-                            {Object.entries(SPECIAL_FLAGS).map(([key, cfg]) => (
-                              <button key={key} type="button"
+                            {brainrotFlags.map((flag: any) => (
+                              <button key={flag.id} type="button"
                                 onClick={() => setEditBrainrotData(p => ({
                                   ...p,
-                                  special_flags: p.special_flags.includes(key) ? p.special_flags.filter(t => t !== key) : [...p.special_flags, key]
+                                  special_flags: p.special_flags.includes(flag.id) ? p.special_flags.filter(t => t !== flag.id) : [...p.special_flags, flag.id]
                                 }))}
                                 className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold transition-all ${
-                                  editBrainrotData.special_flags.includes(key)
+                                  editBrainrotData.special_flags.includes(flag.id)
                                     ? "border-primary bg-primary/15 text-primary"
                                     : "border-border bg-surface text-muted-foreground hover:border-primary/30"
                                 }`}
                               >
-                                <span className="text-sm">{cfg.emoji}</span> {cfg.label}
+                                <img src={flag.image_url} alt={flag.name} className="h-4 w-4 object-contain" /> {flag.name}
                               </button>
                             ))}
                           </div>
@@ -944,9 +952,10 @@ const Admin = () => {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
-                            {(post.special_flags || []).map((flag: string) => (
-                              <SpecialFlagBadge key={flag} flag={flag} />
-                            ))}
+                            {(post.special_flags || []).map((flagId: string) => {
+                              const flag = brainrotFlags.find((f: any) => f.id === flagId);
+                              return flag ? <SpecialFlagBadge key={flagId} imageUrl={flag.image_url} name={flag.name} /> : null;
+                            })}
                             {post.featured && <Star className="h-3.5 w-3.5 fill-primary text-primary" />}
                           </div>
                           <div className="mt-0.5 flex flex-wrap items-center gap-1">
@@ -994,6 +1003,65 @@ const Admin = () => {
                   </div>
                 ))}
                 {brainrotPosts.length === 0 && <EmptyState text="Nenhum brainrot publicado ainda." />}
+              </div>
+
+              {/* Flag Management */}
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <h3 className="flex items-center gap-2 text-sm font-bold sm:text-base"><Plus className="h-4 w-4 text-primary" /> Gerenciar Bandeiras Especiais</h3>
+                <p className="mt-1 text-xs text-muted-foreground">Crie ícones personalizados que podem ser adicionados ao lado do nome de qualquer brainrot.</p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <input value={newFlagName} onChange={e => setNewFlagName(e.target.value)}
+                    placeholder="Nome da bandeira (ex: Brasil)"
+                    className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
+                    <Upload className="h-4 w-4" /> {newFlagImage ? newFlagImage.name : "Ícone da bandeira"}
+                    <input type="file" accept="image/*" className="hidden" onChange={e => setNewFlagImage(e.target.files?.[0] || null)} />
+                  </label>
+                  <button
+                    onClick={async () => {
+                      if (!newFlagName.trim() || !newFlagImage) { toast.error("Preencha nome e selecione um ícone"); return; }
+                      setCreatingFlag(true);
+                      try {
+                        const { data, error } = await supabase.from("brainrot_flags").insert({ name: newFlagName, image_url: "" } as any).select().single();
+                        if (error) throw error;
+                        const ext = newFlagImage.name.split(".").pop();
+                        const path = `flag-${data.id}.${ext}`;
+                        await supabase.storage.from("brainrot-flags").upload(path, newFlagImage, { upsert: true });
+                        const { data: { publicUrl } } = supabase.storage.from("brainrot-flags").getPublicUrl(path);
+                        await supabase.from("brainrot_flags").update({ image_url: publicUrl } as any).eq("id", data.id);
+                        toast.success("Bandeira criada!");
+                        setNewFlagName(""); setNewFlagImage(null);
+                        fetchAll();
+                      } catch (e: any) { toast.error(e.message); }
+                      finally { setCreatingFlag(false); }
+                    }}
+                    disabled={creatingFlag}
+                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+                  >
+                    {creatingFlag ? "Criando..." : "Criar Bandeira"}
+                  </button>
+                </div>
+                {brainrotFlags.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {brainrotFlags.map((flag: any) => (
+                      <div key={flag.id} className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2">
+                        <img src={flag.image_url} alt={flag.name} className="h-6 w-6 object-contain" />
+                        <span className="text-xs font-bold">{flag.name}</span>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Excluir bandeira "${flag.name}"?`)) return;
+                            await supabase.from("brainrot_flags").delete().eq("id", flag.id);
+                            toast.success("Bandeira excluída!");
+                            fetchAll();
+                          }}
+                          className="ml-1 rounded-lg p-1 text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

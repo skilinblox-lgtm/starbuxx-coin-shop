@@ -67,6 +67,7 @@ const generateFakeChart = (currentPrice: number, postId: string) => {
 
 const Brainrot = () => {
   const [posts, setPosts] = useState<any[]>([]);
+  const [flags, setFlags] = useState<any[]>([]);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<BrainrotFilterState>(defaultFilters);
@@ -74,9 +75,12 @@ const Brainrot = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: brainrots } = await supabase
-        .from("brainrot_posts").select("*").order("created_at", { ascending: false });
-      setPosts(brainrots || []);
+      const [brainrots, flagsData] = await Promise.all([
+        supabase.from("brainrot_posts").select("*").order("created_at", { ascending: false }),
+        supabase.from("brainrot_flags").select("*"),
+      ]);
+      setPosts(brainrots.data || []);
+      setFlags(flagsData.data || []);
       setLoading(false);
     };
     fetchData();
@@ -143,7 +147,7 @@ const Brainrot = () => {
           ) : (
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredPosts.map((post, i) => (
-                <BrainrotCard key={post.id} post={post} index={i} onClick={() => setSelectedPost(post)} />
+                <BrainrotCard key={post.id} post={post} index={i} onClick={() => setSelectedPost(post)} flags={flags} />
               ))}
             </div>
           )}
@@ -154,7 +158,7 @@ const Brainrot = () => {
 
         <AnimatePresence>
           {selectedPost && (
-            <BrainrotModal post={selectedPost} onClose={() => setSelectedPost(null)} onBuy={handleBuy} />
+            <BrainrotModal post={selectedPost} onClose={() => setSelectedPost(null)} onBuy={handleBuy} flags={flags} />
           )}
         </AnimatePresence>
 
@@ -166,7 +170,7 @@ const Brainrot = () => {
 };
 
 // ── Card Component ──
-const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onClick: () => void }) => {
+const BrainrotCard = ({ post, index, onClick, flags }: { post: any; index: number; onClick: () => void; flags: any[] }) => {
   const { behavior } = useMemo(() => generateFakeChart(Number(post.current_price), post.id), [post.id, post.current_price]);
   const postTags: string[] = post.tags || [];
 
@@ -238,9 +242,10 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
       <div className="p-4">
         <div className="flex items-center gap-1 flex-wrap">
           <p className="truncate font-heading text-sm font-bold sm:text-base">{post.title}</p>
-          {(post.special_flags || []).map((flag: string) => (
-            <SpecialFlagBadge key={flag} flag={flag} />
-          ))}
+          {(post.special_flags || []).map((flagId: string) => {
+            const f = flags.find((fl: any) => fl.id === flagId);
+            return f ? <SpecialFlagBadge key={flagId} imageUrl={f.image_url} name={f.name} /> : null;
+          })}
         </div>
         {post.description && (
           <p className="mt-1 line-clamp-2 rounded-lg bg-[hsl(145,63%,42%)]/15 px-2.5 py-1.5 text-[12px] font-bold text-[hsl(145,70%,38%)] shadow-[inset_0_0_8px_hsl(145,63%,42%,0.1)]">{post.description}</p>
@@ -277,7 +282,7 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
 };
 
 // ── Detail Modal ──
-const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => void; onBuy: (p: any) => void }) => {
+const BrainrotModal = ({ post, onClose, onBuy, flags }: { post: any; onClose: () => void; onBuy: (p: any) => void; flags: any[] }) => {
   const { data: chartData, behavior } = useMemo(() => generateFakeChart(Number(post.current_price), post.id), [post.id, post.current_price]);
   const peakPrice = Math.max(...chartData.map(d => d.price));
   const minPrice = Math.min(...chartData.map(d => d.price));
@@ -331,9 +336,10 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
         <div className="max-h-[60vh] overflow-y-auto p-5 sm:p-6">
           <div className="flex items-center gap-1.5 flex-wrap">
             <h2 className="font-heading text-2xl font-bold">{post.title}</h2>
-            {(post.special_flags || []).map((flag: string) => (
-              <SpecialFlagBadge key={flag} flag={flag} size="md" />
-            ))}
+            {(post.special_flags || []).map((flagId: string) => {
+              const f = flags.find((fl: any) => fl.id === flagId);
+              return f ? <SpecialFlagBadge key={flagId} imageUrl={f.image_url} name={f.name} size="md" /> : null;
+            })}
           </div>
           {post.description && (
             <p className="mt-2 rounded-xl border border-[hsl(145,63%,42%)]/30 bg-[hsl(145,63%,42%)]/10 px-3 py-2.5 text-base font-bold text-[hsl(145,70%,38%)] shadow-[0_0_12px_hsl(145,63%,42%,0.15)]">{post.description}</p>

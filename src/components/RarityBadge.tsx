@@ -79,97 +79,8 @@ export const RARITY_CONFIG: Record<string, {
   },
 };
 
-// Special flag emojis that can be added next to brainrot names
-export const SPECIAL_FLAGS: Record<string, {
-  label: string;
-  emoji: string;
-  bg: string;
-  text: string;
-  glow?: string;
-}> = {
-  love: {
-    label: "Love",
-    emoji: "❤️",
-    bg: "bg-[hsl(350,80%,18%)]",
-    text: "text-[hsl(350,100%,70%)]",
-    glow: "shadow-[0_0_10px_hsl(350,80%,50%,0.4)]",
-  },
-  chat: {
-    label: "Chat",
-    emoji: "💬",
-    bg: "bg-[hsl(210,60%,18%)]",
-    text: "text-[hsl(210,100%,75%)]",
-    glow: "shadow-[0_0_10px_hsl(210,70%,50%,0.4)]",
-  },
-  brazil: {
-    label: "Brasil",
-    emoji: "🇧🇷",
-    bg: "bg-[hsl(140,60%,14%)]",
-    text: "text-[hsl(140,80%,65%)]",
-    glow: "shadow-[0_0_10px_hsl(140,70%,40%,0.4)]",
-  },
-  fire: {
-    label: "Fogo",
-    emoji: "🔥",
-    bg: "bg-[hsl(15,80%,16%)]",
-    text: "text-[hsl(25,100%,65%)]",
-    glow: "shadow-[0_0_10px_hsl(25,90%,50%,0.4)]",
-  },
-  star: {
-    label: "Estrela",
-    emoji: "⭐",
-    bg: "bg-[hsl(45,80%,14%)]",
-    text: "text-[hsl(45,100%,65%)]",
-    glow: "shadow-[0_0_10px_hsl(45,90%,50%,0.4)]",
-  },
-  crown: {
-    label: "Coroa",
-    emoji: "👑",
-    bg: "bg-[hsl(38,70%,16%)]",
-    text: "text-[hsl(38,100%,70%)]",
-    glow: "shadow-[0_0_12px_hsl(38,90%,50%,0.5)]",
-  },
-  skull: {
-    label: "Caveira",
-    emoji: "💀",
-    bg: "bg-[hsl(0,0%,15%)]",
-    text: "text-[hsl(0,0%,80%)]",
-  },
-  lightning: {
-    label: "Raio",
-    emoji: "⚡",
-    bg: "bg-[hsl(50,90%,16%)]",
-    text: "text-[hsl(50,100%,65%)]",
-    glow: "shadow-[0_0_10px_hsl(50,100%,50%,0.5)]",
-  },
-  diamond_flag: {
-    label: "Diamante",
-    emoji: "💎",
-    bg: "bg-[hsl(200,80%,16%)]",
-    text: "text-[hsl(200,100%,72%)]",
-    glow: "shadow-[0_0_12px_hsl(200,90%,55%,0.5)]",
-  },
-  devil: {
-    label: "Demônio",
-    emoji: "😈",
-    bg: "bg-[hsl(270,70%,18%)]",
-    text: "text-[hsl(270,100%,75%)]",
-    glow: "shadow-[0_0_10px_hsl(270,80%,55%,0.4)]",
-  },
-  alien: {
-    label: "Alien",
-    emoji: "👽",
-    bg: "bg-[hsl(120,60%,14%)]",
-    text: "text-[hsl(120,80%,65%)]",
-    glow: "shadow-[0_0_10px_hsl(120,70%,45%,0.4)]",
-  },
-  ghost: {
-    label: "Fantasma",
-    emoji: "👻",
-    bg: "bg-[hsl(240,30%,18%)]",
-    text: "text-[hsl(240,50%,80%)]",
-  },
-};
+// Special flag emojis removed - now using database-driven flags with uploaded icons
+export const SPECIAL_FLAGS = {}; // kept for backward compat
 
 interface RarityBadgeProps {
   rarity: string;
@@ -200,24 +111,19 @@ const RarityBadge = ({ rarity, size = "sm", className }: RarityBadgeProps) => {
   );
 };
 
-export const SpecialFlagBadge = ({ flag, size = "sm", className }: { flag: string; size?: "sm" | "md"; className?: string }) => {
-  const config = SPECIAL_FLAGS[flag];
-  if (!config) return null;
-
+// Database-driven special flag badge using uploaded icon images
+export const SpecialFlagBadge = ({ imageUrl, name, size = "sm", className }: { imageUrl: string; name: string; size?: "sm" | "md"; className?: string }) => {
   return (
-    <span
+    <img
+      src={imageUrl}
+      alt={name}
+      title={name}
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-full font-bold border border-current/20",
-        config.bg,
-        config.text,
-        config.glow,
-        size === "sm" ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-xs",
+        "object-contain drop-shadow-sm",
+        size === "sm" ? "h-5 w-5" : "h-7 w-7",
         className,
       )}
-    >
-      <span className={size === "sm" ? "text-xs" : "text-sm"}>{config.emoji}</span>
-      {size === "md" && config.label}
-    </span>
+    />
   );
 };
 
