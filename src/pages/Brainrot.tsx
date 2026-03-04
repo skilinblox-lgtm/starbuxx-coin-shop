@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
+import RarityBadge from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
