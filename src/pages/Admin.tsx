@@ -115,7 +115,6 @@ const Admin = () => {
     setBrainrotPosts(br.data || []);
     setBlogPosts(bl.data || []);
   }, []);
-  }, []);
 
   // Chat realtime subscription
   useEffect(() => {
