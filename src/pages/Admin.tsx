@@ -970,12 +970,16 @@ const Admin = () => {
                             }`}>
                             {post.published ? "Publicado" : "Rascunho"}
                           </button>
-                          <button onClick={() => { setEditingBlog(post.id); setEditBlogData({ title: post.title, content: post.content, category: post.category, script_code: post.script_code || "", video_url: post.video_url || "", game_compatible: post.game_compatible || "" }); }}
+                          <button onClick={() => { setEditingBlog(post.id); setEditBlogImage(null); setEditBlogData({ title: post.title, content: post.content, category: post.category, script_code: post.script_code || "", video_url: post.video_url || "", game_compatible: post.game_compatible || "" }); }}
                             className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
                             <Edit2 className="h-3 w-3" /> Editar
                           </button>
+                          <label className="flex cursor-pointer items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
+                            <Upload className="h-3 w-3" /> Foto
+                            <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadBlogImage(post.id, f); }} />
+                          </label>
                           <button onClick={() => deleteBlogPost(post.id)} className="flex items-center justify-center gap-1 rounded-lg border border-destructive/30 px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10">
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-3 w-3" /> Excluir
                           </button>
                         </div>
                       </div>
