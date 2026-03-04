@@ -281,7 +281,7 @@ const ProductPage = () => {
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {relatedProducts.map(rp => {
                   const rpIsRoblox = rp.game_id === "roblox";
-                  const rpPrice = rpIsRoblox ? ratePer1000 / 1000 : Number(rp.price_per_unit);
+                  const rpPrice = rpIsRoblox ? (Number(rp.price_per_unit) * ratePer1000 / 1000) : Number(rp.price_per_unit);
                   return (
                     <Link key={rp.id} to={`/product/${rp.id}`}
                       className="group rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-all hover:border-primary/40 hover:shadow-lg">
