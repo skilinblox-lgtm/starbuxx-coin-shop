@@ -76,9 +76,9 @@ const Admin = () => {
 
   // Blog
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
-  const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script" });
+  const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot" });
   const [editingBlog, setEditingBlog] = useState<string | null>(null);
-  const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script" });
+  const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "" });
   const [newBlogImage, setNewBlogImage] = useState<File | null>(null);
 
   useEffect(() => {
@@ -299,6 +299,8 @@ const Admin = () => {
     try {
       const { data, error } = await supabase.from("blog_posts").insert({
         title: newBlog.title, content: newBlog.content, category: newBlog.category,
+        script_code: newBlog.script_code || null, video_url: newBlog.video_url || null,
+        game_compatible: newBlog.game_compatible || null, author: "skilin",
       } as any).select().single();
       if (error) throw error;
       if (newBlogImage && data) {
@@ -309,7 +311,7 @@ const Admin = () => {
         await supabase.from("blog_posts").update({ image_url: publicUrl } as any).eq("id", data.id);
       }
       toast.success("Post publicado!");
-      setNewBlog({ title: "", content: "", category: "script" });
+      setNewBlog({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot" });
       setNewBlogImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
@@ -320,6 +322,8 @@ const Admin = () => {
     try {
       await supabase.from("blog_posts").update({
         title: editBlogData.title, content: editBlogData.content, category: editBlogData.category,
+        script_code: editBlogData.script_code || null, video_url: editBlogData.video_url || null,
+        game_compatible: editBlogData.game_compatible || null,
       } as any).eq("id", id);
       toast.success("Post atualizado!");
       setEditingBlog(null);
@@ -827,10 +831,17 @@ const Admin = () => {
                     <option value="executor">Executor</option>
                     <option value="tutorial">Tutorial</option>
                   </select>
+                  <input value={newBlog.game_compatible} onChange={e => setNewBlog(p => ({ ...p, game_compatible: e.target.value }))}
+                    placeholder="Jogo compatível (ex: Steal a Brainrot)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <input value={newBlog.video_url} onChange={e => setNewBlog(p => ({ ...p, video_url: e.target.value }))}
+                    placeholder="URL do vídeo (YouTube)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                 </div>
                 <textarea value={newBlog.content} onChange={e => setNewBlog(p => ({ ...p, content: e.target.value }))}
-                  placeholder="Conteúdo (suporta Markdown)" rows={6}
+                  placeholder="Descrição do script (suporta Markdown)" rows={4}
                   className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
+                <textarea value={newBlog.script_code} onChange={e => setNewBlog(p => ({ ...p, script_code: e.target.value }))}
+                  placeholder="Código do Script (cole o loadstring aqui)" rows={3}
+                  className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
                     <Upload className="h-4 w-4" /> {newBlogImage ? newBlogImage.name : "Imagem de capa"}
@@ -855,9 +866,15 @@ const Admin = () => {
                             <option value="executor">Executor</option>
                             <option value="tutorial">Tutorial</option>
                           </select>
+                          <input value={editBlogData.game_compatible} onChange={e => setEditBlogData(p => ({ ...p, game_compatible: e.target.value }))}
+                            placeholder="Jogo compatível" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                          <input value={editBlogData.video_url} onChange={e => setEditBlogData(p => ({ ...p, video_url: e.target.value }))}
+                            placeholder="URL do vídeo (YouTube)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                         </div>
                         <textarea value={editBlogData.content} onChange={e => setEditBlogData(p => ({ ...p, content: e.target.value }))}
-                          placeholder="Conteúdo" rows={4} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
+                          placeholder="Descrição" rows={3} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
+                        <textarea value={editBlogData.script_code} onChange={e => setEditBlogData(p => ({ ...p, script_code: e.target.value }))}
+                          placeholder="Código do Script" rows={2} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
                         <div className="flex items-center gap-2">
                           <button onClick={() => saveBlogEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
                             <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
@@ -888,7 +905,7 @@ const Admin = () => {
                             }`}>
                             {post.published ? "Publicado" : "Rascunho"}
                           </button>
-                          <button onClick={() => { setEditingBlog(post.id); setEditBlogData({ title: post.title, content: post.content, category: post.category }); }}
+                          <button onClick={() => { setEditingBlog(post.id); setEditBlogData({ title: post.title, content: post.content, category: post.category, script_code: post.script_code || "", video_url: post.video_url || "", game_compatible: post.game_compatible || "" }); }}
                             className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
                             <Edit2 className="h-3 w-3" /> Editar
                           </button>

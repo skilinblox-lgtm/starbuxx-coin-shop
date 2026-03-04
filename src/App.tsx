@@ -16,6 +16,7 @@ import ProductPage from "./pages/ProductPage";
 import GameCatalog from "./pages/GameCatalog";
 import Brainrot from "./pages/Brainrot";
 import Scripts from "./pages/Scripts";
+import ScriptPost from "./pages/ScriptPost";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/brainrot" element={<Brainrot />} />
             <Route path="/scripts" element={<Scripts />} />
+            <Route path="/scripts/:postId" element={<ScriptPost />} />
             <Route path="/termos" element={<TermsOfService />} />
             <Route path="/privacidade" element={<PrivacyPolicy />} />
             <Route path="/reembolso" element={<RefundPolicy />} />
