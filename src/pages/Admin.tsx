@@ -85,9 +85,9 @@ const Admin = () => {
   // Blog
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [blogComments, setBlogComments] = useState<any[]>([]);
-  const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot" });
+  const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot", has_key: false, executors_compatible: [] as string[] });
   const [editingBlog, setEditingBlog] = useState<string | null>(null);
-  const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "" });
+  const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "", has_key: false, executors_compatible: [] as string[] });
   const [newBlogImage, setNewBlogImage] = useState<File | null>(null);
   const [editBlogImage, setEditBlogImage] = useState<File | null>(null);
 
