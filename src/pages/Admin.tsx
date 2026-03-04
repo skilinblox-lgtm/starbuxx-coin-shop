@@ -4,7 +4,7 @@ import {
   Package, ShoppingCart, Users, MessageSquare, DollarSign,
   ArrowLeft, Truck, Shield, UserPlus, Send, Bot, Edit2, Save, X,
   Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2, Star, FileText, Settings,
-  ChevronUp, ChevronDown, GripVertical, Sparkles, Zap
+  ChevronUp, ChevronDown, GripVertical, Sparkles, Zap, Mail, Eye, ToggleLeft, ToggleRight, AlertTriangle
 } from "lucide-react";
 import RarityBadge, { RARITY_CONFIG, SpecialFlagBadge } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
