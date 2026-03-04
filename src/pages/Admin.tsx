@@ -293,6 +293,51 @@ const Admin = () => {
     toast.success("Brainrot removido!"); fetchAll();
   };
 
+  // Blog functions
+  const createBlogPost = async () => {
+    if (!newBlog.title || !newBlog.content) { toast.error("Preencha título e conteúdo"); return; }
+    try {
+      const { data, error } = await supabase.from("blog_posts").insert({
+        title: newBlog.title, content: newBlog.content, category: newBlog.category,
+      } as any).select().single();
+      if (error) throw error;
+      if (newBlogImage && data) {
+        const ext = newBlogImage.name.split(".").pop();
+        const path = `blog-${data.id}.${ext}`;
+        await supabase.storage.from("product-images").upload(path, newBlogImage, { upsert: true });
+        const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
+        await supabase.from("blog_posts").update({ image_url: publicUrl } as any).eq("id", data.id);
+      }
+      toast.success("Post publicado!");
+      setNewBlog({ title: "", content: "", category: "script" });
+      setNewBlogImage(null);
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const saveBlogEdit = async (id: string) => {
+    if (!editBlogData.title || !editBlogData.content) return;
+    try {
+      await supabase.from("blog_posts").update({
+        title: editBlogData.title, content: editBlogData.content, category: editBlogData.category,
+      } as any).eq("id", id);
+      toast.success("Post atualizado!");
+      setEditingBlog(null);
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const deleteBlogPost = async (id: string) => {
+    await supabase.from("blog_posts").delete().eq("id", id);
+    toast.success("Post removido!"); fetchAll();
+  };
+
+  const toggleBlogPublished = async (id: string, published: boolean) => {
+    await supabase.from("blog_posts").update({ published: !published } as any).eq("id", id);
+    toast.success(published ? "Post despublicado" : "Post publicado!");
+    fetchAll();
+  };
+
   // Rarity helpers removed - using RarityBadge component instead
 
   if (loading) return (
