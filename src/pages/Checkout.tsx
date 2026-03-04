@@ -56,6 +56,9 @@ const Checkout = () => {
       if (session) {
         setUser(session.user);
         setFullName(session.user.user_metadata?.full_name || "");
+      } else {
+        toast.error("Você precisa estar logado para acessar o checkout.");
+        navigate("/auth");
       }
     });
   }, [order, navigate]);
