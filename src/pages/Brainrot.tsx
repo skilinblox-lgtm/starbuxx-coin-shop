@@ -211,7 +211,7 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
         </div>
       )}
 
-      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[hsl(260,30%,12%)] to-[hsl(250,25%,8%)]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {post.image_url ? (
           <img src={post.image_url} alt={post.title} className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-105" />
         ) : (
