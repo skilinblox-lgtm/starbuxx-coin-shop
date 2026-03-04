@@ -265,6 +265,7 @@ const Admin = () => {
         rarity: newBrainrot.rarity,
         stock: parseInt(newBrainrot.stock) || 0,
         tags: newBrainrot.tags,
+        special_flags: newBrainrot.special_flags,
       } as any).select().single();
       if (error) throw error;
       // Upload image if provided
