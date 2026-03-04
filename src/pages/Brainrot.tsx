@@ -147,7 +147,7 @@ const Brainrot = () => {
           ) : (
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredPosts.map((post, i) => (
-                <BrainrotCard key={post.id} post={post} index={i} onClick={() => setSelectedPost(post)} />
+                <BrainrotCard key={post.id} post={post} index={i} onClick={() => setSelectedPost(post)} flags={flags} />
               ))}
             </div>
           )}
