@@ -19,10 +19,12 @@ export type Database = {
           created_at: string
           current_price: number
           description: string | null
+          featured: boolean
           id: string
           image_url: string | null
           rarity: string | null
           stock: number
+          tags: string[]
           title: string
           updated_at: string
         }
@@ -30,10 +32,12 @@ export type Database = {
           created_at?: string
           current_price?: number
           description?: string | null
+          featured?: boolean
           id?: string
           image_url?: string | null
           rarity?: string | null
           stock?: number
+          tags?: string[]
           title: string
           updated_at?: string
         }
@@ -41,10 +45,12 @@ export type Database = {
           created_at?: string
           current_price?: number
           description?: string | null
+          featured?: boolean
           id?: string
           image_url?: string | null
           rarity?: string | null
           stock?: number
+          tags?: string[]
           title?: string
           updated_at?: string
         }
