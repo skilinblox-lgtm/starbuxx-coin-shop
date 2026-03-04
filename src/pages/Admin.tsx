@@ -95,6 +95,13 @@ const Admin = () => {
   const [robuxPrice, setRobuxPrice] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
 
+  // Email
+  const [emailTemplates, setEmailTemplates] = useState<any[]>([]);
+  const [emailLogs, setEmailLogs] = useState<any[]>([]);
+  const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
+  const [editTemplateData, setEditTemplateData] = useState({ subject: "", body_html: "", description: "" });
+  const [emailPreview, setEmailPreview] = useState<string | null>(null);
+
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession();
