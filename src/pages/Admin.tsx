@@ -220,6 +220,14 @@ const Admin = () => {
         rarity: newBrainrot.rarity,
       } as any).select().single();
       if (error) throw error;
+      // Upload image if provided
+      if (newBrainrotImage && data) {
+        const ext = newBrainrotImage.name.split(".").pop();
+        const path = `${data.id}.${ext}`;
+        await supabase.storage.from("brainrot-images").upload(path, newBrainrotImage, { upsert: true });
+        const { data: { publicUrl } } = supabase.storage.from("brainrot-images").getPublicUrl(path);
+        await supabase.from("brainrot_posts").update({ image_url: publicUrl }).eq("id", data.id);
+      }
       // Add initial price history
       await supabase.from("brainrot_price_history").insert({
         brainrot_id: data.id,
@@ -227,6 +235,7 @@ const Admin = () => {
       });
       toast.success("Brainrot publicado!");
       setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common" });
+      setNewBrainrotImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
   };
