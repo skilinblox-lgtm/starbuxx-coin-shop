@@ -82,6 +82,11 @@ const ProductPage = () => {
   const gameIcon = gameIcons[product.game_id];
 
   const handleBuy = () => {
+    if (!user) {
+      toast.error("Você precisa criar uma conta ou fazer login antes de comprar.");
+      navigate("/auth", { state: { redirectTo: `/product/${productId}` } });
+      return;
+    }
     navigate("/checkout", {
       state: {
         gameId: product.game_id, gameName: product.name, currency: product.currency,
