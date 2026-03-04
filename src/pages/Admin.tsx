@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Package, ShoppingCart, Users, MessageSquare, DollarSign,
   ArrowLeft, Truck, Shield, UserPlus, Send, Bot, Edit2, Save, X,
-  Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2
+  Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2, Star
 } from "lucide-react";
 import RarityBadge, { RARITY_CONFIG } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,10 +68,10 @@ const Admin = () => {
 
   // Brainrot
   const [brainrotPosts, setBrainrotPosts] = useState<any[]>([]);
-  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "" });
+  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[] });
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
-  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "" });
+  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[] });
   const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
 
   useEffect(() => {
@@ -220,6 +220,7 @@ const Admin = () => {
         current_price: parseFloat(newBrainrot.current_price),
         rarity: newBrainrot.rarity,
         stock: parseInt(newBrainrot.stock) || 0,
+        tags: newBrainrot.tags,
       } as any).select().single();
       if (error) throw error;
       // Upload image if provided
@@ -236,7 +237,7 @@ const Admin = () => {
         price: parseFloat(newBrainrot.current_price),
       });
       toast.success("Brainrot publicado!");
-      setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common", stock: "" });
+      setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] });
       setNewBrainrotImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
@@ -266,6 +267,7 @@ const Admin = () => {
         current_price: price,
         rarity: editBrainrotData.rarity,
         stock: parseInt(editBrainrotData.stock) || 0,
+        tags: editBrainrotData.tags,
       } as any).eq("id", id);
       // Add price history if price changed
       if (oldPost && Number(oldPost.current_price) !== price) {
@@ -608,6 +610,25 @@ const Admin = () => {
                     ))}
                   </select>
                 </div>
+                {/* Tags (multi-select) */}
+                <div className="mt-3">
+                  <p className="text-xs font-bold text-muted-foreground mb-1.5">Tags adicionais (ex: Ouro + Divino)</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
+                      <button key={key} type="button"
+                        onClick={() => setNewBrainrot(p => ({
+                          ...p,
+                          tags: p.tags.includes(key) ? p.tags.filter(t => t !== key) : [...p.tags, key]
+                        }))}
+                        className={`rounded-full border px-2.5 py-1 text-[10px] font-bold transition-all ${
+                          newBrainrot.tags.includes(key)
+                            ? "border-primary bg-primary/15 text-primary"
+                            : "border-border bg-surface text-muted-foreground hover:border-primary/30"
+                        }`}
+                      >{cfg.label}</button>
+                    ))}
+                  </div>
+                </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
                   placeholder="Descrição (opcional)" rows={2}
                   className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
@@ -645,6 +666,25 @@ const Admin = () => {
                           <textarea value={editBrainrotData.description} onChange={e => setEditBrainrotData(p => ({ ...p, description: e.target.value }))}
                             placeholder="Descrição" rows={1} className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                         </div>
+                        {/* Edit tags */}
+                        <div>
+                          <p className="text-xs font-bold text-muted-foreground mb-1">Tags adicionais</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
+                              <button key={key} type="button"
+                                onClick={() => setEditBrainrotData(p => ({
+                                  ...p,
+                                  tags: p.tags.includes(key) ? p.tags.filter(t => t !== key) : [...p.tags, key]
+                                }))}
+                                className={`rounded-full border px-2 py-0.5 text-[10px] font-bold transition-all ${
+                                  editBrainrotData.tags.includes(key)
+                                    ? "border-primary bg-primary/15 text-primary"
+                                    : "border-border bg-surface text-muted-foreground hover:border-primary/30"
+                                }`}
+                              >{cfg.label}</button>
+                            ))}
+                          </div>
+                        </div>
                         <div className="flex items-center gap-2">
                           <button onClick={() => saveBrainrotEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
                             <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
@@ -663,14 +703,28 @@ const Admin = () => {
                           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-2xl sm:h-16 sm:w-16">🧠</div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
-                          <div className="mt-0.5 flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                            {post.featured && <Star className="h-3.5 w-3.5 fill-primary text-primary" />}
+                          </div>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1">
                             <RarityBadge rarity={post.rarity || 'common'} />
-                            <span className="text-xs text-muted-foreground">{post.description?.slice(0, 40) || "Sem descrição"}</span>
+                            {(post.tags || []).filter((t: string) => t !== post.rarity).map((tag: string) => (
+                              <RarityBadge key={tag} rarity={tag} />
+                            ))}
                           </div>
                           <p className="mt-1 flex items-center gap-2 text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)} <span className="text-xs font-normal text-muted-foreground">• Estoque: {post.stock ?? 0}</span></p>
                         </div>
                         <div className="flex flex-col gap-1.5">
+                          <button onClick={async () => {
+                            await supabase.from("brainrot_posts").update({ featured: !post.featured } as any).eq("id", post.id);
+                            toast.success(post.featured ? "Destaque removido" : "Destacado!");
+                            fetchAll();
+                          }} className={`flex items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-medium sm:text-xs ${
+                            post.featured ? "border-primary bg-primary/15 text-primary" : "border-border bg-surface text-muted-foreground hover:border-primary"
+                          }`}>
+                            <Star className={`h-3 w-3 ${post.featured ? "fill-primary" : ""}`} /> {post.featured ? "★" : "Destaque"}
+                          </button>
                           <button onClick={() => {
                             setEditingBrainrot(post.id);
                             setEditBrainrotData({
@@ -679,6 +733,7 @@ const Admin = () => {
                               current_price: String(post.current_price),
                               rarity: post.rarity || "common",
                               stock: String(post.stock ?? 0),
+                              tags: post.tags || [],
                             });
                           }} className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
                             <Edit2 className="h-3 w-3" /> Editar

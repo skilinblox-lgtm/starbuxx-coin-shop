@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { TrendingDown, BarChart3, ShoppingCart, Clock, Flame, Zap, ArrowRight, X, AlertTriangle } from "lucide-react";
-import RarityBadge from "@/components/RarityBadge";
+import { TrendingDown, BarChart3, ShoppingCart, Clock, Flame, Zap, ArrowRight, X, AlertTriangle, Star } from "lucide-react";
+import RarityBadge, { RARITY_CONFIG } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,19 +11,18 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
+import BrainrotFilters, { BrainrotFilterState, defaultFilters } from "@/components/BrainrotFilters";
+import BrainrotDeliveryInfo from "@/components/BrainrotDeliveryInfo";
 
 // Generate fake chart data that always shows a recent price drop
 const generateFakeChart = (currentPrice: number) => {
   const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Hoje"];
-  const peakMultiplier = 1.3 + Math.random() * 0.4; // 30-70% higher than current
+  const peakMultiplier = 1.3 + Math.random() * 0.4;
   const peak = currentPrice * peakMultiplier;
-
-  // Create a pattern: starts moderate, peaks mid-week, drops to current
-  const pattern = [0.85, 0.92, 1.0, 0.97, 0.88, 0.78, 0.65]; // relative to peak
+  const pattern = [0.85, 0.92, 1.0, 0.97, 0.88, 0.78, 0.65];
   return days.map((day, i) => ({
     day,
     price: Math.round((peak * pattern[i]) * 100) / 100,
-    // Make "Hoje" exactly the current price
     ...(i === 6 ? { price: currentPrice } : {}),
   }));
 };
@@ -32,6 +31,7 @@ const Brainrot = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<BrainrotFilterState>(defaultFilters);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,6 +43,40 @@ const Brainrot = () => {
     };
     fetchData();
   }, []);
+
+  // Apply filters & sorting
+  const filteredPosts = useMemo(() => {
+    let result = [...posts];
+
+    // Featured first
+    result.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+
+    // Rarity filter - check both rarity field and tags array
+    if (filters.rarities.length > 0) {
+      result = result.filter(p => {
+        const postTags: string[] = p.tags || [];
+        const postRarity = p.rarity || "common";
+        return filters.rarities.some(r => r === postRarity || postTags.includes(r));
+      });
+    }
+
+    // Price range
+    if (filters.minPrice) {
+      result = result.filter(p => Number(p.current_price) >= Number(filters.minPrice));
+    }
+    if (filters.maxPrice) {
+      result = result.filter(p => Number(p.current_price) <= Number(filters.maxPrice));
+    }
+
+    // Sort by price
+    if (filters.sortPrice === "desc") {
+      result.sort((a, b) => Number(b.current_price) - Number(a.current_price));
+    } else if (filters.sortPrice === "asc") {
+      result.sort((a, b) => Number(a.current_price) - Number(b.current_price));
+    }
+
+    return result;
+  }, [posts, filters]);
 
   const handleBuy = (post: any) => {
     navigate("/checkout", {
@@ -76,24 +110,27 @@ const Brainrot = () => {
             </p>
           </motion.div>
 
+          <BrainrotFilters filters={filters} onFilterChange={setFilters} />
+
           {loading ? (
             <div className="mt-12 flex justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
-          ) : posts.length === 0 ? (
+          ) : filteredPosts.length === 0 ? (
             <div className="mt-16 text-center text-sm text-muted-foreground">
-              Nenhum brainrot publicado ainda. Fique ligado!
+              {posts.length === 0 ? "Nenhum brainrot publicado ainda. Fique ligado!" : "Nenhum resultado encontrado com esses filtros."}
             </div>
           ) : (
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post, i) => (
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredPosts.map((post, i) => (
                 <BrainrotCard key={post.id} post={post} index={i} onClick={() => setSelectedPost(post)} />
               ))}
             </div>
           )}
+
+          <BrainrotDeliveryInfo />
         </div>
 
-        {/* Detail Modal */}
         <AnimatePresence>
           {selectedPost && (
             <BrainrotModal post={selectedPost} onClose={() => setSelectedPost(null)} onBuy={handleBuy} />
@@ -110,6 +147,7 @@ const Brainrot = () => {
 // ── Card Component ──
 const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onClick: () => void }) => {
   const fakeDiscount = useMemo(() => Math.round(15 + Math.random() * 35), []);
+  const postTags: string[] = post.tags || [];
 
   return (
     <motion.button
@@ -117,8 +155,19 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06 }}
       onClick={onClick}
-      className="group relative overflow-hidden rounded-2xl border border-border bg-card text-left shadow-[var(--shadow-card)] transition-all hover:border-primary/50 hover:shadow-[0_0_20px_hsl(45,100%,50%,0.1)]"
+      className={`group relative overflow-hidden rounded-2xl border text-left shadow-[var(--shadow-card)] transition-all hover:shadow-[0_0_20px_hsl(45,100%,50%,0.1)] ${
+        post.featured
+          ? "border-primary/60 bg-card ring-1 ring-primary/20"
+          : "border-border bg-card hover:border-primary/50"
+      }`}
     >
+      {/* Featured badge */}
+      {post.featured && (
+        <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+          <Star className="h-3 w-3" /> Destaque
+        </div>
+      )}
+
       {/* Discount ribbon */}
       <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-destructive px-2 py-0.5 text-[10px] font-bold text-destructive-foreground">
         <TrendingDown className="h-3 w-3" /> -{fakeDiscount}%
@@ -131,8 +180,11 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-background text-5xl">🧠</div>
         )}
-        <div className="absolute bottom-2 left-2">
+        <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
           <RarityBadge rarity={post.rarity || "common"} />
+          {postTags.filter(t => t !== post.rarity).map(tag => (
+            <RarityBadge key={tag} rarity={tag} />
+          ))}
         </div>
         {post.stock > 0 && (
           <div className="absolute left-2 top-2 rounded-full bg-success/90 px-2 py-0.5 text-[10px] font-bold text-success-foreground">
@@ -179,6 +231,7 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
   const peakPrice = Math.max(...chartData.map(d => d.price));
   const fakeDiscount = Math.round(((peakPrice - Number(post.current_price)) / peakPrice) * 100);
   const fakeBuyers = useMemo(() => Math.round(12 + Math.random() * 38), []);
+  const postTags: string[] = post.tags || [];
 
   return (
     <motion.div
@@ -207,8 +260,11 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
           <button onClick={onClose} className="absolute right-3 top-3 rounded-full bg-background/60 p-1.5 backdrop-blur-sm hover:bg-background/80">
             <X className="h-4 w-4" />
           </button>
-          <div className="absolute bottom-3 left-4">
+          <div className="absolute bottom-3 left-4 flex flex-wrap gap-1">
             <RarityBadge rarity={post.rarity || "common"} size="md" />
+            {postTags.filter(t => t !== post.rarity).map(tag => (
+              <RarityBadge key={tag} rarity={tag} size="md" />
+            ))}
           </div>
           <div className="absolute bottom-3 right-4 flex items-center gap-1 rounded-full bg-destructive px-2.5 py-1 text-xs font-bold text-destructive-foreground">
             <TrendingDown className="h-3.5 w-3.5" /> -{fakeDiscount}% OFF
@@ -216,7 +272,6 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto p-5 sm:p-6">
-          {/* Title & Price */}
           <h2 className="font-heading text-2xl font-bold">{post.title}</h2>
           {post.description && (
             <p className="mt-2 rounded-xl border border-[hsl(145,63%,42%)]/30 bg-[hsl(145,63%,42%)]/10 px-3 py-2.5 text-base font-bold text-[hsl(145,70%,38%)] shadow-[0_0_12px_hsl(145,63%,42%,0.15)]">{post.description}</p>
@@ -227,7 +282,6 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
             <span className="mb-1 text-sm text-muted-foreground line-through">R$ {peakPrice.toFixed(2)}</span>
           </div>
 
-          {/* Urgency indicators */}
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="flex items-center gap-2 rounded-xl bg-destructive/10 px-3 py-2">
               <Flame className="h-4 w-4 text-destructive" />
@@ -282,7 +336,6 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
             </div>
           </div>
 
-          {/* Warning */}
           <div className="mt-4 flex items-start gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5">
             <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
             <p className="text-[11px] text-muted-foreground">
@@ -290,7 +343,6 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
             </p>
           </div>
 
-          {/* Buy Button */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

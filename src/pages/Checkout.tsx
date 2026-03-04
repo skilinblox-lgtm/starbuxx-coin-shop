@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import {
   ShieldCheck, ArrowLeft, ChevronRight, ChevronLeft, Lock, User,
   CreditCard, CheckCircle, Truck, Users, HelpCircle, Play, Gamepad2,
-  QrCode, Landmark, Zap, Sparkles, BadgeCheck, Shield
+  QrCode, Landmark, Zap, Sparkles, BadgeCheck, Shield, Clock, Server
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,11 +19,19 @@ const Checkout = () => {
   } | null;
 
   const isRobux = order?.gameId?.toLowerCase() === "roblox" || order?.gameId?.toLowerCase().includes("robux");
+  const isBrainrot = order?.gameId?.toLowerCase() === "brainrot";
 
   const STEPS = isRobux
     ? [
         { id: 1, label: "Dados", icon: User },
         { id: 2, label: "Gamepass", icon: Gamepad2 },
+        { id: 3, label: "Pagamento", icon: CreditCard },
+        { id: 4, label: "Confirmar", icon: CheckCircle },
+      ]
+    : isBrainrot
+    ? [
+        { id: 1, label: "Dados", icon: User },
+        { id: 2, label: "Entrega", icon: Truck },
         { id: 3, label: "Pagamento", icon: CreditCard },
         { id: 4, label: "Confirmar", icon: CheckCircle },
       ]
@@ -54,12 +62,13 @@ const Checkout = () => {
 
   if (!order) return null;
 
-  const getPaymentStepIndex = () => isRobux ? 3 : 2;
-  const getConfirmStepIndex = () => isRobux ? 4 : 3;
+  const getPaymentStepIndex = () => (isRobux || isBrainrot) ? 3 : 2;
+  const getConfirmStepIndex = () => (isRobux || isBrainrot) ? 4 : 3;
 
   const canAdvance = () => {
     if (step === 1) return fullName.trim() && gameUsername.trim() && discord.trim();
     if (isRobux && step === 2) return knowsGamepass !== null;
+    if (isBrainrot && step === 2) return true; // just informational
     if (step === getPaymentStepIndex()) return !!paymentMethod;
     return true;
   };
@@ -91,6 +100,7 @@ const Checkout = () => {
   const isPaymentStep = step === getPaymentStepIndex();
   const isConfirmStep = step === getConfirmStepIndex();
   const isGamepassStep = isRobux && step === 2;
+  const isBrainrotDeliveryStep = isBrainrot && step === 2;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(220,20%,9%)] via-[hsl(220,20%,7%)] to-[hsl(220,20%,5%)]">
@@ -234,6 +244,46 @@ const Checkout = () => {
                       </div>
                     </motion.div>
                   )}
+                </motion.div>
+              )}
+
+              {/* Brainrot delivery step */}
+              {isBrainrotDeliveryStep && (
+                <motion.div key="brainrot-delivery" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}
+                  className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-6 sm:p-8">
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                      <Truck className="h-4 w-4 text-primary" />
+                    </div>
+                    <h3 className="font-heading text-lg font-bold text-white">Como funciona a entrega</h3>
+                  </div>
+                  <p className="text-sm text-white/40 mb-6 ml-[42px]">Entenda o processo de entrega do seu Brainrot</p>
+
+                  <div className="space-y-4">
+                    {[
+                      { icon: Clock, title: "Prazo", desc: "Entrega em até 24h com vendedor online. Em alta demanda, pode levar até 48h.", color: "text-primary", bg: "bg-primary/10" },
+                      { icon: Users, title: "Adicionamos como amigo", desc: "Um vendedor irá adicionar você como amigo no jogo para realizar a transferência.", color: "text-[hsl(210,85%,65%)]", bg: "bg-[hsl(210,85%,65%)]/10" },
+                      { icon: Server, title: "Servidor privado", desc: "Entramos em um servidor privado com você para garantir total segurança.", color: "text-[hsl(270,80%,72%)]", bg: "bg-[hsl(270,80%,72%)]/10" },
+                      { icon: Shield, title: "100% seu", desc: "Transferimos o brainrot da nossa base para a sua. Processo seguro e garantido.", color: "text-[hsl(145,70%,45%)]", bg: "bg-[hsl(145,70%,45%)]/10" },
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                        <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${step.bg}`}>
+                          <step.icon className={`h-5 w-5 ${step.color}`} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white">{step.title}</p>
+                          <p className="mt-0.5 text-xs text-white/40">{step.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+                    <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                    <p className="text-xs text-white/50">
+                      <span className="font-bold text-white">Fique tranquilo!</span> Ao confirmar a compra, nosso time já será notificado para iniciar a entrega.
+                    </p>
+                  </div>
                 </motion.div>
               )}
 
