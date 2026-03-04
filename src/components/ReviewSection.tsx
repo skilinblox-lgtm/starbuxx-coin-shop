@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Star, Gamepad2, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, Gamepad2, Calendar, ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import iconRoblox from "@/assets/icon-roblox.png";
 import iconClash from "@/assets/icon-clash-royale.png";
@@ -90,6 +90,7 @@ const ReviewSection = () => {
             {reviews.map((r) => {
               const icon = gameIcons[r.game_id];
               const label = gameLabels[r.game_id] || r.game_id;
+              const isClient = !!r.user_id;
               return (
                 <div
                   key={r.id}
@@ -127,7 +128,14 @@ const ReviewSection = () => {
                       {r.author_name[0]}
                     </div>
                     <div>
-                      <p className="text-sm font-bold">{r.author_name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-bold">{r.author_name}</p>
+                        {isClient && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-[hsl(var(--success))]/10 px-1.5 py-0.5 text-[9px] font-bold text-[hsl(var(--success))]">
+                            <BadgeCheck className="h-2.5 w-2.5" /> Cliente
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[10px] text-muted-foreground">Comprador verificado</p>
                     </div>
                   </div>
