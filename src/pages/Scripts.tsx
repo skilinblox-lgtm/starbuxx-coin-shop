@@ -111,7 +111,7 @@ const Scripts = () => {
           </motion.div>
 
           {/* Filters */}
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 flex flex-col gap-3">
             <div className="flex gap-2 overflow-x-auto">
               {categories.map(c => (
                 <button
@@ -127,6 +127,23 @@ const Scripts = () => {
                 </button>
               ))}
             </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex gap-2 overflow-x-auto">
+                {gameFilters.map(g => (
+                  <button
+                    key={g.id}
+                    onClick={() => setSelectedGame(g.id)}
+                    className={`flex flex-shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-all sm:text-sm ${
+                      selectedGame === g.id
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {g.icon && <img src={g.icon} alt={g.label} className="h-4 w-4 object-contain" />}
+                    {g.label}
+                  </button>
+                ))}
+              </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
