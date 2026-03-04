@@ -1,4 +1,4 @@
-import { Circle, Diamond, Flame, Crown, Coins, Eye, Sparkles, Shield, Zap, Stars } from "lucide-react";
+import { Circle, Coins, Eye, Sparkles, Shield, Zap, Stars, Diamond, UtensilsCrossed, Rainbow } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const RARITY_CONFIG: Record<string, {
@@ -15,26 +15,28 @@ export const RARITY_CONFIG: Record<string, {
     bg: "bg-[hsl(0,0%,22%)]",
     text: "text-[hsl(0,0%,70%)]",
   },
-  rare: {
-    label: "Raro",
+  diamond: {
+    label: "Diamante",
     icon: Diamond,
-    bg: "bg-[hsl(210,60%,16%)]",
-    text: "text-[hsl(210,85%,65%)]",
-    glow: "shadow-[0_0_8px_hsl(210,85%,50%,0.3)]",
+    bg: "bg-gradient-to-r from-[hsl(195,80%,14%)] via-[hsl(210,90%,18%)] to-[hsl(195,80%,14%)]",
+    text: "text-[hsl(195,100%,75%)]",
+    glow: "shadow-[0_0_14px_hsl(195,100%,60%,0.5),0_0_28px_hsl(210,90%,50%,0.2)]",
+    animate: "animate-pulse",
   },
-  epic: {
-    label: "Épico",
-    icon: Flame,
-    bg: "bg-[hsl(270,50%,16%)]",
-    text: "text-[hsl(270,80%,72%)]",
-    glow: "shadow-[0_0_8px_hsl(270,70%,55%,0.3)]",
+  taco: {
+    label: "Taco",
+    icon: UtensilsCrossed,
+    bg: "bg-gradient-to-r from-[hsl(30,80%,16%)] via-[hsl(45,90%,18%)] to-[hsl(15,80%,16%)]",
+    text: "text-[hsl(35,100%,65%)]",
+    glow: "shadow-[0_0_12px_hsl(35,100%,50%,0.4),0_0_24px_hsl(20,90%,45%,0.2)]",
   },
-  legendary: {
-    label: "Lendário",
-    icon: Crown,
-    bg: "bg-[hsl(45,60%,14%)]",
-    text: "text-[hsl(45,100%,60%)]",
-    glow: "shadow-[0_0_10px_hsl(45,100%,50%,0.35)]",
+  rainbow: {
+    label: "Rainbow",
+    icon: Rainbow,
+    bg: "bg-gradient-to-r from-[hsl(0,70%,18%)] via-[hsl(120,70%,16%)] to-[hsl(240,70%,18%)]",
+    text: "text-[hsl(300,100%,85%)]",
+    glow: "shadow-[0_0_16px_hsl(300,80%,60%,0.4),0_0_32px_hsl(180,80%,50%,0.2)]",
+    animate: "animate-pulse",
   },
   gold: {
     label: "Ouro",

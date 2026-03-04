@@ -85,6 +85,57 @@ export type Database = {
           },
         ]
       }
+      brainrot_reviews: {
+        Row: {
+          author_name: string
+          brainrot_id: string
+          comment: string
+          created_at: string
+          id: string
+          is_fake: boolean | null
+          order_id: string | null
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          brainrot_id: string
+          comment: string
+          created_at?: string
+          id?: string
+          is_fake?: boolean | null
+          order_id?: string | null
+          rating?: number
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          brainrot_id?: string
+          comment?: string
+          created_at?: string
+          id?: string
+          is_fake?: boolean | null
+          order_id?: string | null
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brainrot_reviews_brainrot_id_fkey"
+            columns: ["brainrot_id"]
+            isOneToOne: false
+            referencedRelation: "brainrot_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brainrot_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           created_at: string
