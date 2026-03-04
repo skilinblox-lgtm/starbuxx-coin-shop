@@ -140,7 +140,7 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
       <div className="p-4">
         <p className="truncate font-heading text-sm font-bold sm:text-base">{post.title}</p>
         {post.description && (
-          <p className="mt-1 line-clamp-2 rounded-lg bg-primary/10 px-2 py-1 text-[11px] font-medium text-foreground">{post.description}</p>
+          <p className="mt-1 line-clamp-2 rounded-lg bg-success/10 px-2 py-1 text-[11px] font-medium text-success">{post.description}</p>
         )}
         <div className="mt-2 flex items-center justify-between">
           <div>
