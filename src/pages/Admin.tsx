@@ -68,10 +68,10 @@ const Admin = () => {
 
   // Brainrot
   const [brainrotPosts, setBrainrotPosts] = useState<any[]>([]);
-  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common" });
+  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "" });
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
-  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common" });
+  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "" });
   const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
 
   useEffect(() => {
@@ -219,6 +219,7 @@ const Admin = () => {
         description: newBrainrot.description,
         current_price: parseFloat(newBrainrot.current_price),
         rarity: newBrainrot.rarity,
+        stock: parseInt(newBrainrot.stock) || 0,
       } as any).select().single();
       if (error) throw error;
       // Upload image if provided
@@ -235,7 +236,7 @@ const Admin = () => {
         price: parseFloat(newBrainrot.current_price),
       });
       toast.success("Brainrot publicado!");
-      setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common" });
+      setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common", stock: "" });
       setNewBrainrotImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
@@ -264,6 +265,7 @@ const Admin = () => {
         description: editBrainrotData.description,
         current_price: price,
         rarity: editBrainrotData.rarity,
+        stock: parseInt(editBrainrotData.stock) || 0,
       } as any).eq("id", id);
       // Add price history if price changed
       if (oldPost && Number(oldPost.current_price) !== price) {
@@ -597,6 +599,8 @@ const Admin = () => {
                     placeholder="Título (ex: Italian Brainrot)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <input type="number" step="0.01" value={newBrainrot.current_price} onChange={e => setNewBrainrot(p => ({ ...p, current_price: e.target.value }))}
                     placeholder="Preço inicial (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <input type="number" value={newBrainrot.stock} onChange={e => setNewBrainrot(p => ({ ...p, stock: e.target.value }))}
+                    placeholder="Estoque (qtd)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <select value={newBrainrot.rarity} onChange={e => setNewBrainrot(p => ({ ...p, rarity: e.target.value }))}
                     className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
                     {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
@@ -629,7 +633,9 @@ const Admin = () => {
                           <input type="number" step="0.01" value={editBrainrotData.current_price} onChange={e => setEditBrainrotData(p => ({ ...p, current_price: e.target.value }))}
                             placeholder="Preço (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                         </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          <input type="number" value={editBrainrotData.stock} onChange={e => setEditBrainrotData(p => ({ ...p, stock: e.target.value }))}
+                            placeholder="Estoque (qtd)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                           <select value={editBrainrotData.rarity} onChange={e => setEditBrainrotData(p => ({ ...p, rarity: e.target.value }))}
                             className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
                             {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
@@ -662,7 +668,7 @@ const Admin = () => {
                             <RarityBadge rarity={post.rarity || 'common'} />
                             <span className="text-xs text-muted-foreground">{post.description?.slice(0, 40) || "Sem descrição"}</span>
                           </div>
-                          <p className="mt-1 text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</p>
+                          <p className="mt-1 flex items-center gap-2 text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)} <span className="text-xs font-normal text-muted-foreground">• Estoque: {post.stock ?? 0}</span></p>
                         </div>
                         <div className="flex flex-col gap-1.5">
                           <button onClick={() => {
@@ -672,6 +678,7 @@ const Admin = () => {
                               description: post.description || "",
                               current_price: String(post.current_price),
                               rarity: post.rarity || "common",
+                              stock: String(post.stock ?? 0),
                             });
                           }} className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
                             <Edit2 className="h-3 w-3" /> Editar

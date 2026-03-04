@@ -125,15 +125,25 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
       </div>
 
       {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-muted">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {post.image_url ? (
-          <img src={post.image_url} alt={post.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <img src={post.image_url} alt={post.title} className="h-full w-full object-contain bg-gradient-to-br from-muted to-background p-2 transition-transform duration-300 group-hover:scale-105" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-background text-5xl">🧠</div>
         )}
         <div className="absolute bottom-2 left-2">
           <RarityBadge rarity={post.rarity || "common"} />
         </div>
+        {post.stock > 0 && (
+          <div className="absolute left-2 top-2 rounded-full bg-success/90 px-2 py-0.5 text-[10px] font-bold text-success-foreground">
+            {post.stock} em estoque
+          </div>
+        )}
+        {post.stock === 0 && (
+          <div className="absolute left-2 top-2 rounded-full bg-destructive/90 px-2 py-0.5 text-[10px] font-bold text-destructive-foreground">
+            Esgotado
+          </div>
+        )}
       </div>
 
       {/* Info */}
@@ -187,9 +197,9 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
         className="w-full max-w-lg overflow-hidden rounded-t-3xl border border-border bg-card shadow-2xl sm:max-h-[90vh] sm:rounded-3xl"
       >
         {/* Header image */}
-        <div className="relative h-48 overflow-hidden bg-muted sm:h-56">
+        <div className="relative h-56 overflow-hidden bg-muted sm:h-64">
           {post.image_url ? (
-            <img src={post.image_url} alt={post.title} className="h-full w-full object-cover" />
+            <img src={post.image_url} alt={post.title} className="h-full w-full object-contain bg-gradient-to-br from-muted to-background p-3" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-background text-7xl">🧠</div>
           )}
