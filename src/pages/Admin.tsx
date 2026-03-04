@@ -322,6 +322,8 @@ const Admin = () => {
     try {
       await supabase.from("blog_posts").update({
         title: editBlogData.title, content: editBlogData.content, category: editBlogData.category,
+        script_code: editBlogData.script_code || null, video_url: editBlogData.video_url || null,
+        game_compatible: editBlogData.game_compatible || null,
       } as any).eq("id", id);
       toast.success("Post atualizado!");
       setEditingBlog(null);
