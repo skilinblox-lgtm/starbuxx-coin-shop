@@ -106,6 +106,7 @@ export type Database = {
           id: string
           image_url: string | null
           rarity: string | null
+          special_flags: string[]
           stock: number
           tags: string[]
           title: string
@@ -119,6 +120,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           rarity?: string | null
+          special_flags?: string[]
           stock?: number
           tags?: string[]
           title: string
@@ -132,6 +134,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           rarity?: string | null
+          special_flags?: string[]
           stock?: number
           tags?: string[]
           title?: string
