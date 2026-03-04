@@ -1290,6 +1290,34 @@ const Admin = () => {
                 <textarea value={newBlog.script_code} onChange={e => setNewBlog(p => ({ ...p, script_code: e.target.value }))}
                   placeholder="Código do Script (cole o loadstring aqui)" rows={3}
                   className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
+                {/* Key + Executors */}
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <button type="button" onClick={() => setNewBlog(p => ({ ...p, has_key: !p.has_key }))}
+                    className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all ${
+                      newBlog.has_key ? "border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]" : "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                    }`}>
+                    {newBlog.has_key ? "🔑 Com Key" : "🔓 Sem Key"}
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground">Executores:</span>
+                    {["Delta", "Volcano", "Solara", "Fluxus", "KRNL", "Arceus X", "Hydrogen"].map(exec => (
+                      <button key={exec} type="button"
+                        onClick={() => setNewBlog(p => ({
+                          ...p,
+                          executors_compatible: p.executors_compatible.includes(exec)
+                            ? p.executors_compatible.filter(e => e !== exec)
+                            : [...p.executors_compatible, exec]
+                        }))}
+                        className={`rounded-lg border px-2.5 py-1.5 text-[10px] font-medium transition-all ${
+                          newBlog.executors_compatible.includes(exec)
+                            ? "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                            : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                        }`}>
+                        {exec}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
                     <Upload className="h-4 w-4" /> {newBlogImage ? newBlogImage.name : "Imagem de capa"}
