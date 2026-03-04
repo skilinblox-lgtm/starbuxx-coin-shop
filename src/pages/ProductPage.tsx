@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Star, ShieldCheck, ArrowLeft, Minus, Plus, ShoppingCart, Clock, Zap, CheckCircle, Truck, Award, Headphones, CreditCard, Gamepad2, Calendar, Users, MessageCircle, RefreshCw, Link as LinkIcon, Gift, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DiscordFloat from "@/components/DiscordFloat";
@@ -26,7 +27,18 @@ const ProductPage = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
   const { ratePer1000, calculatePrice, loading: pricingLoading } = useRobuxPricing();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -71,6 +83,11 @@ const ProductPage = () => {
   const gameIcon = gameIcons[product.game_id];
 
   const handleBuy = () => {
+    if (!user) {
+      toast.error("Você precisa criar uma conta ou fazer login antes de comprar.");
+      navigate("/auth", { state: { redirectTo: `/product/${productId}` } });
+      return;
+    }
     navigate("/checkout", {
       state: {
         gameId: product.game_id, gameName: product.name, currency: product.currency,
