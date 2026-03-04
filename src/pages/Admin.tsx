@@ -929,13 +929,24 @@ const Admin = () => {
                           placeholder="Descrição" rows={3} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
                         <textarea value={editBlogData.script_code} onChange={e => setEditBlogData(p => ({ ...p, script_code: e.target.value }))}
                           placeholder="Código do Script" rows={2} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => saveBlogEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
-                            <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
-                          </button>
-                          <button onClick={() => setEditingBlog(null)} className="rounded-xl border border-border px-5 py-2 text-xs font-medium text-muted-foreground hover:bg-surface">
-                            Cancelar
-                          </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary">
+                            <Upload className="h-3.5 w-3.5" /> {editBlogImage ? editBlogImage.name : "Trocar Imagem"}
+                            <input type="file" accept="image/*" className="hidden" onChange={e => setEditBlogImage(e.target.files?.[0] || null)} />
+                          </label>
+                          {post.image_url && (
+                            <button onClick={() => deleteBlogImage(post.id)} className="flex items-center gap-1 rounded-xl border border-destructive/30 px-3 py-2 text-xs text-destructive hover:bg-destructive/10">
+                              <Trash2 className="h-3 w-3" /> Remover Imagem
+                            </button>
+                          )}
+                          <div className="ml-auto flex gap-2">
+                            <button onClick={() => { setEditingBlog(null); setEditBlogImage(null); }} className="rounded-xl border border-border px-5 py-2 text-xs font-medium text-muted-foreground hover:bg-surface">
+                              Cancelar
+                            </button>
+                            <button onClick={() => saveBlogEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
+                              <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ) : (
