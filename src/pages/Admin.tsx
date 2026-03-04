@@ -71,7 +71,7 @@ const Admin = () => {
   const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common" });
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
-  const [editBrainrotPrice, setEditBrainrotPrice] = useState("");
+  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common" });
   const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
 
   useEffect(() => {
@@ -254,13 +254,22 @@ const Admin = () => {
     } catch (e: any) { toast.error(e.message); } finally { setBrainrotUploading(false); }
   };
 
-  const updateBrainrotPrice = async (id: string) => {
-    const price = parseFloat(editBrainrotPrice);
-    if (isNaN(price)) return;
+  const saveBrainrotEdit = async (id: string) => {
+    const price = parseFloat(editBrainrotData.current_price);
+    if (isNaN(price) || !editBrainrotData.title) return;
     try {
-      await supabase.from("brainrot_posts").update({ current_price: price }).eq("id", id);
-      await supabase.from("brainrot_price_history").insert({ brainrot_id: id, price });
-      toast.success("Preço atualizado!");
+      const oldPost = brainrotPosts.find(p => p.id === id);
+      await supabase.from("brainrot_posts").update({
+        title: editBrainrotData.title,
+        description: editBrainrotData.description,
+        current_price: price,
+        rarity: editBrainrotData.rarity,
+      } as any).eq("id", id);
+      // Add price history if price changed
+      if (oldPost && Number(oldPost.current_price) !== price) {
+        await supabase.from("brainrot_price_history").insert({ brainrot_id: id, price });
+      }
+      toast.success("Brainrot atualizado!");
       setEditingBrainrot(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
@@ -611,43 +620,72 @@ const Admin = () => {
               <div className="space-y-2 sm:space-y-3">
                 {brainrotPosts.map(post => (
                   <div key={post.id} className="rounded-2xl border border-border bg-background p-3 sm:p-5">
-                    <div className="flex items-center gap-3">
-                      {post.image_url ? (
-                        <img src={post.image_url} alt={post.title} className="h-14 w-14 rounded-xl object-cover sm:h-16 sm:w-16" />
-                      ) : (
-                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-2xl sm:h-16 sm:w-16">🧠</div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
-                        <div className="mt-0.5 flex items-center gap-2">
-                          <RarityBadge rarity={post.rarity || 'common'} />
-                          <span className="text-xs text-muted-foreground">{post.description?.slice(0, 40) || "Sem descrição"}</span>
+                    {editingBrainrot === post.id ? (
+                      /* ── Edit Mode ── */
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <input value={editBrainrotData.title} onChange={e => setEditBrainrotData(p => ({ ...p, title: e.target.value }))}
+                            placeholder="Título" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                          <input type="number" step="0.01" value={editBrainrotData.current_price} onChange={e => setEditBrainrotData(p => ({ ...p, current_price: e.target.value }))}
+                            placeholder="Preço (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                         </div>
-                        <div className="mt-1 flex items-center gap-2">
-                          {editingBrainrot === post.id ? (
-                            <div className="flex items-center gap-1.5">
-                              <input type="number" step="0.01" value={editBrainrotPrice}
-                                onChange={e => setEditBrainrotPrice(e.target.value)}
-                                className="w-24 rounded-lg border border-border bg-surface px-2 py-1 text-xs text-foreground outline-none focus:border-primary" />
-                              <button onClick={() => updateBrainrotPrice(post.id)} className="rounded-lg bg-primary px-2 py-1 text-[10px] font-bold text-primary-foreground">Salvar</button>
-                              <button onClick={() => setEditingBrainrot(null)} className="text-xs text-muted-foreground">✕</button>
-                            </div>
-                          ) : (
-                            <button onClick={() => { setEditingBrainrot(post.id); setEditBrainrotPrice(String(post.current_price)); }}
-                              className="text-sm font-bold text-gradient-gold hover:underline">R$ {Number(post.current_price).toFixed(2)}</button>
-                          )}
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <select value={editBrainrotData.rarity} onChange={e => setEditBrainrotData(p => ({ ...p, rarity: e.target.value }))}
+                            className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
+                            {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
+                              <option key={key} value={key}>{cfg.label}</option>
+                            ))}
+                          </select>
+                          <textarea value={editBrainrotData.description} onChange={e => setEditBrainrotData(p => ({ ...p, description: e.target.value }))}
+                            placeholder="Descrição" rows={1} className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => saveBrainrotEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
+                            <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
+                          </button>
+                          <button onClick={() => setEditingBrainrot(null)} className="rounded-xl border border-border px-5 py-2 text-xs font-medium text-muted-foreground hover:bg-surface">
+                            Cancelar
+                          </button>
                         </div>
                       </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="flex cursor-pointer items-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
-                          <Upload className="h-3 w-3" /> {brainrotUploading ? "..." : "Foto"}
-                          <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadBrainrotImage(post.id, f); }} />
-                        </label>
-                        <button onClick={() => deleteBrainrot(post.id)} className="flex items-center justify-center gap-1 rounded-lg border border-destructive/30 px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10">
-                          <Trash2 className="h-3 w-3" />
-                        </button>
+                    ) : (
+                      /* ── View Mode ── */
+                      <div className="flex items-center gap-3">
+                        {post.image_url ? (
+                          <img src={post.image_url} alt={post.title} className="h-14 w-14 rounded-xl object-cover sm:h-16 sm:w-16" />
+                        ) : (
+                          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-2xl sm:h-16 sm:w-16">🧠</div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                          <div className="mt-0.5 flex items-center gap-2">
+                            <RarityBadge rarity={post.rarity || 'common'} />
+                            <span className="text-xs text-muted-foreground">{post.description?.slice(0, 40) || "Sem descrição"}</span>
+                          </div>
+                          <p className="mt-1 text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</p>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <button onClick={() => {
+                            setEditingBrainrot(post.id);
+                            setEditBrainrotData({
+                              title: post.title,
+                              description: post.description || "",
+                              current_price: String(post.current_price),
+                              rarity: post.rarity || "common",
+                            });
+                          }} className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
+                            <Edit2 className="h-3 w-3" /> Editar
+                          </button>
+                          <label className="flex cursor-pointer items-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
+                            <Upload className="h-3 w-3" /> {brainrotUploading ? "..." : "Foto"}
+                            <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadBrainrotImage(post.id, f); }} />
+                          </label>
+                          <button onClick={() => deleteBrainrot(post.id)} className="flex items-center justify-center gap-1 rounded-lg border border-destructive/30 px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10">
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
                 {brainrotPosts.length === 0 && <EmptyState text="Nenhum brainrot publicado ainda." />}
