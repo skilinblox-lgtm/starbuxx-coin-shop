@@ -1704,7 +1704,7 @@ const Admin = () => {
                             <p className="text-[10px] font-medium text-muted-foreground mb-2">Preview:</p>
                             <div className="rounded-xl border border-border bg-[hsl(0,0%,100%)] p-4">
                               <p className="text-xs font-bold text-[hsl(220,20%,20%)] mb-2">Assunto: {template.subject}</p>
-                              <div className="text-xs text-[hsl(220,10%,40%)] leading-relaxed" dangerouslySetInnerHTML={{ __html: template.body_html.replace(/\{\{nome\}\}/g, "João Silva").replace(/\{\{pedido_id\}\}/g, "ABC123").replace(/\{\{valor\}\}/g, "59.90").replace(/\{\{link_pedido\}\}/g, "#").replace(/\{\{metodo_pagamento\}\}/g, "Pix").replace(/\{\{link_recuperacao\}\}/g, "#") }} />
+                              <div className="text-xs text-[hsl(220,10%,40%)] leading-relaxed" dangerouslySetInnerHTML={{ __html: template.body_html.replace(/\{\{nome\}\}/g, "João Silva").replace(/\{\{pedido_id\}\}/g, "ABC123").replace(/\{\{valor\}\}/g, "59.90").replace(/\{\{link_pedido\}\}/g, "#").replace(/\{\{metodo_pagamento\}\}/g, "Pix").replace(/\{\{link_recuperacao\}\}/g, "#").replace(/\{\{link_loja\}\}/g, "#") }} />
                             </div>
                           </div>
                         )}
