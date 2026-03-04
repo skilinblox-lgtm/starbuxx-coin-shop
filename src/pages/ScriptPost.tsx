@@ -300,22 +300,31 @@ const ScriptPost = () => {
                         <Download className="h-3.5 w-3.5" /> .lua
                       </button>
                     </div>
-                  </div>
+                   </div>
                   {/* Code area */}
-                  <div className="p-4 overflow-x-auto max-h-80 overflow-y-auto">
-                    <div className="flex gap-4">
-                      {/* Line numbers */}
-                      <div className="flex flex-col text-right font-mono text-[10px] text-[hsl(var(--success))]/25 select-none leading-[1.6]">
-                        {post.script_code.split('\n').map((_: string, i: number) => (
-                          <span key={i}>{i + 1}</span>
-                        ))}
+                  {currentUser ? (
+                    <div className="p-4 overflow-x-auto max-h-80 overflow-y-auto">
+                      <div className="flex gap-4">
+                        <div className="flex flex-col text-right font-mono text-[10px] text-[hsl(var(--success))]/25 select-none leading-[1.6]">
+                          {post.script_code.split('\n').map((_: string, i: number) => (
+                            <span key={i}>{i + 1}</span>
+                          ))}
+                        </div>
+                        <pre className="flex-1 text-xs font-mono text-[hsl(var(--success))]/80 whitespace-pre-wrap break-all leading-[1.6]">
+                          <code>{post.script_code}</code>
+                        </pre>
                       </div>
-                      {/* Code */}
-                      <pre className="flex-1 text-xs font-mono text-[hsl(var(--success))]/80 whitespace-pre-wrap break-all leading-[1.6]">
-                        <code>{post.script_code}</code>
-                      </pre>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="p-6 flex flex-col items-center justify-center text-center gap-3">
+                      <Shield className="h-8 w-8 text-[hsl(var(--success))]/40" />
+                      <p className="text-sm font-bold text-[hsl(var(--success))]/80">Crie uma conta para acessar o script</p>
+                      <p className="text-xs text-muted-foreground">Faça login ou crie sua conta gratuitamente para copiar e baixar scripts.</p>
+                      <Link to="/auth" className="mt-1 flex items-center gap-2 rounded-xl bg-[hsl(var(--success))]/15 border border-[hsl(var(--success))]/30 px-5 py-2.5 text-xs font-bold text-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/25 transition-all">
+                        <User className="h-4 w-4" /> Criar Conta / Login
+                      </Link>
+                    </div>
+                  )}
                   {/* Footer status bar */}
                   <div className="flex items-center justify-between border-t border-[hsl(var(--success))]/10 bg-[hsl(220,15%,6%)] px-4 py-2">
                     <span className="flex items-center gap-1.5 text-[10px] text-[hsl(var(--success))]/40 font-mono">
