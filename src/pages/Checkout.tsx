@@ -108,7 +108,7 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(150,25%,7%)] via-[hsl(150,25%,5%)] to-[hsl(150,25%,4%)]">
       {/* Top nav */}
-      <nav className="border-b border-white/5 bg-[hsl(220,20%,8%)]/80 backdrop-blur-xl">
+      <nav className="border-b border-white/5 bg-[hsl(150,25%,6%)]/80 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
           <Link to="/" className="flex items-center gap-1.5">
             <span className="font-heading text-lg font-bold text-white">Star<span className="text-gradient-gold">Buxx</span></span>
