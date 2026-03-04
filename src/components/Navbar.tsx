@@ -61,7 +61,7 @@ const Navbar = () => {
           {user ? (
             <>
               <Link to="/my-orders" className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2 ${
-                scrolled ? "border-border text-foreground hover:bg-muted" : "border-[hsl(150,15%,22%)] text-[hsl(0,0%,100%)] hover:bg-[hsl(150,15%,15%)]"
+                scrolled ? "border-border text-foreground hover:bg-muted" : "border-[hsl(220,15%,25%)] text-[hsl(0,0%,100%)] hover:bg-[hsl(220,15%,18%)]"
               }`}>
                 <ShoppingBag className="h-4 w-4" /> Pedidos
               </Link>
