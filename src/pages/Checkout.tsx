@@ -19,11 +19,19 @@ const Checkout = () => {
   } | null;
 
   const isRobux = order?.gameId?.toLowerCase() === "roblox" || order?.gameId?.toLowerCase().includes("robux");
+  const isBrainrot = order?.gameId?.toLowerCase() === "brainrot";
 
   const STEPS = isRobux
     ? [
         { id: 1, label: "Dados", icon: User },
         { id: 2, label: "Gamepass", icon: Gamepad2 },
+        { id: 3, label: "Pagamento", icon: CreditCard },
+        { id: 4, label: "Confirmar", icon: CheckCircle },
+      ]
+    : isBrainrot
+    ? [
+        { id: 1, label: "Dados", icon: User },
+        { id: 2, label: "Entrega", icon: Truck },
         { id: 3, label: "Pagamento", icon: CreditCard },
         { id: 4, label: "Confirmar", icon: CheckCircle },
       ]
