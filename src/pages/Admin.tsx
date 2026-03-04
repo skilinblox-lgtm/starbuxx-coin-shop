@@ -83,6 +83,10 @@ const Admin = () => {
   const [newBlogImage, setNewBlogImage] = useState<File | null>(null);
   const [editBlogImage, setEditBlogImage] = useState<File | null>(null);
 
+  // Settings
+  const [robuxPrice, setRobuxPrice] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession();
