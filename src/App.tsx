@@ -16,6 +16,7 @@ import ProductPage from "./pages/ProductPage";
 import GameCatalog from "./pages/GameCatalog";
 import Brainrot from "./pages/Brainrot";
 import Scripts from "./pages/Scripts";
+import ScriptPost from "./pages/ScriptPost";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
