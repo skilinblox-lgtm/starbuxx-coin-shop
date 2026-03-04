@@ -929,6 +929,7 @@ const Admin = () => {
                               rarity: post.rarity || "common",
                               stock: String(post.stock ?? 0),
                               tags: post.tags || [],
+                              special_flags: post.special_flags || [],
                             });
                           }} className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
                             <Edit2 className="h-3 w-3" /> Editar
