@@ -71,6 +71,7 @@ const Admin = () => {
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
   const [editBrainrotPrice, setEditBrainrotPrice] = useState("");
+  const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -219,6 +220,14 @@ const Admin = () => {
         rarity: newBrainrot.rarity,
       } as any).select().single();
       if (error) throw error;
+      // Upload image if provided
+      if (newBrainrotImage && data) {
+        const ext = newBrainrotImage.name.split(".").pop();
+        const path = `${data.id}.${ext}`;
+        await supabase.storage.from("brainrot-images").upload(path, newBrainrotImage, { upsert: true });
+        const { data: { publicUrl } } = supabase.storage.from("brainrot-images").getPublicUrl(path);
+        await supabase.from("brainrot_posts").update({ image_url: publicUrl }).eq("id", data.id);
+      }
       // Add initial price history
       await supabase.from("brainrot_price_history").insert({
         brainrot_id: data.id,
@@ -226,6 +235,7 @@ const Admin = () => {
       });
       toast.success("Brainrot publicado!");
       setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common" });
+      setNewBrainrotImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
   };
@@ -262,20 +272,21 @@ const Admin = () => {
 
   const getRarityStyle = (rarity: string) => {
     const styles: Record<string, string> = {
-      common: "bg-[hsl(140,40%,20%)] text-[hsl(140,60%,65%)]",
-      uncommon: "bg-[hsl(210,40%,20%)] text-[hsl(210,70%,65%)]",
-      rare: "bg-[hsl(270,40%,20%)] text-[hsl(270,70%,70%)]",
-      epic: "bg-[hsl(25,50%,20%)] text-[hsl(25,80%,65%)]",
+      common: "bg-[hsl(0,0%,25%)] text-[hsl(0,0%,75%)]",
+      rare: "bg-[hsl(210,50%,20%)] text-[hsl(210,80%,65%)]",
+      epic: "bg-[hsl(270,50%,20%)] text-[hsl(270,70%,70%)]",
       legendary: "bg-[hsl(45,50%,18%)] text-[hsl(45,100%,60%)]",
-      mythic: "bg-[hsl(0,40%,20%)] text-[hsl(0,70%,65%)]",
+      gold: "bg-[hsl(38,60%,18%)] text-[hsl(38,90%,55%)]",
+      secret: "bg-[hsl(180,50%,15%)] text-[hsl(180,80%,60%)]",
+      divine: "bg-[hsl(330,50%,18%)] text-[hsl(330,80%,65%)]",
     };
     return styles[rarity] || styles.common;
   };
 
   const getRarityLabel = (rarity: string) => {
     const labels: Record<string, string> = {
-      common: "🟢 Comum", uncommon: "🔵 Incomum", rare: "🟣 Raro",
-      epic: "🟠 Épico", legendary: "🟡 Lendário", mythic: "🔴 Mítico",
+      common: "⚪ Comum", rare: "🔵 Raro", epic: "🟣 Épico",
+      legendary: "🟡 Lendário", gold: "✨ Ouro", secret: "🔮 Secreto", divine: "💎 Divino",
     };
     return labels[rarity] || labels.common;
   };
@@ -597,18 +608,25 @@ const Admin = () => {
                     placeholder="Preço inicial (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <select value={newBrainrot.rarity} onChange={e => setNewBrainrot(p => ({ ...p, rarity: e.target.value }))}
                     className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
-                    <option value="common">🟢 Comum</option>
-                    <option value="uncommon">🔵 Incomum</option>
-                    <option value="rare">🟣 Raro</option>
-                    <option value="epic">🟠 Épico</option>
+                    <option value="common">⚪ Comum</option>
+                    <option value="rare">🔵 Raro</option>
+                    <option value="epic">🟣 Épico</option>
                     <option value="legendary">🟡 Lendário</option>
-                    <option value="mythic">🔴 Mítico</option>
+                    <option value="gold">✨ Ouro</option>
+                    <option value="secret">🔮 Secreto</option>
+                    <option value="divine">💎 Divino</option>
                   </select>
                 </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
                   placeholder="Descrição (opcional)" rows={2}
                   className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
-                <button onClick={createBrainrot} className="mt-3 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground">Publicar</button>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
+                    <Upload className="h-4 w-4" /> {newBrainrotImage ? newBrainrotImage.name : "Imagem do brainrot"}
+                    <input type="file" accept="image/*" className="hidden" onChange={e => setNewBrainrotImage(e.target.files?.[0] || null)} />
+                  </label>
+                  <button onClick={createBrainrot} className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground">Publicar</button>
+                </div>
               </div>
 
               {/* List */}

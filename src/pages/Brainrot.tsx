@@ -12,20 +12,21 @@ import PageTransition from "@/components/PageTransition";
 
 const getBrainrotRarityStyle = (rarity: string) => {
   const styles: Record<string, string> = {
-    common: "bg-[hsl(140,40%,20%)] text-[hsl(140,60%,65%)]",
-    uncommon: "bg-[hsl(210,40%,20%)] text-[hsl(210,70%,65%)]",
-    rare: "bg-[hsl(270,40%,20%)] text-[hsl(270,70%,70%)]",
-    epic: "bg-[hsl(25,50%,20%)] text-[hsl(25,80%,65%)]",
+    common: "bg-[hsl(0,0%,25%)] text-[hsl(0,0%,75%)]",
+    rare: "bg-[hsl(210,50%,20%)] text-[hsl(210,80%,65%)]",
+    epic: "bg-[hsl(270,50%,20%)] text-[hsl(270,70%,70%)]",
     legendary: "bg-[hsl(45,50%,18%)] text-[hsl(45,100%,60%)]",
-    mythic: "bg-[hsl(0,40%,20%)] text-[hsl(0,70%,65%)]",
+    gold: "bg-[hsl(38,60%,18%)] text-[hsl(38,90%,55%)]",
+    secret: "bg-[hsl(180,50%,15%)] text-[hsl(180,80%,60%)]",
+    divine: "bg-[hsl(330,50%,18%)] text-[hsl(330,80%,65%)]",
   };
   return styles[rarity] || styles.common;
 };
 
 const getBrainrotRarityLabel = (rarity: string) => {
   const labels: Record<string, string> = {
-    common: "Comum", uncommon: "Incomum", rare: "Raro",
-    epic: "Épico", legendary: "Lendário", mythic: "Mítico",
+    common: "⚪ Comum", rare: "🔵 Raro", epic: "🟣 Épico",
+    legendary: "🟡 Lendário", gold: "✨ Ouro", secret: "🔮 Secreto", divine: "💎 Divino",
   };
   return labels[rarity] || labels.common;
 };
