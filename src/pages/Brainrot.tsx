@@ -197,9 +197,9 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
         className="w-full max-w-lg overflow-hidden rounded-t-3xl border border-border bg-card shadow-2xl sm:max-h-[90vh] sm:rounded-3xl"
       >
         {/* Header image */}
-        <div className="relative h-48 overflow-hidden bg-muted sm:h-56">
+        <div className="relative h-56 overflow-hidden bg-muted sm:h-64">
           {post.image_url ? (
-            <img src={post.image_url} alt={post.title} className="h-full w-full object-cover" />
+            <img src={post.image_url} alt={post.title} className="h-full w-full object-contain bg-gradient-to-br from-muted to-background p-3" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-background text-7xl">🧠</div>
           )}
