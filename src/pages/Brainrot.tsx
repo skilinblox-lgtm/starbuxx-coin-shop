@@ -170,7 +170,7 @@ const Brainrot = () => {
 };
 
 // ── Card Component ──
-const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onClick: () => void }) => {
+const BrainrotCard = ({ post, index, onClick, flags }: { post: any; index: number; onClick: () => void; flags: any[] }) => {
   const { behavior } = useMemo(() => generateFakeChart(Number(post.current_price), post.id), [post.id, post.current_price]);
   const postTags: string[] = post.tags || [];
 
