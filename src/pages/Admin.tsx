@@ -368,7 +368,7 @@ const Admin = () => {
         await supabase.from("blog_posts").update({ image_url: publicUrl } as any).eq("id", data.id);
       }
       toast.success("Post publicado!");
-      setNewBlog({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot" });
+      setNewBlog({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot", has_key: false, executors_compatible: [] });
       setNewBlogImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
