@@ -76,9 +76,9 @@ const Admin = () => {
 
   // Blog
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
-  const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script" });
+  const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot" });
   const [editingBlog, setEditingBlog] = useState<string | null>(null);
-  const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script" });
+  const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "" });
   const [newBlogImage, setNewBlogImage] = useState<File | null>(null);
 
   useEffect(() => {
