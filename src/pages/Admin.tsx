@@ -5,6 +5,7 @@ import {
   ArrowLeft, Truck, Shield, UserPlus, Send, Bot, Edit2, Save, X,
   Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2
 } from "lucide-react";
+import RarityBadge, { RARITY_CONFIG } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -270,26 +271,7 @@ const Admin = () => {
     toast.success("Brainrot removido!"); fetchAll();
   };
 
-  const getRarityStyle = (rarity: string) => {
-    const styles: Record<string, string> = {
-      common: "bg-[hsl(0,0%,25%)] text-[hsl(0,0%,75%)]",
-      rare: "bg-[hsl(210,50%,20%)] text-[hsl(210,80%,65%)]",
-      epic: "bg-[hsl(270,50%,20%)] text-[hsl(270,70%,70%)]",
-      legendary: "bg-[hsl(45,50%,18%)] text-[hsl(45,100%,60%)]",
-      gold: "bg-[hsl(38,60%,18%)] text-[hsl(38,90%,55%)]",
-      secret: "bg-[hsl(180,50%,15%)] text-[hsl(180,80%,60%)]",
-      divine: "bg-[hsl(330,50%,18%)] text-[hsl(330,80%,65%)]",
-    };
-    return styles[rarity] || styles.common;
-  };
-
-  const getRarityLabel = (rarity: string) => {
-    const labels: Record<string, string> = {
-      common: "⚪ Comum", rare: "🔵 Raro", epic: "🟣 Épico",
-      legendary: "🟡 Lendário", gold: "✨ Ouro", secret: "🔮 Secreto", divine: "💎 Divino",
-    };
-    return labels[rarity] || labels.common;
-  };
+  // Rarity helpers removed - using RarityBadge component instead
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center bg-dark">
@@ -608,13 +590,9 @@ const Admin = () => {
                     placeholder="Preço inicial (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <select value={newBrainrot.rarity} onChange={e => setNewBrainrot(p => ({ ...p, rarity: e.target.value }))}
                     className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
-                    <option value="common">⚪ Comum</option>
-                    <option value="rare">🔵 Raro</option>
-                    <option value="epic">🟣 Épico</option>
-                    <option value="legendary">🟡 Lendário</option>
-                    <option value="gold">✨ Ouro</option>
-                    <option value="secret">🔮 Secreto</option>
-                    <option value="divine">💎 Divino</option>
+                    {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
+                      <option key={key} value={key}>{cfg.label}</option>
+                    ))}
                   </select>
                 </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
@@ -642,9 +620,7 @@ const Admin = () => {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
                         <div className="mt-0.5 flex items-center gap-2">
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getRarityStyle(post.rarity || 'common')}`}>
-                            {getRarityLabel(post.rarity || 'common')}
-                          </span>
+                          <RarityBadge rarity={post.rarity || 'common'} />
                           <span className="text-xs text-muted-foreground">{post.description?.slice(0, 40) || "Sem descrição"}</span>
                         </div>
                         <div className="mt-1 flex items-center gap-2">
