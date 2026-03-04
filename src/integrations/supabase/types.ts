@@ -14,36 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_comments: {
+        Row: {
+          author_name: string
+          comment: string
+          created_at: string
+          id: string
+          post_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          comment: string
+          created_at?: string
+          id?: string
+          post_id: string
+          rating?: number
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          comment?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
+          author: string | null
           category: string
           content: string
           created_at: string
+          game_compatible: string | null
           id: string
           image_url: string | null
           published: boolean
+          script_code: string | null
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
+          author?: string | null
           category?: string
           content: string
           created_at?: string
+          game_compatible?: string | null
           id?: string
           image_url?: string | null
           published?: boolean
+          script_code?: string | null
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
+          author?: string | null
           category?: string
           content?: string
           created_at?: string
+          game_compatible?: string | null
           id?: string
           image_url?: string | null
           published?: boolean
+          script_code?: string | null
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
