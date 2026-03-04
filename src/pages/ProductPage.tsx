@@ -165,9 +165,9 @@ const ProductPage = () => {
                   { icon: Clock, label: "Entrega Rápida" },
                   { icon: Award, label: "Garantia Total" },
                 ].map(b => (
-                  <div key={b.label} className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-card p-3 text-center shadow-[var(--shadow-card)]">
-                    <b.icon className="h-5 w-5 text-primary" />
-                    <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">{b.label}</span>
+                  <div key={b.label} className="flex flex-col items-center gap-1.5 rounded-xl border border-[hsl(140,60%,45%)]/30 bg-[hsl(140,60%,45%)]/5 p-3 text-center">
+                    <b.icon className="h-5 w-5 text-[hsl(140,60%,45%)]" />
+                    <span className="text-[10px] font-medium text-[hsl(140,60%,45%)] sm:text-xs">{b.label}</span>
                   </div>
                 ))}
               </div>
