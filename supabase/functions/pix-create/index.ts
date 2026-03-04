@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        value: Number(order.total_price),
+        amount: Number(order.total_price),
         webhookUrl,
         externalId: orderId,
       }),
