@@ -242,7 +242,7 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
         )}
         <div className="mt-2 flex items-center justify-between">
           <div>
-            <span className="text-lg font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</span>
+            <span className="text-lg font-bold text-price">R$ {Number(post.current_price).toFixed(2)}</span>
             {isDropping && (
               <span className="ml-1.5 text-xs text-muted-foreground line-through">
                 R$ {(Number(post.current_price) * (1 + fakeDiscount / 100)).toFixed(2)}
