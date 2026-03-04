@@ -352,14 +352,42 @@ const Admin = () => {
   };
 
   const deleteBlogPost = async (id: string) => {
-    await supabase.from("blog_posts").delete().eq("id", id);
-    toast.success("Post removido!"); fetchAll();
+    if (!confirm("Tem certeza que deseja excluir este post permanentemente?")) return;
+    try {
+      await supabase.from("blog_comments").delete().eq("post_id", id);
+      await supabase.from("blog_posts").delete().eq("id", id);
+      toast.success("Post removido!"); fetchAll();
+    } catch (e: any) { toast.error(e.message); }
   };
 
-  const toggleBlogPublished = async (id: string, published: boolean) => {
-    await supabase.from("blog_posts").update({ published: !published } as any).eq("id", id);
-    toast.success(published ? "Post despublicado" : "Post publicado!");
-    fetchAll();
+  const deleteBlogImage = async (id: string) => {
+    try {
+      await supabase.from("blog_posts").update({ image_url: null } as any).eq("id", id);
+      toast.success("Imagem removida!");
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const uploadBlogImage = async (postId: string, file: File) => {
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `blog-${postId}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
+      await supabase.from("blog_posts").update({ image_url: publicUrl } as any).eq("id", postId);
+      toast.success("Imagem atualizada!");
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const deleteBlogComment = async (id: string) => {
+    try {
+      await supabase.from("blog_comments").delete().eq("id", id);
+      toast.success("Comentário removido!");
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
   };
 
   // Rarity helpers removed - using RarityBadge component instead
