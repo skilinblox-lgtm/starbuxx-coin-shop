@@ -330,7 +330,7 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
           )}
 
           <div className="mt-3 flex items-end gap-3">
-            <span className="text-3xl font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</span>
+            <span className="text-3xl font-bold text-price">R$ {Number(post.current_price).toFixed(2)}</span>
             {isDropping && <span className="mb-1 text-sm text-muted-foreground line-through">R$ {peakPrice.toFixed(2)}</span>}
           </div>
 
