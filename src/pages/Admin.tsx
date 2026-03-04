@@ -837,21 +837,22 @@ const Admin = () => {
                 <div className="mt-3">
                   <p className="text-xs font-bold text-muted-foreground mb-1.5">Bandeiras especiais (exibidas ao lado do nome)</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {Object.entries(SPECIAL_FLAGS).map(([key, cfg]) => (
-                      <button key={key} type="button"
+                    {brainrotFlags.map((flag: any) => (
+                      <button key={flag.id} type="button"
                         onClick={() => setNewBrainrot(p => ({
                           ...p,
-                          special_flags: p.special_flags.includes(key) ? p.special_flags.filter(t => t !== key) : [...p.special_flags, key]
+                          special_flags: p.special_flags.includes(flag.id) ? p.special_flags.filter(t => t !== flag.id) : [...p.special_flags, flag.id]
                         }))}
                         className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-bold transition-all ${
-                          newBrainrot.special_flags.includes(key)
+                          newBrainrot.special_flags.includes(flag.id)
                             ? "border-primary bg-primary/15 text-primary"
                             : "border-border bg-surface text-muted-foreground hover:border-primary/30"
                         }`}
                       >
-                        <span className="text-sm">{cfg.emoji}</span> {cfg.label}
+                        <img src={flag.image_url} alt={flag.name} className="h-4 w-4 object-contain" /> {flag.name}
                       </button>
                     ))}
+                    {brainrotFlags.length === 0 && <span className="text-[10px] text-muted-foreground">Nenhuma bandeira criada. Crie abaixo na seção de bandeiras.</span>}
                   </div>
                 </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
