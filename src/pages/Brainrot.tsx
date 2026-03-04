@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { TrendingDown, TrendingUp, Minus, BarChart3, ShoppingCart, Clock, Flame, Zap, ArrowRight, X, AlertTriangle, Star } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus, BarChart3, ShoppingCart, Clock, Flame, Zap, ArrowRight, X, AlertTriangle, Star, Brain } from "lucide-react";
 import RarityBadge, { RARITY_CONFIG } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -215,7 +215,7 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
         {post.image_url ? (
           <img src={post.image_url} alt={post.title} className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-105" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-5xl">🧠</div>
+          <div className="flex h-full w-full items-center justify-center"><Brain className="h-12 w-12 text-muted-foreground" /></div>
         )}
         <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
           <RarityBadge rarity={post.rarity || "common"} />
@@ -304,7 +304,7 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
           {post.image_url ? (
             <img src={post.image_url} alt={post.title} className="h-full w-full object-contain p-3" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-7xl">🧠</div>
+            <div className="flex h-full w-full items-center justify-center"><Brain className="h-16 w-16 text-muted-foreground" /></div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
           <button onClick={onClose} className="absolute right-3 top-3 rounded-full bg-black/40 p-1.5 backdrop-blur-sm hover:bg-black/60">

@@ -48,10 +48,11 @@ const HeroBanner = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-8 w-full max-w-md overflow-hidden rounded-2xl border border-border/30 shadow-2xl sm:mt-0"
+          className="mt-8 w-full max-w-lg overflow-hidden rounded-2xl border border-border/30 shadow-2xl sm:mt-0"
         >
           <video
             className="aspect-video w-full object-cover"
+            style={{ minHeight: "280px" }}
             autoPlay
             muted
             playsInline

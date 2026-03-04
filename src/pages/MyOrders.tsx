@@ -105,7 +105,7 @@ const MyOrders = () => {
   const sendGamepassLink = async (orderId: string) => {
     if (!gamepassLink.trim() || !userId) return;
     if (!gamepassLink.includes("roblox.com")) { toast.error("Cole um link válido do Roblox"); return; }
-    await supabase.from("chat_messages").insert({ order_id: orderId, sender_id: userId, sender_role: "customer", message: `🎮 Link do Gamepass: ${gamepassLink.trim()}` });
+    await supabase.from("chat_messages").insert({ order_id: orderId, sender_id: userId, sender_role: "customer", message: `Link do Gamepass: ${gamepassLink.trim()}` });
     toast.success("Link enviado! Aguarde o pagamento.");
     setGamepassLink("");
   };

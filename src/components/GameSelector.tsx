@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, Coins } from "lucide-react";
+import { useRobuxPricing } from "@/hooks/useRobuxPricing";
 import iconRoblox from "@/assets/icon-roblox.png";
 import iconClash from "@/assets/icon-clash-royale.png";
 import iconBrawl from "@/assets/icon-brawl-stars.png";
@@ -14,23 +13,7 @@ const GAMES = [
 ];
 
 const GameSelector = () => {
-  const [prices, setPrices] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchPrices = async () => {
-      const { data } = await supabase
-        .from("products").select("game_id, price_per_unit").eq("active", true);
-      const mins: Record<string, number> = {};
-      (data || []).forEach(p => {
-        const price = Number(p.price_per_unit);
-        if (!mins[p.game_id] || price < mins[p.game_id]) mins[p.game_id] = price;
-      });
-      setPrices(mins);
-      setLoading(false);
-    };
-    fetchPrices();
-  }, []);
+  const { ratePer1000, loading } = useRobuxPricing();
 
   return (
     <section id="jogos" className="bg-card py-12 sm:py-20">
@@ -56,7 +39,7 @@ const GameSelector = () => {
         ) : (
           <div className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-3">
             {GAMES.map((game, i) => {
-              const minPrice = prices[game.id];
+              const minPrice = game.id === "roblox" ? ratePer1000 / 1000 : undefined;
               return (
                 <motion.div
                   key={game.id}
@@ -73,13 +56,14 @@ const GameSelector = () => {
                       src={game.icon}
                       alt={game.name}
                       className="h-16 w-16 object-contain transition-transform group-hover:scale-110 sm:h-20 sm:w-20"
+                      loading="lazy"
                     />
                     <h3 className="mt-4 font-heading text-base font-bold sm:text-lg">{game.name}</h3>
                     <p className="mt-1 text-xs text-muted-foreground">{game.desc}</p>
                     <div className="mt-3 flex items-center gap-1.5">
                       <Coins className="h-4 w-4 text-primary" />
                       <span className="text-sm font-bold text-gradient-gold">
-                        {minPrice ? `A partir de R$ ${minPrice.toFixed(2)}` : "—"}
+                        {minPrice ? `A partir de R$ ${minPrice.toFixed(2)}` : "Ver preços"}
                       </span>
                     </div>
                     <div className="mt-4 flex items-center gap-1.5 rounded-full bg-[hsl(var(--success))]/10 px-3 py-1.5 text-xs font-bold text-[hsl(var(--success))]">

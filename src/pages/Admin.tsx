@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Package, ShoppingCart, Users, MessageSquare, DollarSign,
   ArrowLeft, Truck, Shield, UserPlus, Send, Bot, Edit2, Save, X,
-  Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2, Star, FileText
+  Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2, Star, FileText, Settings
 } from "lucide-react";
 import RarityBadge, { RARITY_CONFIG } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 
-type Tab = "dashboard" | "products" | "deliveries" | "moderation" | "earnings" | "moderators" | "brainrot" | "blog";
+type Tab = "dashboard" | "products" | "deliveries" | "moderation" | "earnings" | "moderators" | "brainrot" | "blog" | "settings";
 
 const statusOptions = [
   { value: "aguardando_pagamento", label: "Aguardando", color: "hsl(45, 100%, 51%)" },
@@ -83,6 +83,10 @@ const Admin = () => {
   const [newBlogImage, setNewBlogImage] = useState<File | null>(null);
   const [editBlogImage, setEditBlogImage] = useState<File | null>(null);
 
+  // Settings
+  const [robuxPrice, setRobuxPrice] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -93,6 +97,7 @@ const Admin = () => {
       setIsAdmin(true);
       setLoading(false);
       fetchAll();
+      fetchSettings();
     };
     checkAdmin();
   }, [navigate]);
@@ -119,6 +124,22 @@ const Admin = () => {
     setBlogPosts(bl.data || []);
     setBlogComments(bc.data || []);
   }, []);
+
+  const fetchSettings = async () => {
+    const { data } = await supabase.from("site_settings").select("*").eq("key", "robux_price_per_1000").single();
+    if (data) setRobuxPrice(data.value);
+  };
+
+  const saveRobuxPrice = async () => {
+    if (!robuxPrice) return;
+    setSavingSettings(true);
+    try {
+      const { error } = await supabase.from("site_settings").update({ value: robuxPrice, updated_at: new Date().toISOString() } as any).eq("key", "robux_price_per_1000");
+      if (error) throw error;
+      toast.success("Valor do Robux atualizado! Todos os preços foram sincronizados.");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setSavingSettings(false); }
+  };
 
   // Chat realtime subscription
   useEffect(() => {
@@ -454,6 +475,7 @@ const Admin = () => {
     { id: "moderation" as Tab, label: "Moderação", icon: Shield },
     { id: "earnings" as Tab, label: "Ganhos", icon: DollarSign },
     { id: "moderators" as Tab, label: "Moderadores", icon: UserPlus },
+    { id: "settings" as Tab, label: "Configurações", icon: Settings },
   ];
 
   const getProfileName = (userId: string) => {
@@ -813,7 +835,7 @@ const Admin = () => {
                         {post.image_url ? (
                           <img src={post.image_url} alt={post.title} className="h-14 w-14 rounded-xl object-cover sm:h-16 sm:w-16" />
                         ) : (
-                          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-2xl sm:h-16 sm:w-16">🧠</div>
+                          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface sm:h-16 sm:w-16"><Brain className="h-6 w-6 text-muted-foreground" /></div>
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
@@ -1052,7 +1074,7 @@ const Admin = () => {
                           <p className="text-sm font-bold">{r.author_name}</p>
                           {r.is_fake && <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">Fake</span>}
                         </div>
-                        <p className="text-xs text-muted-foreground">{r.game_id} • {"⭐".repeat(r.rating)}</p>
+                        <p className="text-xs text-muted-foreground">{r.game_id} • <span className="flex items-center gap-0.5 inline-flex">{Array.from({length: r.rating}).map((_, i) => <Star key={i} className="h-3 w-3 fill-primary text-primary" />)}</span></p>
                         <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{r.comment}</p>
                       </div>
                       <button onClick={() => deleteReview(r.id)} className="flex-shrink-0 text-xs text-destructive hover:underline">Remover</button>
@@ -1179,6 +1201,52 @@ const Admin = () => {
               </div>
             </div>
           )}
+
+          {/* ====== SETTINGS ====== */}
+          {tab === "settings" && (
+            <div className="space-y-6">
+              <h2 className="font-heading text-lg font-bold sm:text-xl">Configurações</h2>
+
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <h3 className="flex items-center gap-2 text-sm font-bold sm:text-base">
+                  <Settings className="h-4 w-4 text-primary" /> Precificação Universal de Robux
+                </h3>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Defina o valor em reais para cada 1.000 Robux. Todos os preços de produtos Roblox (Robux, Gamepass, Frutas) serão calculados automaticamente com base neste valor.
+                </p>
+                <div className="mt-4 flex items-end gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Valor por 1.000 Robux (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={robuxPrice}
+                      onChange={e => setRobuxPrice(e.target.value)}
+                      placeholder="37.00"
+                      className="mt-1 block w-48 rounded-xl border border-border bg-surface px-4 py-2.5 text-lg font-bold text-foreground outline-none focus:border-primary"
+                    />
+                  </div>
+                  <button
+                    onClick={saveRobuxPrice}
+                    disabled={savingSettings}
+                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+                  >
+                    {savingSettings ? "Salvando..." : "Salvar"}
+                  </button>
+                </div>
+                <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground">
+                  <p><strong className="text-foreground">Exemplo:</strong> Se você definir R$ {robuxPrice || "37.00"} por 1.000 Robux:</p>
+                  <ul className="mt-1 space-y-0.5 ml-3 list-disc">
+                    <li>1 Robux = R$ {(parseFloat(robuxPrice || "37") / 1000).toFixed(4)}</li>
+                    <li>1.000 Robux = R$ {parseFloat(robuxPrice || "37").toFixed(2)}</li>
+                    <li>2.000 Robux = R$ {(parseFloat(robuxPrice || "37") * 2).toFixed(2)}</li>
+                    <li>5.000 Robux = R$ {(parseFloat(robuxPrice || "37") * 5).toFixed(2)}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
         </motion.div>
       </div>
     </div>
