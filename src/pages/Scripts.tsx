@@ -7,6 +7,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
+import iconBrainrot from "@/assets/icon-brainrot-game.png";
+import iconBloxFruits from "@/assets/icon-bloxfruits-game.png";
+
+const GAME_ICONS: Record<string, string> = {
+  "Steal a Brainrot": iconBrainrot,
+  "Blox Fruits": iconBloxFruits,
+};
 
 const Scripts = () => {
   const [posts, setPosts] = useState<any[]>([]);
