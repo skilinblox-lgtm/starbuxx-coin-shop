@@ -74,6 +74,13 @@ const Admin = () => {
   const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[] });
   const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
 
+  // Blog
+  const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script" });
+  const [editingBlog, setEditingBlog] = useState<string | null>(null);
+  const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script" });
+  const [newBlogImage, setNewBlogImage] = useState<File | null>(null);
+
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession();
