@@ -484,15 +484,18 @@ const ScriptPost = () => {
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}
                 className="rounded-2xl border border-border bg-card p-4">
                 <h3 className="flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground tracking-wider">
-                  <CheckCircle className="h-3.5 w-3.5 text-[hsl(var(--success))]" /> Testado Com
+                  <CheckCircle className="h-3.5 w-3.5 text-[hsl(var(--success))]" /> Executores Compatíveis
                 </h3>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {["Delta", "Volcano"].map(exec => (
+                  {(post.executors_compatible?.length > 0 ? post.executors_compatible : ["Delta", "Volcano"]).map((exec: string) => (
                     <span key={exec} className="inline-flex items-center gap-1.5 rounded-lg border border-[hsl(var(--success))]/20 bg-[hsl(var(--success))]/5 px-3 py-1.5 text-xs font-medium text-[hsl(var(--success))]">
                       <Zap className="h-3 w-3" /> {exec}
                     </span>
                   ))}
                 </div>
+                <p className="mt-2 text-[10px] text-muted-foreground">
+                  <Wifi className="mr-1 inline h-3 w-3 text-[hsl(var(--success))]" /> Testado e atualizado pela equipe StarBuxx
+                </p>
               </motion.div>
 
               {/* Trust badges */}
