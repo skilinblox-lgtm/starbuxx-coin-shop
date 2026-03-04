@@ -71,6 +71,10 @@ const ScriptPost = () => {
   }, [postId]);
 
   const copyScript = () => {
+    if (!currentUser) {
+      toast.error("Crie uma conta ou faça login para copiar o script!");
+      return;
+    }
     if (post?.script_code) {
       navigator.clipboard.writeText(post.script_code);
       setCopied(true);
@@ -80,6 +84,10 @@ const ScriptPost = () => {
   };
 
   const downloadScript = () => {
+    if (!currentUser) {
+      toast.error("Crie uma conta ou faça login para fazer download!");
+      return;
+    }
     if (post?.script_code) {
       const blob = new Blob([post.script_code], { type: "text/plain" });
       const url = URL.createObjectURL(blob);

@@ -63,7 +63,7 @@ const ProductPage = () => {
   // Use universal pricing for Roblox products (Robux, Gamepass, Frutas)
   const isRobloxProduct = product.game_id === "roblox";
   const effectivePricePerUnit = isRobloxProduct
-    ? ratePer1000 / 1000
+    ? (Number(product.price_per_unit) * ratePer1000 / 1000)
     : Number(product.price_per_unit);
 
   const totalPrice = (quantity * effectivePricePerUnit).toFixed(2);

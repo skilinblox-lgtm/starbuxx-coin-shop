@@ -128,7 +128,7 @@ const GameCatalog = () => {
           ) : (
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredProducts.map((product, i) => {
-                const displayPrice = isRoblox ? ratePer1000 / 1000 : Number(product.price_per_unit);
+                const displayPrice = isRoblox ? (Number(product.price_per_unit) * ratePer1000 / 1000) : Number(product.price_per_unit);
                 return (
                   <motion.div
                     key={product.id}
