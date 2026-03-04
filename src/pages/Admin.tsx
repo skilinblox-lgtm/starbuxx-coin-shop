@@ -76,10 +76,12 @@ const Admin = () => {
 
   // Blog
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [blogComments, setBlogComments] = useState<any[]>([]);
   const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot" });
   const [editingBlog, setEditingBlog] = useState<string | null>(null);
   const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "" });
   const [newBlogImage, setNewBlogImage] = useState<File | null>(null);
+  const [editBlogImage, setEditBlogImage] = useState<File | null>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -96,7 +98,7 @@ const Admin = () => {
   }, [navigate]);
 
   const fetchAll = useCallback(async () => {
-    const [o, p, r, u, roles, perms, br, bl] = await Promise.all([
+    const [o, p, r, u, roles, perms, br, bl, bc] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("name"),
       supabase.from("reviews").select("*").order("created_at", { ascending: false }),
@@ -105,6 +107,7 @@ const Admin = () => {
       supabase.from("moderator_permissions").select("*"),
       supabase.from("brainrot_posts").select("*").order("created_at", { ascending: false }),
       supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
+      supabase.from("blog_comments").select("*").order("created_at", { ascending: false }),
     ]);
     setOrders(o.data || []);
     setProducts(p.data || []);
@@ -114,6 +117,7 @@ const Admin = () => {
     setModPermissions(perms.data || []);
     setBrainrotPosts(br.data || []);
     setBlogPosts(bl.data || []);
+    setBlogComments(bc.data || []);
   }, []);
 
   // Chat realtime subscription
@@ -332,15 +336,57 @@ const Admin = () => {
         script_code: editBlogData.script_code || null, video_url: editBlogData.video_url || null,
         game_compatible: editBlogData.game_compatible || null,
       } as any).eq("id", id);
+      // Upload new image if provided
+      if (editBlogImage) {
+        const ext = editBlogImage.name.split(".").pop();
+        const path = `blog-${id}.${ext}`;
+        await supabase.storage.from("product-images").upload(path, editBlogImage, { upsert: true });
+        const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
+        await supabase.from("blog_posts").update({ image_url: publicUrl } as any).eq("id", id);
+      }
       toast.success("Post atualizado!");
       setEditingBlog(null);
+      setEditBlogImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
   };
 
   const deleteBlogPost = async (id: string) => {
-    await supabase.from("blog_posts").delete().eq("id", id);
-    toast.success("Post removido!"); fetchAll();
+    if (!confirm("Tem certeza que deseja excluir este post permanentemente?")) return;
+    try {
+      await supabase.from("blog_comments").delete().eq("post_id", id);
+      await supabase.from("blog_posts").delete().eq("id", id);
+      toast.success("Post removido!"); fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const deleteBlogImage = async (id: string) => {
+    try {
+      await supabase.from("blog_posts").update({ image_url: null } as any).eq("id", id);
+      toast.success("Imagem removida!");
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const uploadBlogImage = async (postId: string, file: File) => {
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `blog-${postId}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
+      await supabase.from("blog_posts").update({ image_url: publicUrl } as any).eq("id", postId);
+      toast.success("Imagem atualizada!");
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const deleteBlogComment = async (id: string) => {
+    try {
+      await supabase.from("blog_comments").delete().eq("id", id);
+      toast.success("Comentário removido!");
+      fetchAll();
+    } catch (e: any) { toast.error(e.message); }
   };
 
   const toggleBlogPublished = async (id: string, published: boolean) => {
@@ -883,13 +929,24 @@ const Admin = () => {
                           placeholder="Descrição" rows={3} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
                         <textarea value={editBlogData.script_code} onChange={e => setEditBlogData(p => ({ ...p, script_code: e.target.value }))}
                           placeholder="Código do Script" rows={2} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => saveBlogEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
-                            <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
-                          </button>
-                          <button onClick={() => setEditingBlog(null)} className="rounded-xl border border-border px-5 py-2 text-xs font-medium text-muted-foreground hover:bg-surface">
-                            Cancelar
-                          </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary">
+                            <Upload className="h-3.5 w-3.5" /> {editBlogImage ? editBlogImage.name : "Trocar Imagem"}
+                            <input type="file" accept="image/*" className="hidden" onChange={e => setEditBlogImage(e.target.files?.[0] || null)} />
+                          </label>
+                          {post.image_url && (
+                            <button onClick={() => deleteBlogImage(post.id)} className="flex items-center gap-1 rounded-xl border border-destructive/30 px-3 py-2 text-xs text-destructive hover:bg-destructive/10">
+                              <Trash2 className="h-3 w-3" /> Remover Imagem
+                            </button>
+                          )}
+                          <div className="ml-auto flex gap-2">
+                            <button onClick={() => { setEditingBlog(null); setEditBlogImage(null); }} className="rounded-xl border border-border px-5 py-2 text-xs font-medium text-muted-foreground hover:bg-surface">
+                              Cancelar
+                            </button>
+                            <button onClick={() => saveBlogEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
+                              <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -913,12 +970,16 @@ const Admin = () => {
                             }`}>
                             {post.published ? "Publicado" : "Rascunho"}
                           </button>
-                          <button onClick={() => { setEditingBlog(post.id); setEditBlogData({ title: post.title, content: post.content, category: post.category, script_code: post.script_code || "", video_url: post.video_url || "", game_compatible: post.game_compatible || "" }); }}
+                          <button onClick={() => { setEditingBlog(post.id); setEditBlogImage(null); setEditBlogData({ title: post.title, content: post.content, category: post.category, script_code: post.script_code || "", video_url: post.video_url || "", game_compatible: post.game_compatible || "" }); }}
                             className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
                             <Edit2 className="h-3 w-3" /> Editar
                           </button>
+                          <label className="flex cursor-pointer items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
+                            <Upload className="h-3 w-3" /> Foto
+                            <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadBlogImage(post.id, f); }} />
+                          </label>
                           <button onClick={() => deleteBlogPost(post.id)} className="flex items-center justify-center gap-1 rounded-lg border border-destructive/30 px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10">
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-3 w-3" /> Excluir
                           </button>
                         </div>
                       </div>
@@ -926,6 +987,39 @@ const Admin = () => {
                   </div>
                 ))}
                 {blogPosts.length === 0 && <EmptyState text="Nenhum post publicado ainda." />}
+              </div>
+              {/* Blog Comments Management */}
+              <div className="mt-6">
+                <h3 className="flex items-center gap-2 font-heading text-base font-bold sm:text-lg">
+                  <MessageSquare className="h-4 w-4 text-primary" /> Comentários dos Posts ({blogComments.length})
+                </h3>
+                <div className="mt-3 space-y-2">
+                  {blogComments.map(c => {
+                    const parentPost = blogPosts.find(p => p.id === c.post_id);
+                    return (
+                      <div key={c.id} className="flex items-start justify-between gap-3 rounded-2xl border border-border bg-background p-3 sm:p-4">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold">{c.author_name}</p>
+                            <div className="flex gap-0.5">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star key={i} className={`h-3 w-3 ${i < c.rating ? "fill-primary text-primary" : "text-muted-foreground/20"}`} />
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            Post: {parentPost?.title || c.post_id.slice(0, 8)} • {new Date(c.created_at).toLocaleDateString("pt-BR")}
+                          </p>
+                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{c.comment}</p>
+                        </div>
+                        <button onClick={() => deleteBlogComment(c.id)} className="flex-shrink-0 rounded-lg border border-destructive/30 px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {blogComments.length === 0 && <EmptyState text="Nenhum comentário nos posts." />}
+                </div>
               </div>
             </div>
           )}
