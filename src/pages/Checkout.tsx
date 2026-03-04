@@ -95,9 +95,9 @@ const Checkout = () => {
   };
 
   const paymentMethods = [
-    { id: "pix", label: "Pix", icon: QrCode, desc: "Aprovação instantânea", badge: "⚡ Instantâneo", badgeColor: "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" },
-    { id: "cartao", label: "Cartão de Crédito", icon: CreditCard, desc: "Visa, Mastercard, Elo e mais", badge: null, badgeColor: "" },
-    { id: "boleto", label: "Boleto Bancário", icon: Landmark, desc: "Compensação em até 3 dias úteis", badge: null, badgeColor: "" },
+    { id: "pix", label: "Pix", icon: QrCode, desc: "Aprovação instantânea", badge: "⚡ Instantâneo", badgeColor: "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]", disabled: false },
+    { id: "cartao", label: "Cartão de Crédito", icon: CreditCard, desc: "Em manutenção — disponível em breve", badge: "🔧 Manutenção", badgeColor: "bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]", disabled: true },
+    { id: "boleto", label: "Boleto Bancário", icon: Landmark, desc: "Em manutenção — disponível em breve", badge: "🔧 Manutenção", badgeColor: "bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]", disabled: true },
   ];
 
   const isPaymentStep = step === getPaymentStepIndex();
