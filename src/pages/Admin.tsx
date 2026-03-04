@@ -381,6 +381,7 @@ const Admin = () => {
         title: editBlogData.title, content: editBlogData.content, category: editBlogData.category,
         script_code: editBlogData.script_code || null, video_url: editBlogData.video_url || null,
         game_compatible: editBlogData.game_compatible || null,
+        has_key: editBlogData.has_key, executors_compatible: editBlogData.executors_compatible,
       } as any).eq("id", id);
       // Upload new image if provided
       if (editBlogImage) {
