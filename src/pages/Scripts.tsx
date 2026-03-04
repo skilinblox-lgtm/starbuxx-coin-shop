@@ -41,11 +41,20 @@ const Scripts = () => {
     { id: "tutorial", label: "Tutoriais" },
   ];
 
+  const gameFilters = [
+    { id: "all", label: "Todos os Jogos", icon: null },
+    { id: "Steal a Brainrot", label: "Brainrot", icon: iconBrainrot },
+    { id: "Blox Fruits", label: "Blox Fruits", icon: iconBloxFruits },
+  ];
+
+  const [selectedGame, setSelectedGame] = useState<string>("all");
+
   const filtered = posts.filter(p => {
     const matchSearch = p.title.toLowerCase().includes(search.toLowerCase()) ||
       p.content.toLowerCase().includes(search.toLowerCase());
     const matchCat = selectedCategory === "all" || p.category === selectedCategory;
-    return matchSearch && matchCat;
+    const matchGame = selectedGame === "all" || p.game_compatible === selectedGame;
+    return matchSearch && matchCat && matchGame;
   });
 
   return (
