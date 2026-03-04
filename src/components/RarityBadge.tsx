@@ -1,4 +1,4 @@
-import { Circle, Diamond, Flame, Crown, Coins, Eye, Sparkles, Shield } from "lucide-react";
+import { Circle, Diamond, Flame, Crown, Coins, Eye, Sparkles, Shield, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const RARITY_CONFIG: Record<string, {
@@ -7,6 +7,7 @@ export const RARITY_CONFIG: Record<string, {
   bg: string;
   text: string;
   glow?: string;
+  animate?: string;
 }> = {
   common: {
     label: "Comum",
@@ -45,23 +46,26 @@ export const RARITY_CONFIG: Record<string, {
   secret: {
     label: "Secreto",
     icon: Eye,
-    bg: "bg-[hsl(180,55%,12%)]",
-    text: "text-[hsl(180,85%,58%)]",
-    glow: "shadow-[0_0_12px_hsl(180,80%,45%,0.4)]",
+    bg: "bg-gradient-to-r from-[hsl(260,70%,14%)] via-[hsl(200,80%,14%)] to-[hsl(160,70%,14%)]",
+    text: "text-[hsl(180,100%,70%)]",
+    glow: "shadow-[0_0_16px_hsl(180,100%,50%,0.5),0_0_30px_hsl(260,80%,50%,0.2)]",
+    animate: "animate-pulse",
   },
   divine: {
     label: "Divino",
     icon: Sparkles,
-    bg: "bg-gradient-to-r from-[hsl(330,55%,16%)] to-[hsl(270,50%,18%)]",
-    text: "text-[hsl(330,85%,72%)]",
-    glow: "shadow-[0_0_14px_hsl(330,80%,55%,0.45)]",
+    bg: "bg-gradient-to-r from-[hsl(280,80%,18%)] via-[hsl(320,80%,22%)] to-[hsl(260,70%,18%)]",
+    text: "text-[hsl(300,100%,82%)]",
+    glow: "shadow-[0_0_18px_hsl(300,90%,60%,0.5),0_0_35px_hsl(280,80%,50%,0.25)]",
+    animate: "animate-pulse",
   },
   god: {
-    label: "Deus",
-    icon: Shield,
-    bg: "bg-gradient-to-r from-[hsl(45,80%,15%)] via-[hsl(30,90%,18%)] to-[hsl(0,70%,18%)]",
-    text: "text-[hsl(45,100%,70%)]",
-    glow: "shadow-[0_0_18px_hsl(45,100%,50%,0.5)]",
+    label: "Deus do Brainrot",
+    icon: Zap,
+    bg: "bg-gradient-to-r from-[hsl(0,85%,20%)] via-[hsl(35,100%,22%)] to-[hsl(55,100%,20%)]",
+    text: "text-[hsl(45,100%,80%)]",
+    glow: "shadow-[0_0_22px_hsl(45,100%,55%,0.6),0_0_44px_hsl(0,80%,50%,0.3)]",
+    animate: "animate-pulse",
   },
 };
 
@@ -78,10 +82,12 @@ const RarityBadge = ({ rarity, size = "sm", className }: RarityBadgeProps) => {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full font-bold",
+        "inline-flex items-center gap-1 rounded-full font-bold border",
         config.bg,
         config.text,
         config.glow,
+        config.animate,
+        "border-current/20",
         size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs",
         className,
       )}
