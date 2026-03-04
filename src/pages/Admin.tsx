@@ -125,6 +125,22 @@ const Admin = () => {
     setBlogComments(bc.data || []);
   }, []);
 
+  const fetchSettings = async () => {
+    const { data } = await supabase.from("site_settings").select("*").eq("key", "robux_price_per_1000").single();
+    if (data) setRobuxPrice(data.value);
+  };
+
+  const saveRobuxPrice = async () => {
+    if (!robuxPrice) return;
+    setSavingSettings(true);
+    try {
+      const { error } = await supabase.from("site_settings").update({ value: robuxPrice, updated_at: new Date().toISOString() } as any).eq("key", "robux_price_per_1000");
+      if (error) throw error;
+      toast.success("Valor do Robux atualizado! Todos os preços foram sincronizados.");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setSavingSettings(false); }
+  };
+
   // Chat realtime subscription
   useEffect(() => {
     if (!selectedOrder) return;
