@@ -1074,7 +1074,7 @@ const Admin = () => {
                           <p className="text-sm font-bold">{r.author_name}</p>
                           {r.is_fake && <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">Fake</span>}
                         </div>
-                        <p className="text-xs text-muted-foreground">{r.game_id} • {"⭐".repeat(r.rating)}</p>
+                        <p className="text-xs text-muted-foreground">{r.game_id} • <span className="flex items-center gap-0.5 inline-flex">{Array.from({length: r.rating}).map((_, i) => <Star key={i} className="h-3 w-3 fill-primary text-primary" />)}</span></p>
                         <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{r.comment}</p>
                       </div>
                       <button onClick={() => deleteReview(r.id)} className="flex-shrink-0 text-xs text-destructive hover:underline">Remover</button>
