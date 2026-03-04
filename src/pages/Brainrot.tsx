@@ -304,7 +304,7 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
           {post.image_url ? (
             <img src={post.image_url} alt={post.title} className="h-full w-full object-contain p-3" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-7xl">🧠</div>
+            <div className="flex h-full w-full items-center justify-center"><Brain className="h-16 w-16 text-muted-foreground" /></div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
           <button onClick={onClose} className="absolute right-3 top-3 rounded-full bg-black/40 p-1.5 backdrop-blur-sm hover:bg-black/60">
