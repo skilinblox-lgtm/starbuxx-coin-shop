@@ -58,7 +58,9 @@ export type Database = {
           category: string
           content: string
           created_at: string
+          executors_compatible: string[]
           game_compatible: string | null
+          has_key: boolean
           id: string
           image_url: string | null
           published: boolean
@@ -72,7 +74,9 @@ export type Database = {
           category?: string
           content: string
           created_at?: string
+          executors_compatible?: string[]
           game_compatible?: string | null
+          has_key?: boolean
           id?: string
           image_url?: string | null
           published?: boolean
@@ -86,7 +90,9 @@ export type Database = {
           category?: string
           content?: string
           created_at?: string
+          executors_compatible?: string[]
           game_compatible?: string | null
+          has_key?: boolean
           id?: string
           image_url?: string | null
           published?: boolean
