@@ -236,7 +236,7 @@ const Admin = () => {
         price: parseFloat(newBrainrot.current_price),
       });
       toast.success("Brainrot publicado!");
-      setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common" });
+      setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common", stock: "" });
       setNewBrainrotImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
