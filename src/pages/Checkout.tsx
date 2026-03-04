@@ -51,6 +51,11 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
 
+  // PIX payment state
+  const [pixData, setPixData] = useState<{ qrCode?: string; qrCodeBase64?: string; copyPaste?: string; transactionId?: string; orderId?: string } | null>(null);
+  const [pixStatus, setPixStatus] = useState<"idle" | "generating" | "waiting" | "confirmed" | "error">("idle");
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
     if (!order) { navigate("/"); return; }
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -64,6 +69,27 @@ const Checkout = () => {
     });
   }, [order, navigate]);
 
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, []);
+
+  // Poll for payment status
+  const startPolling = (orderId: string) => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
+      try {
+        const { data: orderData } = await supabase.from("orders").select("status").eq("id", orderId).single();
+        if (orderData?.status === "pago") {
+          setPixStatus("confirmed");
+          if (pollRef.current) clearInterval(pollRef.current);
+          toast.success("Pagamento confirmado! 🎉");
+          setTimeout(() => navigate("/my-orders"), 3000);
+        }
+      } catch {}
+    }, 5000); // Check every 5 seconds
+  };
+
   if (!order) return null;
 
   const getPaymentStepIndex = () => (isRobux || isBrainrot) ? 3 : 2;
@@ -72,7 +98,7 @@ const Checkout = () => {
   const canAdvance = () => {
     if (step === 1) return fullName.trim() && gameUsername.trim() && discord.trim();
     if (isRobux && step === 2) return knowsGamepass !== null;
-    if (isBrainrot && step === 2) return true; // just informational
+    if (isBrainrot && step === 2) return true;
     if (step === getPaymentStepIndex()) return !!paymentMethod;
     return true;
   };
@@ -81,17 +107,49 @@ const Checkout = () => {
     if (!user) { toast.error("Você precisa estar logado para comprar."); navigate("/auth"); return; }
     setLoading(true);
     try {
-      const { error } = await supabase.from("orders").insert({
+      // Create the order
+      const { data: newOrder, error } = await supabase.from("orders").insert({
         user_id: user.id, game_id: order.gameId, quantity: order.quantity,
         total_price: order.totalPrice, payment_method: paymentMethod,
         game_username: gameUsername, full_name: fullName, cpf: "N/A", discord_username: discord,
         product_id: order.productId || null,
-      });
+      }).select().single();
       if (error) throw error;
-      toast.success("Pedido criado! Entre no nosso Discord para suporte.");
-      navigate("/my-orders");
+
+      toast.success("Pedido criado! Gerando PIX...");
+
+      // Generate PIX QR Code
+      setPixStatus("generating");
+      try {
+        const { data: pixResult, error: pixError } = await supabase.functions.invoke("pix-create", {
+          body: { orderId: newOrder.id },
+        });
+
+        if (pixError) throw pixError;
+
+        if (pixResult?.success) {
+          setPixData({
+            qrCode: pixResult.qrCode,
+            qrCodeBase64: pixResult.qrCodeBase64,
+            copyPaste: pixResult.copyPaste,
+            transactionId: pixResult.transactionId,
+            orderId: newOrder.id,
+          });
+          setPixStatus("waiting");
+          startPolling(newOrder.id);
+        } else {
+          throw new Error(pixResult?.error || "Erro ao gerar PIX");
+        }
+      } catch (pixErr: any) {
+        console.error("PIX generation error:", pixErr);
+        setPixStatus("error");
+        toast.error("PIX gerado com erro. Vá em Meus Pedidos para tentar novamente.");
+        // Still redirect since order was created
+        setTimeout(() => navigate("/my-orders"), 3000);
+      }
     } catch (error: any) {
       toast.error(error.message || "Erro ao criar pedido");
+      setPixStatus("idle");
     } finally { setLoading(false); }
   };
 
