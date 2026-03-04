@@ -71,6 +71,7 @@ const Admin = () => {
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
   const [editBrainrotPrice, setEditBrainrotPrice] = useState("");
+  const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
