@@ -95,9 +95,9 @@ const Checkout = () => {
   };
 
   const paymentMethods = [
-    { id: "pix", label: "Pix", icon: QrCode, desc: "Aprovação instantânea", badge: "⚡ Instantâneo", badgeColor: "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" },
-    { id: "cartao", label: "Cartão de Crédito", icon: CreditCard, desc: "Visa, Mastercard, Elo e mais", badge: null, badgeColor: "" },
-    { id: "boleto", label: "Boleto Bancário", icon: Landmark, desc: "Compensação em até 3 dias úteis", badge: null, badgeColor: "" },
+    { id: "pix", label: "Pix", icon: QrCode, desc: "Aprovação instantânea", badge: "⚡ Instantâneo", badgeColor: "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]", disabled: false },
+    { id: "cartao", label: "Cartão de Crédito", icon: CreditCard, desc: "Em manutenção — disponível em breve", badge: "🔧 Manutenção", badgeColor: "bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]", disabled: true },
+    { id: "boleto", label: "Boleto Bancário", icon: Landmark, desc: "Em manutenção — disponível em breve", badge: "🔧 Manutenção", badgeColor: "bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]", disabled: true },
   ];
 
   const isPaymentStep = step === getPaymentStepIndex();
@@ -106,9 +106,9 @@ const Checkout = () => {
   const isBrainrotDeliveryStep = isBrainrot && step === 2;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(220,20%,9%)] via-[hsl(220,20%,7%)] to-[hsl(220,20%,5%)]">
+    <div className="min-h-screen bg-gradient-to-b from-[hsl(150,25%,7%)] via-[hsl(150,25%,5%)] to-[hsl(150,25%,4%)]">
       {/* Top nav */}
-      <nav className="border-b border-white/5 bg-[hsl(220,20%,8%)]/80 backdrop-blur-xl">
+      <nav className="border-b border-white/5 bg-[hsl(150,25%,6%)]/80 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
           <Link to="/" className="flex items-center gap-1.5">
             <span className="font-heading text-lg font-bold text-white">Star<span className="text-gradient-gold">Buxx</span></span>
@@ -303,28 +303,32 @@ const Checkout = () => {
                   <p className="text-sm text-white/40 mb-6 ml-[42px]">Selecione como deseja pagar</p>
                   <div className="space-y-3">
                     {paymentMethods.map(pm => (
-                      <button type="button" key={pm.id} onClick={() => setPaymentMethod(pm.id)}
+                      <button type="button" key={pm.id}
+                        onClick={() => !pm.disabled && setPaymentMethod(pm.id)}
+                        disabled={pm.disabled}
                         className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all duration-200 ${
-                          paymentMethod === pm.id
+                          pm.disabled
+                            ? "border-white/[0.04] opacity-40 cursor-not-allowed"
+                            : paymentMethod === pm.id
                             ? "border-primary bg-primary/[0.04] shadow-[0_0_30px_hsl(var(--primary)/0.08)]"
                             : "border-white/[0.06] hover:border-white/15 hover:bg-white/[0.02]"
                         }`}>
                         <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-all ${
-                          paymentMethod === pm.id ? "bg-primary text-[hsl(var(--dark))]" : "bg-white/[0.05] text-white/30"
+                          pm.disabled ? "bg-white/[0.03] text-white/20" : paymentMethod === pm.id ? "bg-primary text-[hsl(var(--dark))]" : "bg-white/[0.05] text-white/30"
                         }`}>
                           <pm.icon className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-bold text-white">{pm.label}</p>
+                            <p className={`text-sm font-bold ${pm.disabled ? "text-white/40" : "text-white"}`}>{pm.label}</p>
                             {pm.badge && <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${pm.badgeColor}`}>{pm.badge}</span>}
                           </div>
                           <p className="text-xs text-white/35 mt-0.5">{pm.desc}</p>
                         </div>
                         <div className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all ${
-                          paymentMethod === pm.id ? "border-primary bg-primary" : "border-white/15"
+                          pm.disabled ? "border-white/10" : paymentMethod === pm.id ? "border-primary bg-primary" : "border-white/15"
                         }`}>
-                          {paymentMethod === pm.id && <CheckCircle className="h-3 w-3 text-[hsl(var(--dark))]" />}
+                          {!pm.disabled && paymentMethod === pm.id && <CheckCircle className="h-3 w-3 text-[hsl(var(--dark))]" />}
                         </div>
                       </button>
                     ))}
