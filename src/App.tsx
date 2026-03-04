@@ -43,6 +43,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/brainrot" element={<Brainrot />} />
             <Route path="/scripts" element={<Scripts />} />
+            <Route path="/scripts/:postId" element={<ScriptPost />} />
             <Route path="/termos" element={<TermsOfService />} />
             <Route path="/privacidade" element={<PrivacyPolicy />} />
             <Route path="/reembolso" element={<RefundPolicy />} />
