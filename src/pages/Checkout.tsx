@@ -112,7 +112,7 @@ const Checkout = () => {
         user_id: user.id, game_id: order.gameId, quantity: order.quantity,
         total_price: order.totalPrice, payment_method: paymentMethod,
         game_username: gameUsername, full_name: fullName, cpf: "N/A", discord_username: discord,
-        product_id: order.productId || null,
+        product_id: order.productId && order.productId.length > 10 ? order.productId : null,
       }).select().single();
       if (error) throw error;
 
