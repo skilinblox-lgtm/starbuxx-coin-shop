@@ -71,11 +71,16 @@ const Admin = () => {
 
   // Brainrot
   const [brainrotPosts, setBrainrotPosts] = useState<any[]>([]);
+  const [brainrotFlags, setBrainrotFlags] = useState<any[]>([]);
   const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[], special_flags: [] as string[] });
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
   const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[], special_flags: [] as string[] });
   const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
+  // Flag management
+  const [newFlagName, setNewFlagName] = useState("");
+  const [newFlagImage, setNewFlagImage] = useState<File | null>(null);
+  const [creatingFlag, setCreatingFlag] = useState(false);
 
   // Blog
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
