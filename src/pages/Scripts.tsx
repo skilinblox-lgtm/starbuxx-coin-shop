@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
-import { Code2, Download, Calendar, Tag, Search } from "lucide-react";
+import { Code2, Calendar, Tag, Search, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
-import ReactMarkdown from "react-markdown";
 
 const Scripts = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [expandedPost, setExpandedPost] = useState<string | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -103,39 +102,41 @@ const Scripts = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="group overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-[var(--shadow-card)]"
                 >
-                  {post.image_url && (
-                    <div className="aspect-video overflow-hidden bg-muted">
-                      <img src={post.image_url} alt={post.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                  <Link to={`/scripts/${post.id}`}
+                    className="group block overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-[var(--shadow-card)]">
+                    {post.image_url && (
+                      <div className="aspect-video overflow-hidden bg-muted">
+                        <img src={post.image_url} alt={post.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                      </div>
+                    )}
+                    <div className="p-4 sm:p-5">
+                      <div className="flex items-center gap-2">
+                        <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                          post.category === "executor" ? "bg-destructive/10 text-destructive" :
+                          post.category === "tutorial" ? "bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]" :
+                          "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                        }`}>
+                          <Tag className="mr-1 inline h-3 w-3" />
+                          {post.category === "executor" ? "Executor" : post.category === "tutorial" ? "Tutorial" : "Script"}
+                        </span>
+                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(post.created_at).toLocaleDateString("pt-BR")}
+                        </span>
+                      </div>
+                      <h3 className="mt-2 font-heading text-base font-bold sm:text-lg line-clamp-2">{post.title}</h3>
+                      <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">{post.content.substring(0, 120)}...</p>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground">Por {post.author || "skilin"}</span>
+                        {post.game_compatible && (
+                          <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            🎮 {post.game_compatible}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div className="p-4 sm:p-5">
-                    <div className="flex items-center gap-2">
-                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                        post.category === "executor" ? "bg-destructive/10 text-destructive" :
-                        post.category === "tutorial" ? "bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]" :
-                        "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
-                      }`}>
-                        <Tag className="mr-1 inline h-3 w-3" />
-                        {post.category === "executor" ? "Executor" : post.category === "tutorial" ? "Tutorial" : "Script"}
-                      </span>
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(post.created_at).toLocaleDateString("pt-BR")}
-                      </span>
-                    </div>
-                    <h3 className="mt-2 font-heading text-base font-bold sm:text-lg">{post.title}</h3>
-                    <div className={`mt-2 text-xs text-muted-foreground leading-relaxed ${expandedPost === post.id ? "" : "line-clamp-3"}`}>
-                      <ReactMarkdown>{post.content}</ReactMarkdown>
-                    </div>
-                    <button
-                      onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}
-                      className="mt-2 text-xs font-medium text-primary hover:underline"
-                    >
-                      {expandedPost === post.id ? "Ver menos" : "Ler mais"}
-                    </button>
-                  </div>
+                  </Link>
                 </motion.div>
               ))}
             </div>
