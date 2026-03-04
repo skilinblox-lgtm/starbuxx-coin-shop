@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import {
   ShieldCheck, ArrowLeft, ChevronRight, ChevronLeft, Lock, User,
   CreditCard, CheckCircle, Truck, Users, HelpCircle, Play, Gamepad2,
-  QrCode, Landmark, Zap, Sparkles, BadgeCheck, Shield, Clock, Server
+  QrCode, Landmark, Zap, Sparkles, BadgeCheck, Shield, Clock, Server,
+  Copy, RefreshCw, Loader2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
