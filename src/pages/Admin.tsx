@@ -590,13 +590,9 @@ const Admin = () => {
                     placeholder="Preço inicial (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <select value={newBrainrot.rarity} onChange={e => setNewBrainrot(p => ({ ...p, rarity: e.target.value }))}
                     className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
-                    <option value="common">⚪ Comum</option>
-                    <option value="rare">🔵 Raro</option>
-                    <option value="epic">🟣 Épico</option>
-                    <option value="legendary">🟡 Lendário</option>
-                    <option value="gold">✨ Ouro</option>
-                    <option value="secret">🔮 Secreto</option>
-                    <option value="divine">💎 Divino</option>
+                    {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
+                      <option key={key} value={key}>{cfg.label}</option>
+                    ))}
                   </select>
                 </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
