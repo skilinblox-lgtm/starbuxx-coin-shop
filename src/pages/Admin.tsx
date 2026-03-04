@@ -85,9 +85,9 @@ const Admin = () => {
   // Blog
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [blogComments, setBlogComments] = useState<any[]>([]);
-  const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot" });
+  const [newBlog, setNewBlog] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot", has_key: false, executors_compatible: [] as string[] });
   const [editingBlog, setEditingBlog] = useState<string | null>(null);
-  const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "" });
+  const [editBlogData, setEditBlogData] = useState({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "", has_key: false, executors_compatible: [] as string[] });
   const [newBlogImage, setNewBlogImage] = useState<File | null>(null);
   const [editBlogImage, setEditBlogImage] = useState<File | null>(null);
 
@@ -357,6 +357,7 @@ const Admin = () => {
         title: newBlog.title, content: newBlog.content, category: newBlog.category,
         script_code: newBlog.script_code || null, video_url: newBlog.video_url || null,
         game_compatible: newBlog.game_compatible || null, author: "skilin",
+        has_key: newBlog.has_key, executors_compatible: newBlog.executors_compatible,
       } as any).select().single();
       if (error) throw error;
       if (newBlogImage && data) {
@@ -367,7 +368,7 @@ const Admin = () => {
         await supabase.from("blog_posts").update({ image_url: publicUrl } as any).eq("id", data.id);
       }
       toast.success("Post publicado!");
-      setNewBlog({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot" });
+      setNewBlog({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot", has_key: false, executors_compatible: [] });
       setNewBlogImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
@@ -380,6 +381,7 @@ const Admin = () => {
         title: editBlogData.title, content: editBlogData.content, category: editBlogData.category,
         script_code: editBlogData.script_code || null, video_url: editBlogData.video_url || null,
         game_compatible: editBlogData.game_compatible || null,
+        has_key: editBlogData.has_key, executors_compatible: editBlogData.executors_compatible,
       } as any).eq("id", id);
       // Upload new image if provided
       if (editBlogImage) {
@@ -1288,6 +1290,34 @@ const Admin = () => {
                 <textarea value={newBlog.script_code} onChange={e => setNewBlog(p => ({ ...p, script_code: e.target.value }))}
                   placeholder="Código do Script (cole o loadstring aqui)" rows={3}
                   className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
+                {/* Key + Executors */}
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <button type="button" onClick={() => setNewBlog(p => ({ ...p, has_key: !p.has_key }))}
+                    className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all ${
+                      newBlog.has_key ? "border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]" : "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                    }`}>
+                    {newBlog.has_key ? "🔑 Com Key" : "🔓 Sem Key"}
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground">Executores:</span>
+                    {["Delta", "Volcano", "Solara", "Fluxus", "KRNL", "Arceus X", "Hydrogen"].map(exec => (
+                      <button key={exec} type="button"
+                        onClick={() => setNewBlog(p => ({
+                          ...p,
+                          executors_compatible: p.executors_compatible.includes(exec)
+                            ? p.executors_compatible.filter(e => e !== exec)
+                            : [...p.executors_compatible, exec]
+                        }))}
+                        className={`rounded-lg border px-2.5 py-1.5 text-[10px] font-medium transition-all ${
+                          newBlog.executors_compatible.includes(exec)
+                            ? "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                            : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                        }`}>
+                        {exec}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
                     <Upload className="h-4 w-4" /> {newBlogImage ? newBlogImage.name : "Imagem de capa"}
@@ -1335,6 +1365,34 @@ const Admin = () => {
                           placeholder="Descrição" rows={3} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
                         <textarea value={editBlogData.script_code} onChange={e => setEditBlogData(p => ({ ...p, script_code: e.target.value }))}
                           placeholder="Código do Script" rows={2} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
+                        {/* Key + Executors for edit */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <button type="button" onClick={() => setEditBlogData(p => ({ ...p, has_key: !p.has_key }))}
+                            className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all ${
+                              editBlogData.has_key ? "border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]" : "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                            }`}>
+                            {editBlogData.has_key ? "🔑 Com Key" : "🔓 Sem Key"}
+                          </button>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">Executores:</span>
+                            {["Delta", "Volcano", "Solara", "Fluxus", "KRNL", "Arceus X", "Hydrogen"].map(exec => (
+                              <button key={exec} type="button"
+                                onClick={() => setEditBlogData(p => ({
+                                  ...p,
+                                  executors_compatible: p.executors_compatible.includes(exec)
+                                    ? p.executors_compatible.filter(e => e !== exec)
+                                    : [...p.executors_compatible, exec]
+                                }))}
+                                className={`rounded-lg border px-2.5 py-1.5 text-[10px] font-medium transition-all ${
+                                  editBlogData.executors_compatible.includes(exec)
+                                    ? "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                                    : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                                }`}>
+                                {exec}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                         <div className="flex flex-wrap items-center gap-2">
                           <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary">
                             <Upload className="h-3.5 w-3.5" /> {editBlogImage ? editBlogImage.name : "Trocar Imagem"}
@@ -1363,10 +1421,24 @@ const Admin = () => {
                           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-muted-foreground sm:h-16 sm:w-16"><FileText className="h-6 w-6" /></div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                            {post.has_key ? (
+                              <span className="rounded-full bg-[hsl(var(--warning))]/10 px-2 py-0.5 text-[9px] font-bold text-[hsl(var(--warning))]">🔑 Key</span>
+                            ) : (
+                              <span className="rounded-full bg-[hsl(var(--success))]/10 px-2 py-0.5 text-[9px] font-bold text-[hsl(var(--success))]">🔓 No Key</span>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             {post.category === "executor" ? "Executor" : post.category === "tutorial" ? "Tutorial" : "Script"} • {new Date(post.created_at).toLocaleDateString("pt-BR")}
                           </p>
+                          {post.executors_compatible?.length > 0 && (
+                            <div className="mt-0.5 flex flex-wrap gap-1">
+                              {post.executors_compatible.map((e: string) => (
+                                <span key={e} className="rounded bg-[hsl(var(--success))]/10 px-1.5 py-0.5 text-[9px] font-medium text-[hsl(var(--success))]">{e}</span>
+                              ))}
+                            </div>
+                          )}
                           <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{post.content.substring(0, 80)}...</p>
                         </div>
                         <div className="flex flex-col gap-1.5">
@@ -1376,7 +1448,7 @@ const Admin = () => {
                             }`}>
                             {post.published ? "Publicado" : "Rascunho"}
                           </button>
-                          <button onClick={() => { setEditingBlog(post.id); setEditBlogImage(null); setEditBlogData({ title: post.title, content: post.content, category: post.category, script_code: post.script_code || "", video_url: post.video_url || "", game_compatible: post.game_compatible || "" }); }}
+                          <button onClick={() => { setEditingBlog(post.id); setEditBlogImage(null); setEditBlogData({ title: post.title, content: post.content, category: post.category, script_code: post.script_code || "", video_url: post.video_url || "", game_compatible: post.game_compatible || "", has_key: post.has_key || false, executors_compatible: post.executors_compatible || [] }); }}
                             className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
                             <Edit2 className="h-3 w-3" /> Editar
                           </button>
