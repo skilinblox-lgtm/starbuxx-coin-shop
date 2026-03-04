@@ -90,9 +90,7 @@ const Brainrot = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h2 className="font-heading text-xl font-bold sm:text-2xl">{selectedPost.title}</h2>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getBrainrotRarityStyle(selectedPost.rarity || 'common')}`}>
-                          {getBrainrotRarityLabel(selectedPost.rarity || 'common')}
-                        </span>
+                        <RarityBadge rarity={selectedPost.rarity || 'common'} size="md" />
                       </div>
                       <div className="mt-1 flex items-center gap-3">
                         <span className="font-heading text-lg font-bold text-gradient-gold sm:text-xl">
