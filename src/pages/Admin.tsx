@@ -892,7 +892,7 @@ const Admin = () => {
                             }`}>
                             {post.published ? "Publicado" : "Rascunho"}
                           </button>
-                          <button onClick={() => { setEditingBlog(post.id); setEditBlogData({ title: post.title, content: post.content, category: post.category }); }}
+                          <button onClick={() => { setEditingBlog(post.id); setEditBlogData({ title: post.title, content: post.content, category: post.category, script_code: post.script_code || "", video_url: post.video_url || "", game_compatible: post.game_compatible || "" }); }}
                             className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
                             <Edit2 className="h-3 w-3" /> Editar
                           </button>
