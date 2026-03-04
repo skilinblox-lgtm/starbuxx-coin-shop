@@ -300,7 +300,7 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-lg overflow-hidden rounded-t-3xl border border-border bg-card shadow-2xl sm:max-h-[90vh] sm:rounded-3xl"
       >
-        <div className="relative h-56 overflow-hidden bg-gradient-to-br from-[hsl(260,30%,12%)] to-[hsl(250,25%,8%)] sm:h-64">
+        <div className="relative h-56 overflow-hidden bg-muted sm:h-64">
           {post.image_url ? (
             <img src={post.image_url} alt={post.title} className="h-full w-full object-contain p-3" />
           ) : (
