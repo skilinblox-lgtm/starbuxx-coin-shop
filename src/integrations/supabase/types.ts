@@ -97,6 +97,27 @@ export type Database = {
         }
         Relationships: []
       }
+      brainrot_flags: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
       brainrot_posts: {
         Row: {
           created_at: string
