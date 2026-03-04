@@ -1736,7 +1736,7 @@ const Admin = () => {
               <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                 <div className="flex items-center gap-2 mb-3"><FileText className="h-4 w-4 text-primary" /><h3 className="text-sm font-bold">Variáveis Disponíveis</h3></div>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {[{ var: "{{nome}}", desc: "Nome do cliente" },{ var: "{{pedido_id}}", desc: "ID do pedido" },{ var: "{{valor}}", desc: "Valor total" },{ var: "{{link_pedido}}", desc: "Link Meus Pedidos" },{ var: "{{metodo_pagamento}}", desc: "Método de pagamento" },{ var: "{{link_recuperacao}}", desc: "Link de recuperação" },{ var: "{{game}}", desc: "Nome do jogo" },{ var: "{{produto}}", desc: "Nome do produto" },{ var: "{{discord}}", desc: "Discord do cliente" }].map(v => (
+                  {[{ var: "{{nome}}", desc: "Nome do cliente" },{ var: "{{pedido_id}}", desc: "ID do pedido" },{ var: "{{valor}}", desc: "Valor total" },{ var: "{{link_pedido}}", desc: "Link Meus Pedidos" },{ var: "{{metodo_pagamento}}", desc: "Método de pagamento" },{ var: "{{link_recuperacao}}", desc: "Link de recuperação" },{ var: "{{link_loja}}", desc: "Link da loja" },{ var: "{{game}}", desc: "Nome do jogo" },{ var: "{{produto}}", desc: "Nome do produto" },{ var: "{{discord}}", desc: "Discord do cliente" }].map(v => (
                     <div key={v.var} className="rounded-lg border border-border bg-surface/30 px-3 py-2"><code className="text-[10px] font-bold text-primary">{v.var}</code><p className="text-[9px] text-muted-foreground mt-0.5">{v.desc}</p></div>
                   ))}
                 </div>
