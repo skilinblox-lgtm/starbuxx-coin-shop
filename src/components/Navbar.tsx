@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchBar from "./SearchBar";
+import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => {
   const [user, setUser] = useState<any>(null);
@@ -30,6 +31,14 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const navLinks = [
+    { href: "/#jogos", label: "Jogos" },
+    { href: "/brainrot", label: "Brainrot", isLink: true },
+    { href: "/scripts", label: "Scripts", isLink: true },
+    { href: "/#vantagens", label: "Vantagens" },
+    { href: "/#depoimentos", label: "Avaliações" },
+  ];
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       scrolled ? "border-b border-border bg-card/95 shadow-sm backdrop-blur-xl" : "bg-[hsl(220,20%,10%)]/95 backdrop-blur-xl"
@@ -42,12 +51,7 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden items-center gap-6 lg:flex">
-          {[
-            { href: "/#jogos", label: "Jogos" },
-            { href: "/brainrot", label: "Brainrot", isLink: true },
-            { href: "/#vantagens", label: "Vantagens" },
-            { href: "/#depoimentos", label: "Avaliações" },
-          ].map(item => item.isLink ? (
+          {navLinks.map(item => item.isLink ? (
             <Link key={item.label} to={item.href} className={`text-sm font-medium transition-colors hover:text-primary ${scrolled ? "text-muted-foreground" : "text-[hsl(220,10%,70%)]"}`}>{item.label}</Link>
           ) : (
             <a key={item.label} href={item.href} className={`text-sm font-medium transition-colors hover:text-primary ${scrolled ? "text-muted-foreground" : "text-[hsl(220,10%,70%)]"}`}>{item.label}</a>
@@ -56,6 +60,7 @@ const Navbar = () => {
 
         <div className="hidden items-center gap-2 sm:flex sm:gap-3">
           <SearchBar />
+          <ThemeToggle className={scrolled ? "text-foreground" : "text-[hsl(0,0%,100%)]"} />
           {user ? (
             <>
               <Link to="/my-orders" className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2 ${
@@ -83,6 +88,7 @@ const Navbar = () => {
 
         <div className="flex items-center gap-2 sm:hidden">
           <SearchBar />
+          <ThemeToggle className={scrolled ? "text-foreground" : "text-[hsl(0,0%,100%)]"} />
           {user && (
             <Link to="/my-orders" className={scrolled ? "text-foreground" : "text-[hsl(0,0%,100%)]"}>
               <User className="h-5 w-5" />
@@ -106,6 +112,7 @@ const Navbar = () => {
             <div className="flex flex-col gap-4 p-4">
               <a href="/#jogos" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground">Jogos</a>
               <Link to="/brainrot" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground">Brainrot</Link>
+              <Link to="/scripts" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground">Executor & Scripts</Link>
               <a href="/#vantagens" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground">Vantagens</a>
               <a href="/#depoimentos" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground">Avaliações</a>
               <div className="border-t border-border pt-4">
