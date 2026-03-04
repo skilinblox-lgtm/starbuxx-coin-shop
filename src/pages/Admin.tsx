@@ -643,6 +643,98 @@ const Admin = () => {
             );
           })()}
 
+          {/* ====== ORDERS (PEDIDOS) ====== */}
+          {tab === "orders" && (
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciamento de Pedidos</h2>
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{orders.length} total</span>
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap gap-2">
+                {["todos", ...statusOptions.map(s => s.value)].map(filter => {
+                  const label = filter === "todos" ? "Todos" : statusOptions.find(s => s.value === filter)?.label || filter;
+                  const count = filter === "todos" ? orders.length : orders.filter(o => o.status === filter).length;
+                  return (
+                    <button key={filter} onClick={() => setOrderFilter(filter)}
+                      className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${orderFilter === filter ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:bg-surface/80"}`}>
+                      {label} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Order list */}
+              <div className="space-y-2">
+                {orders
+                  .filter(o => orderFilter === "todos" || o.status === orderFilter)
+                  .map(o => {
+                    const statusMeta = statusOptions.find(s => s.value === o.status);
+                    return (
+                      <motion.div key={o.id} layout className="rounded-2xl border border-border bg-background p-3 sm:p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-bold">{o.full_name}</p>
+                              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ backgroundColor: `${statusMeta?.color}20`, color: statusMeta?.color }}>
+                                {statusMeta?.label}
+                              </span>
+                              {o.product_id && products.find(p => p.id === o.product_id) && (
+                                <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] text-muted-foreground">
+                                  {products.find(p => p.id === o.product_id)?.name}
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground sm:text-xs">
+                              <span>🎮 {o.game_id} • {o.game_username}</span>
+                              <span>💬 {o.discord_username}</span>
+                              <span>📦 {o.quantity} un</span>
+                              <span>💳 {o.payment_method}</span>
+                              <span>📅 {new Date(o.created_at).toLocaleDateString("pt-BR")} {new Date(o.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                            </div>
+                            <p className="mt-1 text-xs font-bold text-gradient-gold">R$ {Number(o.total_price).toFixed(2)}</p>
+                            {o.payment_approved_at && (
+                              <p className="text-[10px] text-[hsl(145,63%,42%)]">✅ Pago em {new Date(o.payment_approved_at).toLocaleDateString("pt-BR")} {new Date(o.payment_approved_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                            <select value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)}
+                              className="rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-foreground outline-none">
+                              {statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                            </select>
+                            {o.status === "aguardando_pagamento" && (
+                              <button onClick={() => updateOrderStatus(o.id, "pago")}
+                                className="flex items-center gap-1 rounded-lg bg-[hsl(145,63%,42%)] px-3 py-1.5 text-[10px] font-bold text-[hsl(0,0%,100%)] hover:opacity-90">
+                                <CheckCircle className="h-3 w-3" /> Aprovar
+                              </button>
+                            )}
+                            <button onClick={() => openChat(o)}
+                              className="flex items-center gap-1 rounded-lg border border-border px-2 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">
+                              <MessageSquare className="h-3 w-3" /> Chat
+                            </button>
+                            <button onClick={async () => {
+                              if (!confirm(`Excluir pedido #${o.id.slice(0, 8)} de ${o.full_name}? Esta ação é irreversível.`)) return;
+                              const { error } = await supabase.from("orders").delete().eq("id", o.id);
+                              if (error) { toast.error(error.message); return; }
+                              toast.success("Pedido excluído!");
+                              fetchAll();
+                            }}
+                              className="flex items-center gap-1 rounded-lg border border-destructive/30 px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10">
+                              <Trash2 className="h-3 w-3" /> Excluir
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                {orders.filter(o => orderFilter === "todos" || o.status === orderFilter).length === 0 && (
+                  <EmptyState text="Nenhum pedido encontrado com esse filtro." />
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ====== PRODUCTS ====== */}
           {tab === "products" && (
             <div className="space-y-4 sm:space-y-6">
