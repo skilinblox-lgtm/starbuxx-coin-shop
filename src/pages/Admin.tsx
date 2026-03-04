@@ -313,6 +313,7 @@ const Admin = () => {
         rarity: editBrainrotData.rarity,
         stock: parseInt(editBrainrotData.stock) || 0,
         tags: editBrainrotData.tags,
+        special_flags: editBrainrotData.special_flags,
       } as any).eq("id", id);
       // Add price history if price changed
       if (oldPost && Number(oldPost.current_price) !== price) {
