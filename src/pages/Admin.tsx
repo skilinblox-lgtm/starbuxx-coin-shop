@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import RarityBadge, { RARITY_CONFIG } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
+import iconBrainrot from "@/assets/icon-brainrot-game.png";
+import iconBloxFruits from "@/assets/icon-bloxfruits-game.png";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
