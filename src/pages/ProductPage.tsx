@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Star, ShieldCheck, ArrowLeft, Minus, Plus, ShoppingCart, Clock, Zap, CheckCircle, Truck, Award, Headphones, CreditCard, Gamepad2, Calendar } from "lucide-react";
+import { Star, ShieldCheck, ArrowLeft, Minus, Plus, ShoppingCart, Clock, Zap, CheckCircle, Truck, Award, Headphones, CreditCard, Gamepad2, Calendar, Users, MessageCircle, RefreshCw, Link as LinkIcon, Gift, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -179,13 +179,50 @@ const ProductPage = () => {
             className="mt-12 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
             <h2 className="font-heading text-lg font-bold sm:text-xl">Detalhes do Produto</h2>
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              <p>Adquira <strong className="text-foreground">{product.currency}</strong> para <strong className="text-foreground">{gameLabel}</strong> de forma rápida e segura através da StarBuxx.</p>
-              <div className="flex items-start gap-2"><Zap className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Entrega realizada em até 20 minutos após confirmação do pagamento.</span></div>
+              {product.currency?.toLowerCase() === "robux" ? (
+                <>
+                  <p>Adquira <strong className="text-foreground">Robux</strong> para <strong className="text-foreground">Roblox</strong> de forma rapida e segura pela StarBuxx.</p>
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <p className="text-sm font-bold text-foreground flex items-center gap-2"><LinkIcon className="h-4 w-4 text-primary" /> Como funciona a entrega via Gamepass</p>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">1</span><span>Voce cria uma Gamepass dentro do Roblox com o valor correspondente aos Robux que deseja comprar.</span></div>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">2</span><span>Na hora de finalizar o pagamento, voce insere o link da sua Gamepass no campo indicado.</span></div>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">3</span><span>Assim que o pagamento for confirmado, o link da sua Gamepass e enviado automaticamente para o nosso sistema.</span></div>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">4</span><span>Em ate <strong className="text-foreground">24 horas</strong> (maximo 48h), nossos vendedores realizam a compra da sua Gamepass, entregando seus Robux.</span></div>
+                  </div>
+                  <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Fique atento ao prazo de processamento do Roblox (2 a 7 dias uteis para os Robux ficarem disponiveis na sua conta). Acompanhe tudo pela aba <strong className="text-foreground">Meus Pedidos</strong>.</span></div>
+                  <div className="flex items-start gap-2"><RefreshCw className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Caso a entrega nao seja realizada em ate 48 horas, voce pode solicitar o reembolso automatico diretamente na pagina do seu pedido.</span></div>
+                </>
+              ) : product.name?.toLowerCase().includes("gamepass") || product.name?.toLowerCase().includes("fruta") || product.name?.toLowerCase().includes("fruit") ? (
+                <>
+                  <p>Adquira <strong className="text-foreground">{product.name}</strong> para <strong className="text-foreground">{gameLabel}</strong> de forma rapida e segura pela StarBuxx.</p>
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <p className="text-sm font-bold text-foreground flex items-center gap-2"><Gift className="h-4 w-4 text-primary" /> Como funciona a entrega</p>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">1</span><span>Apos a confirmacao do pagamento, um de nossos vendedores ira adicionar voce como amigo dentro do jogo.</span></div>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">2</span><span>O vendedor entra no seu servidor e envia o item como presente ou realiza o trade, conforme sua preferencia.</span></div>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">3</span><span>Um chat sera aberto automaticamente para voce se conectar com nossos vendedores e acompanhar a entrega em tempo real.</span></div>
+                  </div>
+                  <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Prazo de entrega: ate <strong className="text-foreground">24 horas</strong> (maximo 48h) apos a confirmacao do pagamento.</span></div>
+                  <div className="flex items-start gap-2"><RefreshCw className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Se a entrega nao for concluida em 48h, voce pode solicitar o reembolso automatico clicando no botao disponivel na pagina do pedido.</span></div>
+                  <div className="flex items-start gap-2"><MessageCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Apos a compra, utilize o chat integrado para se comunicar diretamente com o vendedor responsavel pela sua entrega.</span></div>
+                </>
+              ) : (
+                <>
+                  <p>Adquira <strong className="text-foreground">{product.currency}</strong> para <strong className="text-foreground">{gameLabel}</strong> de forma rapida e segura pela StarBuxx.</p>
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <p className="text-sm font-bold text-foreground flex items-center gap-2"><UserPlus className="h-4 w-4 text-primary" /> Como funciona a entrega</p>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">1</span><span>Apos o pagamento ser confirmado, nossos vendedores irao adicionar voce como amigo no jogo.</span></div>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">2</span><span>O vendedor entra no seu servidor e realiza a entrega por presente ou trade.</span></div>
+                    <div className="flex items-start gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">3</span><span>Um chat se abre automaticamente para voce acompanhar tudo com o vendedor.</span></div>
+                  </div>
+                  <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Entrega em ate <strong className="text-foreground">24 horas</strong> (maximo 48h) apos confirmacao.</span></div>
+                  <div className="flex items-start gap-2"><RefreshCw className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Caso a entrega nao seja feita em 48h, solicite reembolso automatico na pagina do pedido.</span></div>
+                </>
+              )}
               <div className="flex items-start gap-2"><Headphones className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Suporte dedicado via Discord com mais de 10.000 membros.</span></div>
               <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Garantia de reembolso integral caso ocorra qualquer problema.</span></div>
-              <div className="flex items-start gap-2"><CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Aceitamos Pix (instantâneo), Cartão de Crédito/Débito e Boleto.</span></div>
+              <div className="flex items-start gap-2"><CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" /><span>Aceitamos Pix (instantaneo), Cartao de Credito/Debito e Boleto.</span></div>
               <div className="rounded-xl border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
-                <strong className="text-foreground">Aviso:</strong> A StarBuxx é um revendedor terceirizado independente. As moedas são adquiridas de forma legítima dentro dos próprios jogos. Não possuímos vínculo oficial com a Roblox Corporation.
+                <strong className="text-foreground">Aviso:</strong> A StarBuxx e um revendedor terceirizado independente. Os itens sao adquiridos de forma legitima dentro dos proprios jogos. Nao possuimos vinculo oficial com os desenvolvedores dos jogos.
               </div>
             </div>
           </motion.div>
