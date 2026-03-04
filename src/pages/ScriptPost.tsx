@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Code2, Calendar, Tag, Copy, Download, Star, Send, Youtube, ExternalLink, ArrowLeft, User, FileText, Gamepad2, Terminal, CheckCircle, Play, Shield, Zap, ClipboardCheck, BookOpen, MessageSquare, Info } from "lucide-react";
+import { Code2, Calendar, Tag, Copy, Download, Star, Send, Youtube, ExternalLink, ArrowLeft, User, FileText, Gamepad2, Terminal, CheckCircle, Play, Shield, Zap, ClipboardCheck, BookOpen, MessageSquare, Info, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
