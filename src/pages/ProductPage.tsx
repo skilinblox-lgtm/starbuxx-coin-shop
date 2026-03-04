@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
+import { useRobuxPricing } from "@/hooks/useRobuxPricing";
 import iconRoblox from "@/assets/icon-roblox.png";
 import iconClash from "@/assets/icon-clash-royale.png";
 import iconBrawl from "@/assets/icon-brawl-stars.png";
@@ -25,6 +26,7 @@ const ProductPage = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+  const { ratePer1000, calculatePrice, loading: pricingLoading } = useRobuxPricing();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -51,14 +53,20 @@ const ProductPage = () => {
     fetchProduct();
   }, [productId, navigate]);
 
-  if (loading) return (
+  if (loading || pricingLoading) return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Star className="h-8 w-8 animate-pulse fill-primary text-primary" />
     </div>
   );
   if (!product) return null;
 
-  const totalPrice = (quantity * Number(product.price_per_unit)).toFixed(2);
+  // Use universal pricing for Roblox products (Robux, Gamepass, Frutas)
+  const isRobloxProduct = product.game_id === "roblox";
+  const effectivePricePerUnit = isRobloxProduct
+    ? ratePer1000 / 1000
+    : Number(product.price_per_unit);
+
+  const totalPrice = (quantity * effectivePricePerUnit).toFixed(2);
   const gameLabel = product.game_id.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
   const gameIcon = gameIcons[product.game_id];
 
@@ -66,7 +74,7 @@ const ProductPage = () => {
     navigate("/checkout", {
       state: {
         gameId: product.game_id, gameName: product.name, currency: product.currency,
-        quantity, pricePerUnit: Number(product.price_per_unit),
+        quantity, pricePerUnit: effectivePricePerUnit,
         totalPrice: parseFloat(totalPrice), productId: product.id, imageUrl: product.image_url,
       },
     });
@@ -91,7 +99,7 @@ const ProductPage = () => {
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
               className="flex items-center justify-center rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)] sm:p-12">
               {product.image_url ? (
-                <img src={product.image_url} alt={product.name} className="max-h-72 w-auto object-contain drop-shadow-xl sm:max-h-96" />
+                <img src={product.image_url} alt={product.name} className="max-h-72 w-auto object-contain drop-shadow-xl sm:max-h-96" loading="lazy" />
               ) : (
                 <div className="flex h-72 w-72 items-center justify-center rounded-2xl bg-muted">
                   <ShoppingCart className="h-16 w-16 text-muted-foreground" />
@@ -121,8 +129,13 @@ const ProductPage = () => {
               <div className="mt-4 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5">
                 <p className="text-xs text-muted-foreground">Preço por unidade</p>
                 <p className="mt-1 font-heading text-lg font-bold text-gradient-gold sm:text-xl">
-                  R$ {Number(product.price_per_unit).toFixed(2)} <span className="text-sm font-normal text-muted-foreground">/ {product.currency}</span>
+                  R$ {effectivePricePerUnit.toFixed(2)} <span className="text-sm font-normal text-muted-foreground">/ {product.currency}</span>
                 </p>
+                {isRobloxProduct && (
+                  <p className="mt-1 text-[10px] text-muted-foreground">
+                    Baseado no valor de R$ {ratePer1000.toFixed(2)} a cada 1.000 Robux
+                  </p>
+                )}
               </div>
 
               <div className="mt-4">
@@ -241,28 +254,19 @@ const ProductPage = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           {rGameIcon ? <img src={rGameIcon} alt={r.game_id} className="h-5 w-5 object-contain" /> : <Gamepad2 className="h-4 w-4 text-primary" />}
-                          <span className="text-[10px] font-medium text-muted-foreground">{r.game_id.replace(/-/g, " ")}</span>
+                          <span className="text-sm font-bold">{r.author_name}</span>
                         </div>
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(r.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex gap-0.5">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? "fill-primary text-primary" : "text-border"}`} />
-                        ))}
-                      </div>
-                      <p className="mt-2 text-xs leading-relaxed sm:text-sm">"{r.comment}"</p>
-                      <div className="mt-3 flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                          {r.author_name[0]}
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium">{r.author_name}</p>
-                          <p className="text-[10px] text-muted-foreground">Comprador verificado</p>
+                        <div className="flex gap-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? "fill-primary text-primary" : "text-border"}`} />
+                          ))}
                         </div>
                       </div>
+                      <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">{r.comment}</p>
+                      <p className="mt-2 text-[10px] text-muted-foreground">
+                        <Calendar className="mr-1 inline h-3 w-3" />
+                        {new Date(r.created_at).toLocaleDateString("pt-BR")}
+                      </p>
                     </div>
                   );
                 })}
@@ -274,21 +278,25 @@ const ProductPage = () => {
           {relatedProducts.length > 0 && (
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-12">
               <h2 className="font-heading text-lg font-bold sm:text-xl">Produtos Relacionados</h2>
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-                {relatedProducts.map(rp => (
-                  <Link key={rp.id} to={`/product/${rp.id}`}
-                    className="group rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-all hover:border-primary/40 hover:shadow-lg">
-                    <div className="flex h-24 items-center justify-center sm:h-32">
-                      {rp.image_url ? (
-                        <img src={rp.image_url} alt={rp.name} className="max-h-full w-auto object-contain drop-shadow-lg transition-transform group-hover:scale-105" />
-                      ) : (
-                        <ShoppingCart className="h-8 w-8 text-muted-foreground/30" />
-                      )}
-                    </div>
-                    <p className="mt-2 truncate text-xs font-bold sm:text-sm">{rp.name}</p>
-                    <p className="text-xs text-muted-foreground">R$ {Number(rp.price_per_unit).toFixed(2)}/{rp.currency}</p>
-                  </Link>
-                ))}
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {relatedProducts.map(rp => {
+                  const rpIsRoblox = rp.game_id === "roblox";
+                  const rpPrice = rpIsRoblox ? ratePer1000 / 1000 : Number(rp.price_per_unit);
+                  return (
+                    <Link key={rp.id} to={`/product/${rp.id}`}
+                      className="group rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-all hover:border-primary/40 hover:shadow-lg">
+                      <div className="flex h-24 items-center justify-center sm:h-32">
+                        {rp.image_url ? (
+                          <img src={rp.image_url} alt={rp.name} className="max-h-full w-auto object-contain transition-transform group-hover:scale-105" loading="lazy" />
+                        ) : (
+                          <ShoppingCart className="h-8 w-8 text-muted-foreground/30" />
+                        )}
+                      </div>
+                      <h4 className="mt-2 text-xs font-bold line-clamp-2 sm:text-sm">{rp.name}</h4>
+                      <p className="mt-1 text-xs font-bold text-gradient-gold">R$ {rpPrice.toFixed(2)} <span className="text-[10px] font-normal text-muted-foreground">/{rp.currency}</span></p>
+                    </Link>
+                  );
+                })}
               </div>
             </motion.div>
           )}

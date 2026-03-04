@@ -18,16 +18,16 @@ const BrainrotBanner = () => {
             alt="Brainrot Marketplace"
             className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-52 lg:h-60"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(220,20%,5%)]/85 via-[hsl(220,20%,5%)]/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
           <div className="absolute inset-0 flex items-center">
             <div className="px-5 sm:px-8 lg:px-10">
               <span className="inline-block rounded-full bg-primary/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-primary sm:text-xs">
                 Marketplace
               </span>
-              <h2 className="mt-2 font-heading text-xl font-bold text-white sm:text-2xl lg:text-3xl">
+              <h2 className="mt-2 font-heading text-xl font-bold text-[hsl(0,0%,100%)] sm:text-2xl lg:text-3xl">
                 Compre seu <span className="text-gradient-gold">Brainrot</span> com segurança
               </h2>
-              <p className="mt-1 max-w-sm text-xs text-white/60 sm:text-sm">
+              <p className="mt-1 max-w-sm text-xs text-[hsl(0,0%,100%)]/70 sm:text-sm">
                 Rápido, fácil e 100% seguro. Entrega em até 24h com garantia total.
               </p>
               <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all group-hover:brightness-110 sm:text-sm">

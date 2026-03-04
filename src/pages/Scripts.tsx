@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Code2, Calendar, Tag, Search, Star } from "lucide-react";
+import { Code2, Calendar, Tag, Search, Star, Shield, CheckCircle, RefreshCw, Gamepad2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -58,8 +58,44 @@ const Scripts = () => {
             </p>
           </motion.div>
 
+          {/* Trust / Tested Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mt-6 rounded-2xl border border-[hsl(var(--success))]/20 bg-[hsl(var(--success))]/5 p-4 sm:p-5"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="h-5 w-5 text-[hsl(var(--success))]" />
+              <h3 className="font-heading text-sm font-bold sm:text-base">Conteúdo verificado pela nossa equipe</h3>
+            </div>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="flex items-start gap-2.5 rounded-xl bg-background/50 p-3">
+                <RefreshCw className="mt-0.5 h-4 w-4 flex-shrink-0 text-[hsl(var(--success))]" />
+                <div>
+                  <p className="text-xs font-bold text-foreground">Atualizado manualmente</p>
+                  <p className="text-[10px] text-muted-foreground">Cada script é atualizado pela nossa equipe antes de ser publicado</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 rounded-xl bg-background/50 p-3">
+                <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-[hsl(var(--success))]" />
+                <div>
+                  <p className="text-xs font-bold text-foreground">Testado antes de postar</p>
+                  <p className="text-[10px] text-muted-foreground">Tudo que está aqui foi testado e está funcionando corretamente</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 rounded-xl bg-background/50 p-3">
+                <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-[hsl(var(--success))]" />
+                <div>
+                  <p className="text-xs font-bold text-foreground">Seguro e sem vírus</p>
+                  <p className="text-[10px] text-muted-foreground">Nenhum script contém vírus ou qualquer coisa que prejudique o usuário</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Filters */}
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-2 overflow-x-auto">
               {categories.map(c => (
                 <button
@@ -107,7 +143,7 @@ const Scripts = () => {
                     className="group block overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-[var(--shadow-card)]">
                     {post.image_url && (
                       <div className="aspect-video overflow-hidden bg-muted">
-                        <img src={post.image_url} alt={post.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                        <img src={post.image_url} alt={post.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
                       </div>
                     )}
                     <div className="p-4 sm:p-5">
@@ -130,8 +166,8 @@ const Scripts = () => {
                       <div className="mt-3 flex items-center justify-between">
                         <span className="text-[10px] text-muted-foreground">Por {post.author || "skilin"}</span>
                         {post.game_compatible && (
-                          <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            🎮 {post.game_compatible}
+                          <span className="flex items-center gap-1 rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            <Gamepad2 className="h-3 w-3" /> {post.game_compatible}
                           </span>
                         )}
                       </div>
