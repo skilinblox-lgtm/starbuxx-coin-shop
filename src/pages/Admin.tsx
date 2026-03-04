@@ -97,6 +97,7 @@ const Admin = () => {
       setIsAdmin(true);
       setLoading(false);
       fetchAll();
+      fetchSettings();
     };
     checkAdmin();
   }, [navigate]);
