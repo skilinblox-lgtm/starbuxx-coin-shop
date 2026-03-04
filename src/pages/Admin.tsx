@@ -68,10 +68,10 @@ const Admin = () => {
 
   // Brainrot
   const [brainrotPosts, setBrainrotPosts] = useState<any[]>([]);
-  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "" });
+  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[] });
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
-  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "" });
+  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[] });
   const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
 
   useEffect(() => {
