@@ -835,7 +835,7 @@ const Admin = () => {
                         {post.image_url ? (
                           <img src={post.image_url} alt={post.title} className="h-14 w-14 rounded-xl object-cover sm:h-16 sm:w-16" />
                         ) : (
-                          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-2xl sm:h-16 sm:w-16">🧠</div>
+                          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface sm:h-16 sm:w-16"><Brain className="h-6 w-6 text-muted-foreground" /></div>
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
