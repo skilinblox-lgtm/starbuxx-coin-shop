@@ -149,9 +149,19 @@ const ProductPage = () => {
                   R$ {effectivePricePerUnit.toFixed(2)} <span className="text-sm font-normal text-muted-foreground">/ {product.currency}</span>
                 </p>
                 {isRobloxProduct && (
-                  <p className="mt-1 text-[10px] text-muted-foreground">
-                    Baseado no valor de R$ {ratePer1000.toFixed(2)} a cada 1.000 Robux
-                  </p>
+                  <div className="mt-2 space-y-1.5">
+                    <p className="text-[10px] text-muted-foreground">
+                      Baseado no valor de R$ {ratePer1000.toFixed(2)} a cada 1.000 Robux
+                    </p>
+                    <div className="flex items-center gap-2 rounded-lg border border-[hsl(0,70%,55%)]/20 bg-[hsl(0,70%,55%)]/5 px-3 py-2">
+                      <span className="text-[10px] text-[hsl(0,70%,55%)] line-through font-medium">
+                        R$ 59,90 / 1.000 Robux na Roblox
+                      </span>
+                      <span className="rounded-full bg-[hsl(var(--success))]/10 px-2 py-0.5 text-[9px] font-bold text-[hsl(var(--success))]">
+                        -{Math.round((1 - ratePer1000 / 59.90) * 100)}% na StarBuxx
+                      </span>
+                    </div>
+                  </div>
                 )}
               </div>
 
