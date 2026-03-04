@@ -603,7 +603,12 @@ const Admin = () => {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
-                        <p className="text-xs text-muted-foreground">{post.description?.slice(0, 60) || "Sem descrição"}</p>
+                        <div className="mt-0.5 flex items-center gap-2">
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getRarityStyle(post.rarity || 'common')}`}>
+                            {getRarityLabel(post.rarity || 'common')}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{post.description?.slice(0, 40) || "Sem descrição"}</span>
+                        </div>
                         <div className="mt-1 flex items-center gap-2">
                           {editingBrainrot === post.id ? (
                             <div className="flex items-center gap-1.5">
