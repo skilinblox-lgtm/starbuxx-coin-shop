@@ -952,9 +952,10 @@ const Admin = () => {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
-                            {(post.special_flags || []).map((flag: string) => (
-                              <SpecialFlagBadge key={flag} flag={flag} />
-                            ))}
+                            {(post.special_flags || []).map((flagId: string) => {
+                              const flag = brainrotFlags.find((f: any) => f.id === flagId);
+                              return flag ? <SpecialFlagBadge key={flagId} imageUrl={flag.image_url} name={flag.name} /> : null;
+                            })}
                             {post.featured && <Star className="h-3.5 w-3.5 fill-primary text-primary" />}
                           </div>
                           <div className="mt-0.5 flex flex-wrap items-center gap-1">
