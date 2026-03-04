@@ -1201,6 +1201,52 @@ const Admin = () => {
               </div>
             </div>
           )}
+
+          {/* ====== SETTINGS ====== */}
+          {tab === "settings" && (
+            <div className="space-y-6">
+              <h2 className="font-heading text-lg font-bold sm:text-xl">Configurações</h2>
+
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <h3 className="flex items-center gap-2 text-sm font-bold sm:text-base">
+                  <Settings className="h-4 w-4 text-primary" /> Precificação Universal de Robux
+                </h3>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Defina o valor em reais para cada 1.000 Robux. Todos os preços de produtos Roblox (Robux, Gamepass, Frutas) serão calculados automaticamente com base neste valor.
+                </p>
+                <div className="mt-4 flex items-end gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Valor por 1.000 Robux (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={robuxPrice}
+                      onChange={e => setRobuxPrice(e.target.value)}
+                      placeholder="37.00"
+                      className="mt-1 block w-48 rounded-xl border border-border bg-surface px-4 py-2.5 text-lg font-bold text-foreground outline-none focus:border-primary"
+                    />
+                  </div>
+                  <button
+                    onClick={saveRobuxPrice}
+                    disabled={savingSettings}
+                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+                  >
+                    {savingSettings ? "Salvando..." : "Salvar"}
+                  </button>
+                </div>
+                <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground">
+                  <p><strong className="text-foreground">Exemplo:</strong> Se você definir R$ {robuxPrice || "37.00"} por 1.000 Robux:</p>
+                  <ul className="mt-1 space-y-0.5 ml-3 list-disc">
+                    <li>1 Robux = R$ {(parseFloat(robuxPrice || "37") / 1000).toFixed(4)}</li>
+                    <li>1.000 Robux = R$ {parseFloat(robuxPrice || "37").toFixed(2)}</li>
+                    <li>2.000 Robux = R$ {(parseFloat(robuxPrice || "37") * 2).toFixed(2)}</li>
+                    <li>5.000 Robux = R$ {(parseFloat(robuxPrice || "37") * 5).toFixed(2)}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
         </motion.div>
       </div>
     </div>
