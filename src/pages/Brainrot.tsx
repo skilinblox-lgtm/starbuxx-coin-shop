@@ -114,7 +114,7 @@ const Brainrot = () => {
 
   return (
     <PageTransition>
-      <div className="brainrot-dark min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container px-4 pb-12 pt-20 sm:pt-24">
           {/* Hero */}
