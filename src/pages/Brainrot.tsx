@@ -209,7 +209,7 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
           {/* Title & Price */}
           <h2 className="font-heading text-2xl font-bold">{post.title}</h2>
           {post.description && (
-            <p className="mt-2 rounded-xl border border-success/20 bg-success/5 px-3 py-2 text-sm font-medium text-success">{post.description}</p>
+            <p className="mt-2 rounded-xl border border-[hsl(145,63%,42%)]/30 bg-[hsl(145,63%,42%)]/10 px-3 py-2.5 text-base font-bold text-[hsl(145,70%,38%)] shadow-[0_0_12px_hsl(145,63%,42%,0.15)]">{post.description}</p>
           )}
 
           <div className="mt-3 flex items-end gap-3">
