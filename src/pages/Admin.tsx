@@ -557,6 +557,7 @@ const Admin = () => {
                           className={`rounded-full px-3 py-1 text-[10px] font-bold sm:px-4 sm:py-1.5 sm:text-xs ${p.active ? "bg-[hsl(140,60%,45%)]/10 text-[hsl(140,60%,45%)]" : "bg-[hsl(0,70%,55%)]/10 text-[hsl(0,70%,55%)]"}`}>
                           {p.active ? "Ativo" : "Inativo"}
                         </button>
+                        <button onClick={() => deleteProduct(p.id)} className="rounded-lg border border-destructive/30 p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
                       </div>
                     </div>
                   )}
