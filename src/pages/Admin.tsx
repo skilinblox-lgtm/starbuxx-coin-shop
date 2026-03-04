@@ -299,6 +299,8 @@ const Admin = () => {
     try {
       const { data, error } = await supabase.from("blog_posts").insert({
         title: newBlog.title, content: newBlog.content, category: newBlog.category,
+        script_code: newBlog.script_code || null, video_url: newBlog.video_url || null,
+        game_compatible: newBlog.game_compatible || null, author: "skilin",
       } as any).select().single();
       if (error) throw error;
       if (newBlogImage && data) {
@@ -309,7 +311,7 @@ const Admin = () => {
         await supabase.from("blog_posts").update({ image_url: publicUrl } as any).eq("id", data.id);
       }
       toast.success("Post publicado!");
-      setNewBlog({ title: "", content: "", category: "script" });
+      setNewBlog({ title: "", content: "", category: "script", script_code: "", video_url: "", game_compatible: "Steal a Brainrot" });
       setNewBlogImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
