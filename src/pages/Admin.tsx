@@ -71,7 +71,7 @@ const Admin = () => {
   const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common" });
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
-  const [editBrainrotPrice, setEditBrainrotPrice] = useState("");
+  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common" });
   const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
 
   useEffect(() => {
