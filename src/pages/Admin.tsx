@@ -67,7 +67,7 @@ const Admin = () => {
 
   // Brainrot
   const [brainrotPosts, setBrainrotPosts] = useState<any[]>([]);
-  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "" });
+  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common" });
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
   const [editBrainrotPrice, setEditBrainrotPrice] = useState("");
@@ -216,7 +216,8 @@ const Admin = () => {
         title: newBrainrot.title,
         description: newBrainrot.description,
         current_price: parseFloat(newBrainrot.current_price),
-      }).select().single();
+        rarity: newBrainrot.rarity,
+      } as any).select().single();
       if (error) throw error;
       // Add initial price history
       await supabase.from("brainrot_price_history").insert({
@@ -224,7 +225,7 @@ const Admin = () => {
         price: parseFloat(newBrainrot.current_price),
       });
       toast.success("Brainrot publicado!");
-      setNewBrainrot({ title: "", description: "", current_price: "" });
+      setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common" });
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
   };
@@ -257,6 +258,26 @@ const Admin = () => {
   const deleteBrainrot = async (id: string) => {
     await supabase.from("brainrot_posts").delete().eq("id", id);
     toast.success("Brainrot removido!"); fetchAll();
+  };
+
+  const getRarityStyle = (rarity: string) => {
+    const styles: Record<string, string> = {
+      common: "bg-[hsl(140,40%,20%)] text-[hsl(140,60%,65%)]",
+      uncommon: "bg-[hsl(210,40%,20%)] text-[hsl(210,70%,65%)]",
+      rare: "bg-[hsl(270,40%,20%)] text-[hsl(270,70%,70%)]",
+      epic: "bg-[hsl(25,50%,20%)] text-[hsl(25,80%,65%)]",
+      legendary: "bg-[hsl(45,50%,18%)] text-[hsl(45,100%,60%)]",
+      mythic: "bg-[hsl(0,40%,20%)] text-[hsl(0,70%,65%)]",
+    };
+    return styles[rarity] || styles.common;
+  };
+
+  const getRarityLabel = (rarity: string) => {
+    const labels: Record<string, string> = {
+      common: "🟢 Comum", uncommon: "🔵 Incomum", rare: "🟣 Raro",
+      epic: "🟠 Épico", legendary: "🟡 Lendário", mythic: "🔴 Mítico",
+    };
+    return labels[rarity] || labels.common;
   };
 
   if (loading) return (
@@ -569,11 +590,20 @@ const Admin = () => {
               {/* Create new */}
               <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                 <h3 className="flex items-center gap-2 text-sm font-bold sm:text-base"><Plus className="h-4 w-4 text-primary" /> Publicar Novo Brainrot</h3>
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <input value={newBrainrot.title} onChange={e => setNewBrainrot(p => ({ ...p, title: e.target.value }))}
                     placeholder="Título (ex: Italian Brainrot)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <input type="number" step="0.01" value={newBrainrot.current_price} onChange={e => setNewBrainrot(p => ({ ...p, current_price: e.target.value }))}
                     placeholder="Preço inicial (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <select value={newBrainrot.rarity} onChange={e => setNewBrainrot(p => ({ ...p, rarity: e.target.value }))}
+                    className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
+                    <option value="common">🟢 Comum</option>
+                    <option value="uncommon">🔵 Incomum</option>
+                    <option value="rare">🟣 Raro</option>
+                    <option value="epic">🟠 Épico</option>
+                    <option value="legendary">🟡 Lendário</option>
+                    <option value="mythic">🔴 Mítico</option>
+                  </select>
                 </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
                   placeholder="Descrição (opcional)" rows={2}
@@ -593,7 +623,12 @@ const Admin = () => {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
-                        <p className="text-xs text-muted-foreground">{post.description?.slice(0, 60) || "Sem descrição"}</p>
+                        <div className="mt-0.5 flex items-center gap-2">
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getRarityStyle(post.rarity || 'common')}`}>
+                            {getRarityLabel(post.rarity || 'common')}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{post.description?.slice(0, 40) || "Sem descrição"}</span>
+                        </div>
                         <div className="mt-1 flex items-center gap-2">
                           {editingBrainrot === post.id ? (
                             <div className="flex items-center gap-1.5">

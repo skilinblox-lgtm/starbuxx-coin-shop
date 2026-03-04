@@ -1,0 +1,1 @@
+ALTER TABLE public.brainrot_posts ADD COLUMN rarity text DEFAULT 'common';

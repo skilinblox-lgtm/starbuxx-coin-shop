@@ -10,6 +10,26 @@ import Footer from "@/components/Footer";
 import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
 
+const getBrainrotRarityStyle = (rarity: string) => {
+  const styles: Record<string, string> = {
+    common: "bg-[hsl(140,40%,20%)] text-[hsl(140,60%,65%)]",
+    uncommon: "bg-[hsl(210,40%,20%)] text-[hsl(210,70%,65%)]",
+    rare: "bg-[hsl(270,40%,20%)] text-[hsl(270,70%,70%)]",
+    epic: "bg-[hsl(25,50%,20%)] text-[hsl(25,80%,65%)]",
+    legendary: "bg-[hsl(45,50%,18%)] text-[hsl(45,100%,60%)]",
+    mythic: "bg-[hsl(0,40%,20%)] text-[hsl(0,70%,65%)]",
+  };
+  return styles[rarity] || styles.common;
+};
+
+const getBrainrotRarityLabel = (rarity: string) => {
+  const labels: Record<string, string> = {
+    common: "Comum", uncommon: "Incomum", rare: "Raro",
+    epic: "Épico", legendary: "Lendário", mythic: "Mítico",
+  };
+  return labels[rarity] || labels.common;
+};
+
 const Brainrot = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [priceHistories, setPriceHistories] = useState<Record<string, any[]>>({});
@@ -85,7 +105,12 @@ const Brainrot = () => {
                       <img src={selectedPost.image_url} alt={selectedPost.title} className="h-16 w-16 rounded-2xl object-cover sm:h-20 sm:w-20" />
                     )}
                     <div className="flex-1">
-                      <h2 className="font-heading text-xl font-bold sm:text-2xl">{selectedPost.title}</h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="font-heading text-xl font-bold sm:text-2xl">{selectedPost.title}</h2>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getBrainrotRarityStyle(selectedPost.rarity || 'common')}`}>
+                          {getBrainrotRarityLabel(selectedPost.rarity || 'common')}
+                        </span>
+                      </div>
                       <div className="mt-1 flex items-center gap-3">
                         <span className="font-heading text-lg font-bold text-gradient-gold sm:text-xl">
                           R$ {Number(selectedPost.current_price).toFixed(2)}
@@ -150,7 +175,12 @@ const Brainrot = () => {
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold">{post.title}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="truncate text-sm font-bold">{post.title}</p>
+                          <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold ${getBrainrotRarityStyle(post.rarity || 'common')}`}>
+                            {getBrainrotRarityLabel(post.rarity || 'common')}
+                          </span>
+                        </div>
                         <div className="mt-0.5 flex items-center gap-2">
                           <span className="text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</span>
                           <span className={`flex items-center gap-0.5 text-[10px] font-bold ${
