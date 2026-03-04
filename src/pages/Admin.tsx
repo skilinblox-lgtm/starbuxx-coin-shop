@@ -106,7 +106,7 @@ const Admin = () => {
   const fetchAll = useCallback(async () => {
     const [o, p, r, u, roles, perms, br, bl, bc] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
-      supabase.from("products").select("*").order("name"),
+      supabase.from("products").select("*").order("display_order", { ascending: true }),
       supabase.from("reviews").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("*").eq("role", "moderator"),
