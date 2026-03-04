@@ -98,7 +98,7 @@ const Admin = () => {
   }, [navigate]);
 
   const fetchAll = useCallback(async () => {
-    const [o, p, r, u, roles, perms, br, bl] = await Promise.all([
+    const [o, p, r, u, roles, perms, br, bl, bc] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("name"),
       supabase.from("reviews").select("*").order("created_at", { ascending: false }),
@@ -107,6 +107,7 @@ const Admin = () => {
       supabase.from("moderator_permissions").select("*"),
       supabase.from("brainrot_posts").select("*").order("created_at", { ascending: false }),
       supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
+      supabase.from("blog_comments").select("*").order("created_at", { ascending: false }),
     ]);
     setOrders(o.data || []);
     setProducts(p.data || []);
@@ -116,6 +117,7 @@ const Admin = () => {
     setModPermissions(perms.data || []);
     setBrainrotPosts(br.data || []);
     setBlogPosts(bl.data || []);
+    setBlogComments(bc.data || []);
   }, []);
 
   // Chat realtime subscription
