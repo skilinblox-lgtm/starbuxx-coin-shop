@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Code2, Calendar, Tag, Copy, Download, Star, Send, Youtube, ExternalLink, ArrowLeft, User, FileText, Gamepad2, Terminal, CheckCircle, Play, Shield, Zap, ClipboardCheck, BookOpen, MessageSquare, Info } from "lucide-react";
+import { Code2, Calendar, Tag, Copy, Download, Star, Send, Youtube, ExternalLink, ArrowLeft, User, FileText, Gamepad2, Terminal, CheckCircle, Play, Shield, Zap, ClipboardCheck, BookOpen, MessageSquare, Info, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -9,6 +9,13 @@ import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+import iconBrainrot from "@/assets/icon-brainrot-game.png";
+import iconBloxFruits from "@/assets/icon-bloxfruits-game.png";
+
+const GAME_ICONS: Record<string, string> = {
+  "Steal a Brainrot": iconBrainrot,
+  "Blox Fruits": iconBloxFruits,
+};
 
 const CREATORS = [
   { name: "skilin", youtube: "https://www.youtube.com/@skilin7" },
@@ -71,6 +78,10 @@ const ScriptPost = () => {
   }, [postId]);
 
   const copyScript = () => {
+    if (!currentUser) {
+      toast.error("Crie uma conta ou faça login para copiar o script!");
+      return;
+    }
     if (post?.script_code) {
       navigator.clipboard.writeText(post.script_code);
       setCopied(true);
@@ -80,6 +91,10 @@ const ScriptPost = () => {
   };
 
   const downloadScript = () => {
+    if (!currentUser) {
+      toast.error("Crie uma conta ou faça login para fazer download!");
+      return;
+    }
     if (post?.script_code) {
       const blob = new Blob([post.script_code], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
@@ -198,8 +213,13 @@ const ScriptPost = () => {
                 </div>
                 <h1 className="font-heading text-2xl font-bold sm:text-3xl uppercase tracking-wide">{post.title}</h1>
                 {post.game_compatible && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-[hsl(var(--success))]/20 bg-[hsl(var(--success))]/5 px-3 py-1.5 text-xs font-medium text-[hsl(var(--success))]">
-                    <Gamepad2 className="h-3.5 w-3.5" /> {post.game_compatible}
+                  <div className="mt-2 inline-flex items-center gap-2 rounded-lg border border-[hsl(var(--success))]/20 bg-[hsl(var(--success))]/5 px-3 py-1.5 text-xs font-medium text-[hsl(var(--success))]">
+                    {GAME_ICONS[post.game_compatible] ? (
+                      <img src={GAME_ICONS[post.game_compatible]} alt={post.game_compatible} className="h-4 w-4 object-contain" />
+                    ) : (
+                      <Gamepad2 className="h-3.5 w-3.5" />
+                    )}
+                    {post.game_compatible}
                   </div>
                 )}
               </motion.div>
@@ -292,22 +312,31 @@ const ScriptPost = () => {
                         <Download className="h-3.5 w-3.5" /> .lua
                       </button>
                     </div>
-                  </div>
+                   </div>
                   {/* Code area */}
-                  <div className="p-4 overflow-x-auto max-h-80 overflow-y-auto">
-                    <div className="flex gap-4">
-                      {/* Line numbers */}
-                      <div className="flex flex-col text-right font-mono text-[10px] text-[hsl(var(--success))]/25 select-none leading-[1.6]">
-                        {post.script_code.split('\n').map((_: string, i: number) => (
-                          <span key={i}>{i + 1}</span>
-                        ))}
+                  {currentUser ? (
+                    <div className="p-4 overflow-x-auto max-h-80 overflow-y-auto">
+                      <div className="flex gap-4">
+                        <div className="flex flex-col text-right font-mono text-[10px] text-[hsl(var(--success))]/25 select-none leading-[1.6]">
+                          {post.script_code.split('\n').map((_: string, i: number) => (
+                            <span key={i}>{i + 1}</span>
+                          ))}
+                        </div>
+                        <pre className="flex-1 text-xs font-mono text-[hsl(var(--success))]/80 whitespace-pre-wrap break-all leading-[1.6]">
+                          <code>{post.script_code}</code>
+                        </pre>
                       </div>
-                      {/* Code */}
-                      <pre className="flex-1 text-xs font-mono text-[hsl(var(--success))]/80 whitespace-pre-wrap break-all leading-[1.6]">
-                        <code>{post.script_code}</code>
-                      </pre>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="p-6 flex flex-col items-center justify-center text-center gap-3">
+                      <Shield className="h-8 w-8 text-[hsl(var(--success))]/40" />
+                      <p className="text-sm font-bold text-[hsl(var(--success))]/80">Crie uma conta para acessar o script</p>
+                      <p className="text-xs text-muted-foreground">Faça login ou crie sua conta gratuitamente para copiar e baixar scripts.</p>
+                      <Link to="/auth" className="mt-1 flex items-center gap-2 rounded-xl bg-[hsl(var(--success))]/15 border border-[hsl(var(--success))]/30 px-5 py-2.5 text-xs font-bold text-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/25 transition-all">
+                        <User className="h-4 w-4" /> Criar Conta / Login
+                      </Link>
+                    </div>
+                  )}
                   {/* Footer status bar */}
                   <div className="flex items-center justify-between border-t border-[hsl(var(--success))]/10 bg-[hsl(220,15%,6%)] px-4 py-2">
                     <span className="flex items-center gap-1.5 text-[10px] text-[hsl(var(--success))]/40 font-mono">

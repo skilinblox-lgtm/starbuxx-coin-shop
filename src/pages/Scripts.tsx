@@ -7,6 +7,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
+import iconBrainrot from "@/assets/icon-brainrot-game.png";
+import iconBloxFruits from "@/assets/icon-bloxfruits-game.png";
+
+const GAME_ICONS: Record<string, string> = {
+  "Steal a Brainrot": iconBrainrot,
+  "Blox Fruits": iconBloxFruits,
+};
 
 const Scripts = () => {
   const [posts, setPosts] = useState<any[]>([]);
@@ -167,7 +174,12 @@ const Scripts = () => {
                         <span className="text-[10px] text-muted-foreground">Por {post.author || "skilin"}</span>
                         {post.game_compatible && (
                           <span className="flex items-center gap-1 rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            <Gamepad2 className="h-3 w-3" /> {post.game_compatible}
+                            {GAME_ICONS[post.game_compatible] ? (
+                              <img src={GAME_ICONS[post.game_compatible]} alt={post.game_compatible} className="h-3.5 w-3.5 object-contain" />
+                            ) : (
+                              <Gamepad2 className="h-3 w-3" />
+                            )}
+                            {post.game_compatible}
                           </span>
                         )}
                       </div>
