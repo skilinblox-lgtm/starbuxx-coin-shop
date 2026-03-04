@@ -668,7 +668,7 @@ const Admin = () => {
                             <RarityBadge rarity={post.rarity || 'common'} />
                             <span className="text-xs text-muted-foreground">{post.description?.slice(0, 40) || "Sem descrição"}</span>
                           </div>
-                          <p className="mt-1 text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</p>
+                          <p className="mt-1 flex items-center gap-2 text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)} <span className="text-xs font-normal text-muted-foreground">• Estoque: {post.stock ?? 0}</span></p>
                         </div>
                         <div className="flex flex-col gap-1.5">
                           <button onClick={() => {
