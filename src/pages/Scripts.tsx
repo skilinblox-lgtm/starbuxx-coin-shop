@@ -72,6 +72,11 @@ const Scripts = () => {
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">
               Scripts e executors atualizados para Roblox
             </p>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5 px-4 py-1.5">
+              <Wifi className="h-3.5 w-3.5 text-[hsl(var(--success))] animate-pulse" />
+              <span className="text-xs font-bold text-[hsl(var(--success))]">API Atualizada</span>
+              <span className="text-[10px] text-muted-foreground">• Conteúdo de primeira mão</span>
+            </div>
           </motion.div>
 
           {/* Trust / Tested Section */}
