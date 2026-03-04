@@ -100,6 +100,7 @@ const Checkout = () => {
   const isPaymentStep = step === getPaymentStepIndex();
   const isConfirmStep = step === getConfirmStepIndex();
   const isGamepassStep = isRobux && step === 2;
+  const isBrainrotDeliveryStep = isBrainrot && step === 2;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(220,20%,9%)] via-[hsl(220,20%,7%)] to-[hsl(220,20%,5%)]">
