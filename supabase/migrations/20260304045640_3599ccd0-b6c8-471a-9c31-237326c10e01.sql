@@ -1,0 +1,1 @@
+ALTER TABLE public.brainrot_posts ADD COLUMN IF NOT EXISTS special_flags text[] NOT NULL DEFAULT '{}'::text[];

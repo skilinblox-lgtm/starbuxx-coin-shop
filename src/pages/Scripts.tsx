@@ -41,11 +41,20 @@ const Scripts = () => {
     { id: "tutorial", label: "Tutoriais" },
   ];
 
+  const gameFilters = [
+    { id: "all", label: "Todos os Jogos", icon: null },
+    { id: "Steal a Brainrot", label: "Brainrot", icon: iconBrainrot },
+    { id: "Blox Fruits", label: "Blox Fruits", icon: iconBloxFruits },
+  ];
+
+  const [selectedGame, setSelectedGame] = useState<string>("all");
+
   const filtered = posts.filter(p => {
     const matchSearch = p.title.toLowerCase().includes(search.toLowerCase()) ||
       p.content.toLowerCase().includes(search.toLowerCase());
     const matchCat = selectedCategory === "all" || p.category === selectedCategory;
-    return matchSearch && matchCat;
+    const matchGame = selectedGame === "all" || p.game_compatible === selectedGame;
+    return matchSearch && matchCat && matchGame;
   });
 
   return (
@@ -102,7 +111,7 @@ const Scripts = () => {
           </motion.div>
 
           {/* Filters */}
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 flex flex-col gap-3">
             <div className="flex gap-2 overflow-x-auto">
               {categories.map(c => (
                 <button
@@ -118,14 +127,32 @@ const Scripts = () => {
                 </button>
               ))}
             </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar scripts..."
-                className="w-full rounded-xl border border-border bg-card pl-10 pr-4 py-2.5 text-sm text-foreground outline-none focus:border-primary sm:w-64"
-              />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex gap-2 overflow-x-auto">
+                {gameFilters.map(g => (
+                  <button
+                    key={g.id}
+                    onClick={() => setSelectedGame(g.id)}
+                    className={`flex flex-shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-all sm:text-sm ${
+                      selectedGame === g.id
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {g.icon && <img src={g.icon} alt={g.label} className="h-4 w-4 object-contain" />}
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Buscar scripts..."
+                  className="w-full rounded-xl border border-border bg-card pl-10 pr-4 py-2.5 text-sm text-foreground outline-none focus:border-primary sm:w-64"
+                />
+              </div>
             </div>
           </div>
 

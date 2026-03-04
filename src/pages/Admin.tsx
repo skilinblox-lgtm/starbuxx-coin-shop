@@ -6,7 +6,7 @@ import {
   Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2, Star, FileText, Settings,
   ChevronUp, ChevronDown, GripVertical, Sparkles
 } from "lucide-react";
-import RarityBadge, { RARITY_CONFIG } from "@/components/RarityBadge";
+import RarityBadge, { RARITY_CONFIG, SPECIAL_FLAGS, SpecialFlagBadge } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
 import iconBrainrot from "@/assets/icon-brainrot-game.png";
 import iconBloxFruits from "@/assets/icon-bloxfruits-game.png";
@@ -71,10 +71,10 @@ const Admin = () => {
 
   // Brainrot
   const [brainrotPosts, setBrainrotPosts] = useState<any[]>([]);
-  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[] });
+  const [newBrainrot, setNewBrainrot] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[], special_flags: [] as string[] });
   const [brainrotUploading, setBrainrotUploading] = useState(false);
   const [editingBrainrot, setEditingBrainrot] = useState<string | null>(null);
-  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[] });
+  const [editBrainrotData, setEditBrainrotData] = useState({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] as string[], special_flags: [] as string[] });
   const [newBrainrotImage, setNewBrainrotImage] = useState<File | null>(null);
 
   // Blog
@@ -265,6 +265,7 @@ const Admin = () => {
         rarity: newBrainrot.rarity,
         stock: parseInt(newBrainrot.stock) || 0,
         tags: newBrainrot.tags,
+        special_flags: newBrainrot.special_flags,
       } as any).select().single();
       if (error) throw error;
       // Upload image if provided
@@ -281,7 +282,7 @@ const Admin = () => {
         price: parseFloat(newBrainrot.current_price),
       });
       toast.success("Brainrot publicado!");
-      setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [] });
+      setNewBrainrot({ title: "", description: "", current_price: "", rarity: "common", stock: "", tags: [], special_flags: [] });
       setNewBrainrotImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
@@ -312,6 +313,7 @@ const Admin = () => {
         rarity: editBrainrotData.rarity,
         stock: parseInt(editBrainrotData.stock) || 0,
         tags: editBrainrotData.tags,
+        special_flags: editBrainrotData.special_flags,
       } as any).eq("id", id);
       // Add price history if price changed
       if (oldPost && Number(oldPost.current_price) !== price) {
@@ -824,6 +826,27 @@ const Admin = () => {
                     ))}
                   </div>
                 </div>
+                {/* Special Flags */}
+                <div className="mt-3">
+                  <p className="text-xs font-bold text-muted-foreground mb-1.5">Bandeiras especiais (exibidas ao lado do nome)</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(SPECIAL_FLAGS).map(([key, cfg]) => (
+                      <button key={key} type="button"
+                        onClick={() => setNewBrainrot(p => ({
+                          ...p,
+                          special_flags: p.special_flags.includes(key) ? p.special_flags.filter(t => t !== key) : [...p.special_flags, key]
+                        }))}
+                        className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-bold transition-all ${
+                          newBrainrot.special_flags.includes(key)
+                            ? "border-primary bg-primary/15 text-primary"
+                            : "border-border bg-surface text-muted-foreground hover:border-primary/30"
+                        }`}
+                      >
+                        <span className="text-sm">{cfg.emoji}</span> {cfg.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
                   placeholder="Descrição (opcional)" rows={2}
                   className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
@@ -880,6 +903,27 @@ const Admin = () => {
                             ))}
                           </div>
                         </div>
+                        {/* Edit special flags */}
+                        <div>
+                          <p className="text-xs font-bold text-muted-foreground mb-1">Bandeiras especiais</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {Object.entries(SPECIAL_FLAGS).map(([key, cfg]) => (
+                              <button key={key} type="button"
+                                onClick={() => setEditBrainrotData(p => ({
+                                  ...p,
+                                  special_flags: p.special_flags.includes(key) ? p.special_flags.filter(t => t !== key) : [...p.special_flags, key]
+                                }))}
+                                className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold transition-all ${
+                                  editBrainrotData.special_flags.includes(key)
+                                    ? "border-primary bg-primary/15 text-primary"
+                                    : "border-border bg-surface text-muted-foreground hover:border-primary/30"
+                                }`}
+                              >
+                                <span className="text-sm">{cfg.emoji}</span> {cfg.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                         <div className="flex items-center gap-2">
                           <button onClick={() => saveBrainrotEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
                             <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
@@ -898,8 +942,11 @@ const Admin = () => {
                           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface sm:h-16 sm:w-16"><Brain className="h-6 w-6 text-muted-foreground" /></div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                            {(post.special_flags || []).map((flag: string) => (
+                              <SpecialFlagBadge key={flag} flag={flag} />
+                            ))}
                             {post.featured && <Star className="h-3.5 w-3.5 fill-primary text-primary" />}
                           </div>
                           <div className="mt-0.5 flex flex-wrap items-center gap-1">
@@ -929,6 +976,7 @@ const Admin = () => {
                               rarity: post.rarity || "common",
                               stock: String(post.stock ?? 0),
                               tags: post.tags || [],
+                              special_flags: post.special_flags || [],
                             });
                           }} className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
                             <Edit2 className="h-3 w-3" /> Editar

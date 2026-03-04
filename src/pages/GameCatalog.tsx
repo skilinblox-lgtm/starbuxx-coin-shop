@@ -12,21 +12,33 @@ import iconRoblox from "@/assets/icon-roblox.png";
 import iconClash from "@/assets/icon-clash-royale.png";
 import iconBrawl from "@/assets/icon-brawl-stars.png";
 
-const GAME_CONFIG: Record<string, { name: string; icon: string; categories: string[] }> = {
+const GAME_CONFIG: Record<string, { name: string; icon: string; categories: { id: string; label: string }[] }> = {
   roblox: {
     name: "Roblox",
     icon: iconRoblox,
-    categories: ["Gamepass Blox Fruits", "Frutas Blox Fruits", "Robux"],
+    categories: [
+      { id: "Gamepass", label: "Gamepass" },
+      { id: "Frutas", label: "Frutas" },
+      { id: "Robux", label: "Robux" },
+    ],
   },
   "clash-royale": {
     name: "Clash Royale",
     icon: iconClash,
-    categories: ["Passe Royale", "Evolução", "Gemas", "Heroicos", "Ouro"],
+    categories: [
+      { id: "Passe Royale", label: "Passe Royale" },
+      { id: "Evolução", label: "Evolução" },
+      { id: "Gemas", label: "Gemas" },
+      { id: "Heroicos", label: "Heroicos" },
+      { id: "Ouro", label: "Ouro" },
+    ],
   },
   "brawl-stars": {
     name: "Brawl Stars",
     icon: iconBrawl,
-    categories: [],
+    categories: [
+      { id: "Gemas", label: "Gemas" },
+    ],
   },
 };
 
@@ -61,7 +73,7 @@ const GameCatalog = () => {
   }, [gameId]);
 
   const filteredProducts = activeCategory
-    ? products.filter((p) => p.name.toLowerCase().includes(activeCategory.toLowerCase()))
+    ? products.filter((p) => p.currency === activeCategory)
     : products;
 
   const isRoblox = gameId === "roblox";
@@ -102,15 +114,15 @@ const GameCatalog = () => {
               </button>
               {config.categories.map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
                   className={`rounded-xl border px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
-                    activeCategory === cat
+                    activeCategory === cat.id
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-card text-muted-foreground hover:border-primary/40"
                   }`}
                 >
-                  {cat}
+                  {cat.label}
                 </button>
               ))}
             </div>

@@ -30,8 +30,12 @@ const Auth = () => {
           options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        toast.success("Cadastro realizado! Verifique seu e-mail.");
-        navigate("/");
+        toast.success("Cadastro realizado! Verifique seu e-mail para confirmar a conta.", { duration: 6000 });
+        setIsLogin(true);
+        setEmail("");
+        setPassword("");
+        setFullName("");
+        return;
       }
     } catch (error: any) {
       toast.error(error.message || "Erro ao processar solicitação");
