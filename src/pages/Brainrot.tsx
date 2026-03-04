@@ -158,9 +158,7 @@ const Brainrot = () => {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <p className="truncate text-sm font-bold">{post.title}</p>
-                          <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold ${getBrainrotRarityStyle(post.rarity || 'common')}`}>
-                            {getBrainrotRarityLabel(post.rarity || 'common')}
-                          </span>
+                          <RarityBadge rarity={post.rarity || 'common'} />
                         </div>
                         <div className="mt-0.5 flex items-center gap-2">
                           <span className="text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</span>
