@@ -67,6 +67,7 @@ const generateFakeChart = (currentPrice: number, postId: string) => {
 
 const Brainrot = () => {
   const [posts, setPosts] = useState<any[]>([]);
+  const [flags, setFlags] = useState<any[]>([]);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<BrainrotFilterState>(defaultFilters);
@@ -74,9 +75,12 @@ const Brainrot = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: brainrots } = await supabase
-        .from("brainrot_posts").select("*").order("created_at", { ascending: false });
-      setPosts(brainrots || []);
+      const [brainrots, flagsData] = await Promise.all([
+        supabase.from("brainrot_posts").select("*").order("created_at", { ascending: false }),
+        supabase.from("brainrot_flags").select("*"),
+      ]);
+      setPosts(brainrots.data || []);
+      setFlags(flagsData.data || []);
       setLoading(false);
     };
     fetchData();
