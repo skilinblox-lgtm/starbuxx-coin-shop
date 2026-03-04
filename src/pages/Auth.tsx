@@ -47,7 +47,7 @@ const Auth = () => {
 
   return (
     <PageTransition>
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[hsl(220,20%,9%)] via-[hsl(220,20%,7%)] to-[hsl(220,20%,5%)] px-4 py-8">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[hsl(150,25%,7%)] via-[hsl(150,25%,5%)] to-[hsl(150,25%,4%)] px-4 py-8">
         
         {/* Background effects */}
         <div className="pointer-events-none fixed inset-0 overflow-hidden">
