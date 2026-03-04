@@ -1,4 +1,4 @@
-import { Circle, Diamond, Flame, Crown, Coins, Eye, Sparkles, Shield, Zap } from "lucide-react";
+import { Circle, Diamond, Flame, Crown, Coins, Eye, Sparkles, Shield, Zap, Stars } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const RARITY_CONFIG: Record<string, {
@@ -57,6 +57,14 @@ export const RARITY_CONFIG: Record<string, {
     bg: "bg-gradient-to-r from-[hsl(280,80%,18%)] via-[hsl(320,80%,22%)] to-[hsl(260,70%,18%)]",
     text: "text-[hsl(300,100%,82%)]",
     glow: "shadow-[0_0_18px_hsl(300,90%,60%,0.5),0_0_35px_hsl(280,80%,50%,0.25)]",
+    animate: "animate-pulse",
+  },
+  secret_divine: {
+    label: "Secreto Divino",
+    icon: Stars,
+    bg: "bg-gradient-to-r from-[hsl(180,80%,12%)] via-[hsl(260,80%,18%)] to-[hsl(320,80%,16%)]",
+    text: "text-[hsl(200,100%,85%)]",
+    glow: "shadow-[0_0_20px_hsl(200,100%,60%,0.5),0_0_40px_hsl(280,90%,55%,0.3)]",
     animate: "animate-pulse",
   },
   god: {
