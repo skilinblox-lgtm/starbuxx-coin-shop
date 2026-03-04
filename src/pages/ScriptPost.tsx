@@ -201,6 +201,18 @@ const ScriptPost = () => {
                     <Tag className="h-3 w-3" />
                     {post.category === "executor" ? "Executor" : post.category === "tutorial" ? "Tutorial" : "Script"}
                   </span>
+                  {post.has_key ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/20 px-3 py-1 text-xs font-bold text-[hsl(var(--warning))]">
+                      <Key className="h-3 w-3" /> Com Key
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/20 px-3 py-1 text-xs font-bold text-[hsl(var(--success))]">
+                      <Unlock className="h-3 w-3" /> Sem Key
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/20 px-3 py-1 text-xs font-bold text-[hsl(var(--success))]">
+                    <Wifi className="h-3 w-3" /> API Atualizada
+                  </span>
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />
                     {new Date(post.created_at).toLocaleDateString("pt-BR")}
