@@ -52,6 +52,7 @@ const HeroBanner = () => {
         >
           <video
             className="aspect-video w-full object-cover"
+            style={{ minHeight: "280px" }}
             autoPlay
             muted
             playsInline
