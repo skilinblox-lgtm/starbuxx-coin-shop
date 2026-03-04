@@ -61,6 +61,7 @@ export default {
           card: "hsl(var(--dark-card))",
           muted: "hsl(var(--dark-muted))",
         },
+        price: "hsl(var(--price))",
         surface: {
           DEFAULT: "hsl(var(--surface))",
           hover: "hsl(var(--surface-hover))",

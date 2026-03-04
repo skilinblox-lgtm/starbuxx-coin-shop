@@ -38,6 +38,7 @@ const Footer = () => {
             <h4 className="font-heading text-xs font-bold uppercase tracking-wider sm:text-sm">Suporte</h4>
             <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground sm:mt-4 sm:space-y-2 sm:text-sm">
               <li><Link to="/ajuda" className="transition-colors hover:text-primary">Central de Ajuda</Link></li>
+              <li><Link to="/scripts" className="transition-colors hover:text-primary">Executor & Scripts</Link></li>
               <li><a href="https://discord.gg/EQTankyt8R" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary">Discord</a></li>
             </ul>
           </div>
