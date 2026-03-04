@@ -475,6 +475,7 @@ const Admin = () => {
     { id: "moderation" as Tab, label: "Moderação", icon: Shield },
     { id: "earnings" as Tab, label: "Ganhos", icon: DollarSign },
     { id: "moderators" as Tab, label: "Moderadores", icon: UserPlus },
+    { id: "settings" as Tab, label: "Configurações", icon: Settings },
   ];
 
   const getProfileName = (userId: string) => {
