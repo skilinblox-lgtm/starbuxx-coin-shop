@@ -831,10 +831,17 @@ const Admin = () => {
                     <option value="executor">Executor</option>
                     <option value="tutorial">Tutorial</option>
                   </select>
+                  <input value={newBlog.game_compatible} onChange={e => setNewBlog(p => ({ ...p, game_compatible: e.target.value }))}
+                    placeholder="Jogo compatível (ex: Steal a Brainrot)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <input value={newBlog.video_url} onChange={e => setNewBlog(p => ({ ...p, video_url: e.target.value }))}
+                    placeholder="URL do vídeo (YouTube)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                 </div>
                 <textarea value={newBlog.content} onChange={e => setNewBlog(p => ({ ...p, content: e.target.value }))}
-                  placeholder="Conteúdo (suporta Markdown)" rows={6}
+                  placeholder="Descrição do script (suporta Markdown)" rows={4}
                   className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
+                <textarea value={newBlog.script_code} onChange={e => setNewBlog(p => ({ ...p, script_code: e.target.value }))}
+                  placeholder="Código do Script (cole o loadstring aqui)" rows={3}
+                  className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
                     <Upload className="h-4 w-4" /> {newBlogImage ? newBlogImage.name : "Imagem de capa"}
