@@ -598,18 +598,25 @@ const Admin = () => {
                     placeholder="Preço inicial (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <select value={newBrainrot.rarity} onChange={e => setNewBrainrot(p => ({ ...p, rarity: e.target.value }))}
                     className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
-                    <option value="common">🟢 Comum</option>
-                    <option value="uncommon">🔵 Incomum</option>
-                    <option value="rare">🟣 Raro</option>
-                    <option value="epic">🟠 Épico</option>
+                    <option value="common">⚪ Comum</option>
+                    <option value="rare">🔵 Raro</option>
+                    <option value="epic">🟣 Épico</option>
                     <option value="legendary">🟡 Lendário</option>
-                    <option value="mythic">🔴 Mítico</option>
+                    <option value="gold">✨ Ouro</option>
+                    <option value="secret">🔮 Secreto</option>
+                    <option value="divine">💎 Divino</option>
                   </select>
                 </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
                   placeholder="Descrição (opcional)" rows={2}
                   className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
-                <button onClick={createBrainrot} className="mt-3 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground">Publicar</button>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
+                    <Upload className="h-4 w-4" /> {newBrainrotImage ? newBrainrotImage.name : "Imagem do brainrot"}
+                    <input type="file" accept="image/*" className="hidden" onChange={e => setNewBrainrotImage(e.target.files?.[0] || null)} />
+                  </label>
+                  <button onClick={createBrainrot} className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground">Publicar</button>
+                </div>
               </div>
 
               {/* List */}
