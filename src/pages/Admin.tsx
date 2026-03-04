@@ -336,8 +336,17 @@ const Admin = () => {
         script_code: editBlogData.script_code || null, video_url: editBlogData.video_url || null,
         game_compatible: editBlogData.game_compatible || null,
       } as any).eq("id", id);
+      // Upload new image if provided
+      if (editBlogImage) {
+        const ext = editBlogImage.name.split(".").pop();
+        const path = `blog-${id}.${ext}`;
+        await supabase.storage.from("product-images").upload(path, editBlogImage, { upsert: true });
+        const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
+        await supabase.from("blog_posts").update({ image_url: publicUrl } as any).eq("id", id);
+      }
       toast.success("Post atualizado!");
       setEditingBlog(null);
+      setEditBlogImage(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
   };
