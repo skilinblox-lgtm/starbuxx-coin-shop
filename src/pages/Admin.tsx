@@ -666,6 +666,25 @@ const Admin = () => {
                           <textarea value={editBrainrotData.description} onChange={e => setEditBrainrotData(p => ({ ...p, description: e.target.value }))}
                             placeholder="Descrição" rows={1} className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                         </div>
+                        {/* Edit tags */}
+                        <div>
+                          <p className="text-xs font-bold text-muted-foreground mb-1">Tags adicionais</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
+                              <button key={key} type="button"
+                                onClick={() => setEditBrainrotData(p => ({
+                                  ...p,
+                                  tags: p.tags.includes(key) ? p.tags.filter(t => t !== key) : [...p.tags, key]
+                                }))}
+                                className={`rounded-full border px-2 py-0.5 text-[10px] font-bold transition-all ${
+                                  editBrainrotData.tags.includes(key)
+                                    ? "border-primary bg-primary/15 text-primary"
+                                    : "border-border bg-surface text-muted-foreground hover:border-primary/30"
+                                }`}
+                              >{cfg.label}</button>
+                            ))}
+                          </div>
+                        </div>
                         <div className="flex items-center gap-2">
                           <button onClick={() => saveBrainrotEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
                             <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
