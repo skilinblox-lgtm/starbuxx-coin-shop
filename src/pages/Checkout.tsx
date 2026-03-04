@@ -303,28 +303,32 @@ const Checkout = () => {
                   <p className="text-sm text-white/40 mb-6 ml-[42px]">Selecione como deseja pagar</p>
                   <div className="space-y-3">
                     {paymentMethods.map(pm => (
-                      <button type="button" key={pm.id} onClick={() => setPaymentMethod(pm.id)}
+                      <button type="button" key={pm.id}
+                        onClick={() => !pm.disabled && setPaymentMethod(pm.id)}
+                        disabled={pm.disabled}
                         className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all duration-200 ${
-                          paymentMethod === pm.id
+                          pm.disabled
+                            ? "border-white/[0.04] opacity-40 cursor-not-allowed"
+                            : paymentMethod === pm.id
                             ? "border-primary bg-primary/[0.04] shadow-[0_0_30px_hsl(var(--primary)/0.08)]"
                             : "border-white/[0.06] hover:border-white/15 hover:bg-white/[0.02]"
                         }`}>
                         <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-all ${
-                          paymentMethod === pm.id ? "bg-primary text-[hsl(var(--dark))]" : "bg-white/[0.05] text-white/30"
+                          pm.disabled ? "bg-white/[0.03] text-white/20" : paymentMethod === pm.id ? "bg-primary text-[hsl(var(--dark))]" : "bg-white/[0.05] text-white/30"
                         }`}>
                           <pm.icon className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-bold text-white">{pm.label}</p>
+                            <p className={`text-sm font-bold ${pm.disabled ? "text-white/40" : "text-white"}`}>{pm.label}</p>
                             {pm.badge && <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${pm.badgeColor}`}>{pm.badge}</span>}
                           </div>
                           <p className="text-xs text-white/35 mt-0.5">{pm.desc}</p>
                         </div>
                         <div className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all ${
-                          paymentMethod === pm.id ? "border-primary bg-primary" : "border-white/15"
+                          pm.disabled ? "border-white/10" : paymentMethod === pm.id ? "border-primary bg-primary" : "border-white/15"
                         }`}>
-                          {paymentMethod === pm.id && <CheckCircle className="h-3 w-3 text-[hsl(var(--dark))]" />}
+                          {!pm.disabled && paymentMethod === pm.id && <CheckCircle className="h-3 w-3 text-[hsl(var(--dark))]" />}
                         </div>
                       </button>
                     ))}
