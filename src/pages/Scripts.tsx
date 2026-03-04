@@ -186,7 +186,7 @@ const Scripts = () => {
                       </div>
                     )}
                     <div className="p-4 sm:p-5">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
                           post.category === "executor" ? "bg-destructive/10 text-destructive" :
                           post.category === "tutorial" ? "bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]" :
@@ -195,6 +195,15 @@ const Scripts = () => {
                           <Tag className="mr-1 inline h-3 w-3" />
                           {post.category === "executor" ? "Executor" : post.category === "tutorial" ? "Tutorial" : "Script"}
                         </span>
+                        {post.has_key ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/20 px-2.5 py-0.5 text-[10px] font-bold text-[hsl(var(--warning))]">
+                            <Key className="h-3 w-3" /> Com Key
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/20 px-2.5 py-0.5 text-[10px] font-bold text-[hsl(var(--success))]">
+                            <Unlock className="h-3 w-3" /> Sem Key
+                          </span>
+                        )}
                         <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                           <Calendar className="h-3 w-3" />
                           {new Date(post.created_at).toLocaleDateString("pt-BR")}
@@ -202,6 +211,16 @@ const Scripts = () => {
                       </div>
                       <h3 className="mt-2 font-heading text-base font-bold sm:text-lg line-clamp-2">{post.title}</h3>
                       <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">{post.content.substring(0, 120)}...</p>
+                      {/* Executors compatible */}
+                      {post.executors_compatible?.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {post.executors_compatible.map((exec: string) => (
+                            <span key={exec} className="inline-flex items-center gap-1 rounded-lg border border-[hsl(var(--success))]/15 bg-[hsl(var(--success))]/5 px-2 py-0.5 text-[9px] font-medium text-[hsl(var(--success))]">
+                              <Zap className="h-2.5 w-2.5" /> {exec}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       <div className="mt-3 flex items-center justify-between">
                         <span className="text-[10px] text-muted-foreground">Por {post.author || "skilin"}</span>
                         {post.game_compatible && (
