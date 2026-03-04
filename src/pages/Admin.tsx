@@ -866,9 +866,15 @@ const Admin = () => {
                             <option value="executor">Executor</option>
                             <option value="tutorial">Tutorial</option>
                           </select>
+                          <input value={editBlogData.game_compatible} onChange={e => setEditBlogData(p => ({ ...p, game_compatible: e.target.value }))}
+                            placeholder="Jogo compatível" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                          <input value={editBlogData.video_url} onChange={e => setEditBlogData(p => ({ ...p, video_url: e.target.value }))}
+                            placeholder="URL do vídeo (YouTube)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                         </div>
                         <textarea value={editBlogData.content} onChange={e => setEditBlogData(p => ({ ...p, content: e.target.value }))}
-                          placeholder="Conteúdo" rows={4} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
+                          placeholder="Descrição" rows={3} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
+                        <textarea value={editBlogData.script_code} onChange={e => setEditBlogData(p => ({ ...p, script_code: e.target.value }))}
+                          placeholder="Código do Script" rows={2} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
                         <div className="flex items-center gap-2">
                           <button onClick={() => saveBlogEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
                             <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
