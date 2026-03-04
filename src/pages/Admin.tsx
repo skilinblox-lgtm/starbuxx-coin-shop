@@ -594,114 +594,144 @@ const Admin = () => {
               {/* Create product */}
               <CreateProductForm onCreated={fetchAll} />
               
-              <div className="space-y-2 sm:space-y-3">
-              {products.map((p, idx) => (
-                <motion.div key={p.id} layout className={`rounded-2xl border bg-background p-3 sm:p-5 ${p.featured ? "border-primary/50 ring-1 ring-primary/20" : "border-border"}`}>
-                  {editingProduct === p.id ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        {p.image_url && <img src={p.image_url} alt="" className="h-12 w-12 rounded-lg object-contain" />}
-                        <div className="flex-1 space-y-2">
-                          <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Nome" />
-                          <div className="flex gap-2">
-                            <input type="number" step="0.01" value={editPrice} onChange={e => setEditPrice(e.target.value)} className="w-32 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Preço" />
-                            <span className="flex items-center text-xs text-muted-foreground">/unidade</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
-                          <Upload className="h-3.5 w-3.5" /> {uploadingImage ? "Enviando..." : "Trocar Imagem"}
-                          <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadProductImage(p.id, f); }} />
-                        </label>
-                        <div className="ml-auto flex gap-2">
-                          <button onClick={() => setEditingProduct(null)} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
-                          <button onClick={() => saveProduct(p.id)} className="rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground"><Save className="h-3.5 w-3.5" /></button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {/* Reorder buttons */}
-                      <div className="flex flex-col gap-0.5">
-                        <button
-                          onClick={async () => {
-                            if (idx === 0) return;
-                            const prev = products[idx - 1];
-                            const currOrder = p.display_order ?? idx;
-                            const prevOrder = prev.display_order ?? (idx - 1);
-                            await Promise.all([
-                              supabase.from("products").update({ display_order: prevOrder } as any).eq("id", p.id),
-                              supabase.from("products").update({ display_order: currOrder } as any).eq("id", prev.id),
-                            ]);
-                            fetchAll();
-                          }}
-                          disabled={idx === 0}
-                          className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-20"
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                        </button>
-                        <GripVertical className="mx-auto h-3.5 w-3.5 text-muted-foreground/40" />
-                        <button
-                          onClick={async () => {
-                            if (idx === products.length - 1) return;
-                            const next = products[idx + 1];
-                            const currOrder = p.display_order ?? idx;
-                            const nextOrder = next.display_order ?? (idx + 1);
-                            await Promise.all([
-                              supabase.from("products").update({ display_order: nextOrder } as any).eq("id", p.id),
-                              supabase.from("products").update({ display_order: currOrder } as any).eq("id", next.id),
-                            ]);
-                            fetchAll();
-                          }}
-                          disabled={idx === products.length - 1}
-                          className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-20"
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
-                      </div>
+              {/* Group products by game_id then currency */}
+              {(() => {
+                const gameLabels: Record<string, string> = { roblox: "Roblox", "clash-royale": "Clash Royale", "brawl-stars": "Brawl Stars" };
+                const grouped: Record<string, Record<string, any[]>> = {};
+                products.forEach(p => {
+                  if (!grouped[p.game_id]) grouped[p.game_id] = {};
+                  if (!grouped[p.game_id][p.currency]) grouped[p.game_id][p.currency] = [];
+                  grouped[p.game_id][p.currency].push(p);
+                });
+                // Sort each group: featured first, then by display_order
+                Object.values(grouped).forEach(cats => {
+                  Object.values(cats).forEach(arr => {
+                    arr.sort((a: any, b: any) => {
+                      if (a.featured && !b.featured) return -1;
+                      if (!a.featured && b.featured) return 1;
+                      return (a.display_order ?? 0) - (b.display_order ?? 0);
+                    });
+                  });
+                });
+                return Object.entries(grouped).map(([gameId, categories]) => (
+                  <div key={gameId} className="space-y-4">
+                    <h3 className="font-heading text-base font-bold border-b border-border pb-2 sm:text-lg">{gameLabels[gameId] || gameId}</h3>
+                    {Object.entries(categories).map(([currency, catProducts]) => (
+                      <div key={currency} className="space-y-2">
+                        <p className="text-xs font-bold text-primary uppercase tracking-wider">{currency} ({catProducts.length})</p>
+                        <div className="space-y-2 sm:space-y-3">
+                          {catProducts.map((p: any, idx: number) => (
+                            <motion.div key={p.id} layout className={`rounded-2xl border bg-background p-3 sm:p-5 ${p.featured ? "border-primary/50 ring-1 ring-primary/20" : "border-border"}`}>
+                              {editingProduct === p.id ? (
+                                <div className="space-y-3">
+                                  <div className="flex items-center gap-3">
+                                    {p.image_url && <img src={p.image_url} alt="" className="h-12 w-12 rounded-lg object-contain" />}
+                                    <div className="flex-1 space-y-2">
+                                      <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Nome" />
+                                      <div className="flex gap-2">
+                                        <input type="number" step="0.01" value={editPrice} onChange={e => setEditPrice(e.target.value)} className="w-32 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" placeholder="Preço" />
+                                        <span className="flex items-center text-xs text-muted-foreground">/unidade</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
+                                      <Upload className="h-3.5 w-3.5" /> {uploadingImage ? "Enviando..." : "Trocar Imagem"}
+                                      <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadProductImage(p.id, f); }} />
+                                    </label>
+                                    <div className="ml-auto flex gap-2">
+                                      <button onClick={() => setEditingProduct(null)} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+                                      <button onClick={() => saveProduct(p.id)} className="rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground"><Save className="h-3.5 w-3.5" /></button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                  {/* Reorder buttons - scoped to same category */}
+                                  <div className="flex flex-col gap-0.5">
+                                    <button
+                                      onClick={async () => {
+                                        if (idx === 0) return;
+                                        const prev = catProducts[idx - 1];
+                                        const currOrder = p.display_order ?? idx;
+                                        const prevOrder = prev.display_order ?? (idx - 1);
+                                        await Promise.all([
+                                          supabase.from("products").update({ display_order: prevOrder } as any).eq("id", p.id),
+                                          supabase.from("products").update({ display_order: currOrder } as any).eq("id", prev.id),
+                                        ]);
+                                        fetchAll();
+                                      }}
+                                      disabled={idx === 0}
+                                      className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-20"
+                                    >
+                                      <ChevronUp className="h-4 w-4" />
+                                    </button>
+                                    <GripVertical className="mx-auto h-3.5 w-3.5 text-muted-foreground/40" />
+                                    <button
+                                      onClick={async () => {
+                                        if (idx === catProducts.length - 1) return;
+                                        const next = catProducts[idx + 1];
+                                        const currOrder = p.display_order ?? idx;
+                                        const nextOrder = next.display_order ?? (idx + 1);
+                                        await Promise.all([
+                                          supabase.from("products").update({ display_order: nextOrder } as any).eq("id", p.id),
+                                          supabase.from("products").update({ display_order: currOrder } as any).eq("id", next.id),
+                                        ]);
+                                        fetchAll();
+                                      }}
+                                      disabled={idx === catProducts.length - 1}
+                                      className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-20"
+                                    >
+                                      <ChevronDown className="h-4 w-4" />
+                                    </button>
+                                  </div>
 
-                      {p.image_url ? (
-                        <img src={p.image_url} alt={p.name} className="h-12 w-12 rounded-lg object-contain sm:h-14 sm:w-14" />
-                      ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface text-muted-foreground sm:h-14 sm:w-14"><Image className="h-5 w-5" /></div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-bold sm:text-base">{p.name}</p>
-                          {p.featured && (
-                            <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                              <Sparkles className="h-3 w-3" /> Destaque
-                            </span>
-                          )}
+                                  {p.image_url ? (
+                                    <img src={p.image_url} alt={p.name} className="h-12 w-12 rounded-lg object-contain sm:h-14 sm:w-14" />
+                                  ) : (
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface text-muted-foreground sm:h-14 sm:w-14"><Image className="h-5 w-5" /></div>
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <p className="truncate text-sm font-bold sm:text-base">{p.name}</p>
+                                      {p.featured && (
+                                        <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                                          <Sparkles className="h-3 w-3" /> Destaque
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">{p.currency} • {p.game_id === "roblox" ? `${Number(p.price_per_unit).toLocaleString("pt-BR")} Robux` : `R$ ${Number(p.price_per_unit).toFixed(2)}/un`}</p>
+                                  </div>
+                                  <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+                                    <button
+                                      onClick={async () => {
+                                        await supabase.from("products").update({ featured: !p.featured } as any).eq("id", p.id);
+                                        toast.success(p.featured ? "Destaque removido" : "Produto destacado!");
+                                        fetchAll();
+                                      }}
+                                      className={`rounded-lg border p-2 transition-colors ${p.featured ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}
+                                      title={p.featured ? "Remover destaque" : "Destacar produto"}
+                                    >
+                                      <Star className={`h-3.5 w-3.5 ${p.featured ? "fill-primary" : ""}`} />
+                                    </button>
+                                    <button onClick={() => startEditProduct(p)} className="rounded-lg border border-border p-2 text-muted-foreground hover:border-primary hover:text-primary"><Edit2 className="h-3.5 w-3.5" /></button>
+                                    <button onClick={() => toggleProduct(p.id, p.active)}
+                                      className={`rounded-full px-3 py-1 text-[10px] font-bold sm:px-4 sm:py-1.5 sm:text-xs ${p.active ? "bg-[hsl(140,60%,45%)]/10 text-[hsl(140,60%,45%)]" : "bg-[hsl(0,70%,55%)]/10 text-[hsl(0,70%,55%)]"}`}>
+                                      {p.active ? "Ativo" : "Inativo"}
+                                    </button>
+                                    <button onClick={() => deleteProduct(p.id)} className="rounded-lg border border-destructive/30 p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+                                  </div>
+                                </div>
+                              )}
+                            </motion.div>
+                          ))}
                         </div>
-                        <p className="text-xs text-muted-foreground">{p.currency} • {p.game_id === "roblox" ? `${Number(p.price_per_unit).toLocaleString("pt-BR")} Robux` : `R$ ${Number(p.price_per_unit).toFixed(2)}/un`} • {p.game_id}</p>
                       </div>
-                      <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
-                        <button
-                          onClick={async () => {
-                            await supabase.from("products").update({ featured: !p.featured } as any).eq("id", p.id);
-                            toast.success(p.featured ? "Destaque removido" : "Produto destacado!");
-                            fetchAll();
-                          }}
-                          className={`rounded-lg border p-2 transition-colors ${p.featured ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}
-                          title={p.featured ? "Remover destaque" : "Destacar produto"}
-                        >
-                          <Star className={`h-3.5 w-3.5 ${p.featured ? "fill-primary" : ""}`} />
-                        </button>
-                        <button onClick={() => startEditProduct(p)} className="rounded-lg border border-border p-2 text-muted-foreground hover:border-primary hover:text-primary"><Edit2 className="h-3.5 w-3.5" /></button>
-                        <button onClick={() => toggleProduct(p.id, p.active)}
-                          className={`rounded-full px-3 py-1 text-[10px] font-bold sm:px-4 sm:py-1.5 sm:text-xs ${p.active ? "bg-[hsl(140,60%,45%)]/10 text-[hsl(140,60%,45%)]" : "bg-[hsl(0,70%,55%)]/10 text-[hsl(0,70%,55%)]"}`}>
-                          {p.active ? "Ativo" : "Inativo"}
-                        </button>
-                        <button onClick={() => deleteProduct(p.id)} className="rounded-lg border border-destructive/30 p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
+                    ))}
+                  </div>
+                ));
+              })()}
               {products.length === 0 && <EmptyState text="Nenhum produto cadastrado." />}
-              </div>
             </div>
           )}
 
