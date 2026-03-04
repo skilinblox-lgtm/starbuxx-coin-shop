@@ -6,7 +6,7 @@ import {
   Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2, Star, FileText, Settings,
   ChevronUp, ChevronDown, GripVertical, Sparkles
 } from "lucide-react";
-import RarityBadge, { RARITY_CONFIG } from "@/components/RarityBadge";
+import RarityBadge, { RARITY_CONFIG, SPECIAL_FLAGS, SpecialFlagBadge } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
 import iconBrainrot from "@/assets/icon-brainrot-game.png";
 import iconBloxFruits from "@/assets/icon-bloxfruits-game.png";
