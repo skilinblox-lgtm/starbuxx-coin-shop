@@ -26,6 +26,7 @@ const ProductPage = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
   const { ratePer1000, calculatePrice, loading: pricingLoading } = useRobuxPricing();
 
   useEffect(() => {
