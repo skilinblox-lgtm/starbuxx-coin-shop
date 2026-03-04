@@ -62,8 +62,8 @@ const Checkout = () => {
 
   if (!order) return null;
 
-  const getPaymentStepIndex = () => isRobux ? 3 : 2;
-  const getConfirmStepIndex = () => isRobux ? 4 : 3;
+  const getPaymentStepIndex = () => (isRobux || isBrainrot) ? 3 : 2;
+  const getConfirmStepIndex = () => (isRobux || isBrainrot) ? 4 : 3;
 
   const canAdvance = () => {
     if (step === 1) return fullName.trim() && gameUsername.trim() && discord.trim();
