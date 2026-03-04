@@ -2,3 +2,12 @@ project_id = "lskfydlwzanrogcuzwmy"
 
 [functions.chat-ai]
 verify_jwt = false
+
+[functions.pix-create]
+verify_jwt = false
+
+[functions.pix-webhook]
+verify_jwt = false
+
+[functions.pix-check]
+verify_jwt = false
