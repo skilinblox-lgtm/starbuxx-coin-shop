@@ -965,8 +965,22 @@ const Admin = () => {
                     <option value="executor">Executor</option>
                     <option value="tutorial">Tutorial</option>
                   </select>
-                  <input value={newBlog.game_compatible} onChange={e => setNewBlog(p => ({ ...p, game_compatible: e.target.value }))}
-                    placeholder="Jogo compatível (ex: Steal a Brainrot)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <div className="flex gap-2">
+                    {[
+                      { id: "Steal a Brainrot", label: "Steal a Brainrot", icon: iconBrainrot },
+                      { id: "Blox Fruits", label: "Blox Fruits", icon: iconBloxFruits },
+                    ].map(g => (
+                      <button key={g.id} type="button" onClick={() => setNewBlog(p => ({ ...p, game_compatible: g.id }))}
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-all ${
+                          newBlog.game_compatible === g.id
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                        }`}>
+                        <img src={g.icon} alt={g.label} className="h-5 w-5 object-contain" />
+                        {g.label}
+                      </button>
+                    ))}
+                  </div>
                   <input value={newBlog.video_url} onChange={e => setNewBlog(p => ({ ...p, video_url: e.target.value }))}
                     placeholder="URL do vídeo (YouTube)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                 </div>
