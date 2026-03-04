@@ -56,6 +56,13 @@ export const RARITY_CONFIG: Record<string, {
     text: "text-[hsl(330,85%,72%)]",
     glow: "shadow-[0_0_14px_hsl(330,80%,55%,0.45)]",
   },
+  god: {
+    label: "Deus",
+    icon: Shield,
+    bg: "bg-gradient-to-r from-[hsl(45,80%,15%)] via-[hsl(30,90%,18%)] to-[hsl(0,70%,18%)]",
+    text: "text-[hsl(45,100%,70%)]",
+    glow: "shadow-[0_0_18px_hsl(45,100%,50%,0.5)]",
+  },
 };
 
 interface RarityBadgeProps {
