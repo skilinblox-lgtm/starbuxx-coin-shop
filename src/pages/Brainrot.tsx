@@ -243,8 +243,8 @@ const BrainrotCard = ({ post, index, onClick, flags }: { post: any; index: numbe
         <div className="flex items-center gap-1 flex-wrap">
           <p className="truncate font-heading text-sm font-bold sm:text-base">{post.title}</p>
           {(post.special_flags || []).map((flagId: string) => {
-            const flag = flags.find((f: any) => f.id === flagId);
-            return flag ? <SpecialFlagBadge key={flagId} imageUrl={flag.image_url} name={flag.name} /> : null;
+            const f = flags.find((fl: any) => fl.id === flagId);
+            return f ? <SpecialFlagBadge key={flagId} imageUrl={f.image_url} name={f.name} /> : null;
           })}
         </div>
         {post.description && (
