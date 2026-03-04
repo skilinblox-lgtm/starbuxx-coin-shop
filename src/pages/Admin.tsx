@@ -570,11 +570,20 @@ const Admin = () => {
               {/* Create new */}
               <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
                 <h3 className="flex items-center gap-2 text-sm font-bold sm:text-base"><Plus className="h-4 w-4 text-primary" /> Publicar Novo Brainrot</h3>
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <input value={newBrainrot.title} onChange={e => setNewBrainrot(p => ({ ...p, title: e.target.value }))}
                     placeholder="Título (ex: Italian Brainrot)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
                   <input type="number" step="0.01" value={newBrainrot.current_price} onChange={e => setNewBrainrot(p => ({ ...p, current_price: e.target.value }))}
                     placeholder="Preço inicial (R$)" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <select value={newBrainrot.rarity} onChange={e => setNewBrainrot(p => ({ ...p, rarity: e.target.value }))}
+                    className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
+                    <option value="common">🟢 Comum</option>
+                    <option value="uncommon">🔵 Incomum</option>
+                    <option value="rare">🟣 Raro</option>
+                    <option value="epic">🟠 Épico</option>
+                    <option value="legendary">🟡 Lendário</option>
+                    <option value="mythic">🔴 Mítico</option>
+                  </select>
                 </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
                   placeholder="Descrição (opcional)" rows={2}
