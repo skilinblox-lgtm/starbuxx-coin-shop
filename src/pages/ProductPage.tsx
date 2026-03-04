@@ -30,6 +30,16 @@ const ProductPage = () => {
   const { ratePer1000, calculatePrice, loading: pricingLoading } = useRobuxPricing();
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const fetchProduct = async () => {
       const { data: prod } = await supabase
         .from("products").select("*").eq("id", productId).eq("active", true).single();
