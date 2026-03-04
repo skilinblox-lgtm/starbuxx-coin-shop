@@ -282,7 +282,7 @@ const BrainrotCard = ({ post, index, onClick, flags }: { post: any; index: numbe
 };
 
 // ── Detail Modal ──
-const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => void; onBuy: (p: any) => void }) => {
+const BrainrotModal = ({ post, onClose, onBuy, flags }: { post: any; onClose: () => void; onBuy: (p: any) => void; flags: any[] }) => {
   const { data: chartData, behavior } = useMemo(() => generateFakeChart(Number(post.current_price), post.id), [post.id, post.current_price]);
   const peakPrice = Math.max(...chartData.map(d => d.price));
   const minPrice = Math.min(...chartData.map(d => d.price));
