@@ -59,6 +59,14 @@ export const RARITY_CONFIG: Record<string, {
     glow: "shadow-[0_0_18px_hsl(300,90%,60%,0.5),0_0_35px_hsl(280,80%,50%,0.25)]",
     animate: "animate-pulse",
   },
+  secret_divine: {
+    label: "Secreto Divino",
+    icon: Stars,
+    bg: "bg-gradient-to-r from-[hsl(180,80%,12%)] via-[hsl(260,80%,18%)] to-[hsl(320,80%,16%)]",
+    text: "text-[hsl(200,100%,85%)]",
+    glow: "shadow-[0_0_20px_hsl(200,100%,60%,0.5),0_0_40px_hsl(280,90%,55%,0.3)]",
+    animate: "animate-pulse",
+  },
   god: {
     label: "Deus do Brainrot",
     icon: Zap,
