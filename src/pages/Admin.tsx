@@ -810,6 +810,101 @@ const Admin = () => {
             </div>
           )}
 
+          {/* ====== BLOG ====== */}
+          {tab === "blog" && (
+            <div className="space-y-6">
+              <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciar Blog / Scripts</h2>
+
+              {/* Create */}
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <h3 className="flex items-center gap-2 text-sm font-bold sm:text-base"><Plus className="h-4 w-4 text-primary" /> Novo Post</h3>
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <input value={newBlog.title} onChange={e => setNewBlog(p => ({ ...p, title: e.target.value }))}
+                    placeholder="Título do post" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <select value={newBlog.category} onChange={e => setNewBlog(p => ({ ...p, category: e.target.value }))}
+                    className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
+                    <option value="script">Script</option>
+                    <option value="executor">Executor</option>
+                    <option value="tutorial">Tutorial</option>
+                  </select>
+                </div>
+                <textarea value={newBlog.content} onChange={e => setNewBlog(p => ({ ...p, content: e.target.value }))}
+                  placeholder="Conteúdo (suporta Markdown)" rows={6}
+                  className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
+                    <Upload className="h-4 w-4" /> {newBlogImage ? newBlogImage.name : "Imagem de capa"}
+                    <input type="file" accept="image/*" className="hidden" onChange={e => setNewBlogImage(e.target.files?.[0] || null)} />
+                  </label>
+                  <button onClick={createBlogPost} className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground">Publicar</button>
+                </div>
+              </div>
+
+              {/* List */}
+              <div className="space-y-2 sm:space-y-3">
+                {blogPosts.map(post => (
+                  <div key={post.id} className="rounded-2xl border border-border bg-background p-3 sm:p-5">
+                    {editingBlog === post.id ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <input value={editBlogData.title} onChange={e => setEditBlogData(p => ({ ...p, title: e.target.value }))}
+                            placeholder="Título" className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                          <select value={editBlogData.category} onChange={e => setEditBlogData(p => ({ ...p, category: e.target.value }))}
+                            className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
+                            <option value="script">Script</option>
+                            <option value="executor">Executor</option>
+                            <option value="tutorial">Tutorial</option>
+                          </select>
+                        </div>
+                        <textarea value={editBlogData.content} onChange={e => setEditBlogData(p => ({ ...p, content: e.target.value }))}
+                          placeholder="Conteúdo" rows={4} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => saveBlogEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
+                            <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
+                          </button>
+                          <button onClick={() => setEditingBlog(null)} className="rounded-xl border border-border px-5 py-2 text-xs font-medium text-muted-foreground hover:bg-surface">
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        {post.image_url ? (
+                          <img src={post.image_url} alt={post.title} className="h-14 w-14 rounded-xl object-cover sm:h-16 sm:w-16" />
+                        ) : (
+                          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-muted-foreground sm:h-16 sm:w-16"><FileText className="h-6 w-6" /></div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {post.category === "executor" ? "Executor" : post.category === "tutorial" ? "Tutorial" : "Script"} • {new Date(post.created_at).toLocaleDateString("pt-BR")}
+                          </p>
+                          <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{post.content.substring(0, 80)}...</p>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <button onClick={() => toggleBlogPublished(post.id, post.published)}
+                            className={`rounded-lg border px-2 py-1.5 text-[10px] font-medium sm:text-xs ${
+                              post.published ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" : "border-border bg-surface text-muted-foreground"
+                            }`}>
+                            {post.published ? "Publicado" : "Rascunho"}
+                          </button>
+                          <button onClick={() => { setEditingBlog(post.id); setEditBlogData({ title: post.title, content: post.content, category: post.category }); }}
+                            className="flex items-center justify-center gap-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:border-primary sm:text-xs">
+                            <Edit2 className="h-3 w-3" /> Editar
+                          </button>
+                          <button onClick={() => deleteBlogPost(post.id)} className="flex items-center justify-center gap-1 rounded-lg border border-destructive/30 px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10">
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {blogPosts.length === 0 && <EmptyState text="Nenhum post publicado ainda." />}
+              </div>
+            </div>
+          )}
+
           {/* ====== MODERATION ====== */}
           {tab === "moderation" && (
             <div className="space-y-6">
