@@ -4,7 +4,7 @@ import {
   Package, ShoppingCart, Users, MessageSquare, DollarSign,
   ArrowLeft, Truck, Shield, UserPlus, Send, Bot, Edit2, Save, X,
   Upload, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, Image, Brain, Plus, Trash2, Star, FileText, Settings,
-  ChevronUp, ChevronDown, GripVertical, Sparkles, Zap
+  ChevronUp, ChevronDown, GripVertical, Sparkles, Zap, Mail, Eye, ToggleLeft, ToggleRight, AlertTriangle
 } from "lucide-react";
 import RarityBadge, { RARITY_CONFIG, SpecialFlagBadge } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,7 +17,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 
-type Tab = "dashboard" | "products" | "deliveries" | "moderation" | "earnings" | "moderators" | "brainrot" | "blog" | "settings";
+type Tab = "dashboard" | "products" | "deliveries" | "moderation" | "earnings" | "moderators" | "brainrot" | "blog" | "settings" | "emails";
 
 const statusOptions = [
   { value: "aguardando_pagamento", label: "Aguardando", color: "hsl(45, 100%, 51%)" },
@@ -95,6 +95,13 @@ const Admin = () => {
   const [robuxPrice, setRobuxPrice] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
 
+  // Email
+  const [emailTemplates, setEmailTemplates] = useState<any[]>([]);
+  const [emailLogs, setEmailLogs] = useState<any[]>([]);
+  const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
+  const [editTemplateData, setEditTemplateData] = useState({ subject: "", body_html: "", description: "" });
+  const [emailPreview, setEmailPreview] = useState<string | null>(null);
+
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -111,7 +118,7 @@ const Admin = () => {
   }, [navigate]);
 
   const fetchAll = useCallback(async () => {
-    const [o, p, r, u, roles, perms, br, bl, bc, flags] = await Promise.all([
+    const [o, p, r, u, roles, perms, br, bl, bc, flags, et, el] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("display_order", { ascending: true }),
       supabase.from("reviews").select("*").order("created_at", { ascending: false }),
@@ -122,6 +129,8 @@ const Admin = () => {
       supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
       supabase.from("blog_comments").select("*").order("created_at", { ascending: false }),
       supabase.from("brainrot_flags").select("*").order("created_at", { ascending: true }),
+      supabase.from("email_templates" as any).select("*").order("created_at", { ascending: true }),
+      supabase.from("email_logs" as any).select("*").order("created_at", { ascending: false }).limit(50),
     ]);
     setOrders(o.data || []);
     setProducts(p.data || []);
@@ -133,6 +142,8 @@ const Admin = () => {
     setBlogPosts(bl.data || []);
     setBlogComments(bc.data || []);
     setBrainrotFlags(flags.data || []);
+    setEmailTemplates(et.data || []);
+    setEmailLogs(el.data || []);
   }, []);
 
   const fetchSettings = async () => {
@@ -484,6 +495,7 @@ const Admin = () => {
     { id: "deliveries" as Tab, label: "Entregas", icon: Truck },
     { id: "brainrot" as Tab, label: "Brainrot", icon: Brain },
     { id: "blog" as Tab, label: "Blog/Scripts", icon: FileText },
+    { id: "emails" as Tab, label: "E-mails", icon: Mail },
     { id: "moderation" as Tab, label: "Moderação", icon: Shield },
     { id: "earnings" as Tab, label: "Ganhos", icon: DollarSign },
     { id: "moderators" as Tab, label: "Moderadores", icon: UserPlus },
@@ -1520,6 +1532,118 @@ const Admin = () => {
                     <li>2.000 Robux = R$ {(parseFloat(robuxPrice || "37") * 2).toFixed(2)}</li>
                     <li>5.000 Robux = R$ {(parseFloat(robuxPrice || "37") * 5).toFixed(2)}</li>
                   </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ====== EMAILS ====== */}
+          {tab === "emails" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading text-lg font-bold sm:text-xl">Gerenciamento de E-mails</h2>
+                <div className="flex items-center gap-2 rounded-full border border-[hsl(var(--warning))]/20 bg-[hsl(var(--warning))]/5 px-3 py-1">
+                  <AlertTriangle className="h-3 w-3 text-[hsl(var(--warning))]" />
+                  <span className="text-[10px] font-medium text-[hsl(var(--warning))]">Sistema em configuração</span>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-bold sm:text-base">Templates de E-mail</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Edite os templates dos e-mails. Use variáveis como <code className="rounded bg-surface px-1 py-0.5 text-primary">{"{{nome}}"}</code>, <code className="rounded bg-surface px-1 py-0.5 text-primary">{"{{pedido_id}}"}</code>, <code className="rounded bg-surface px-1 py-0.5 text-primary">{"{{valor}}"}</code>.
+                </p>
+                <div className="space-y-3">
+                  {emailTemplates.map(template => {
+                    const isEditingTpl = editingTemplate === template.id;
+                    const tplMeta: Record<string, { label: string; color: string; icon: any }> = {
+                      payment_approved: { label: "Pagamento Aprovado", color: "hsl(145, 63%, 42%)", icon: CheckCircle },
+                      awaiting_payment: { label: "Aguardando Pagamento", color: "hsl(32, 95%, 52%)", icon: Clock },
+                      order_delivered: { label: "Pedido Entregue", color: "hsl(210, 80%, 55%)", icon: Truck },
+                      order_cancelled: { label: "Pedido Cancelado", color: "hsl(0, 84%, 60%)", icon: XCircle },
+                      password_recovery: { label: "Recuperação de Senha", color: "hsl(210, 80%, 55%)", icon: Shield },
+                    };
+                    const meta = tplMeta[template.template_key] || { label: template.template_key, color: "hsl(220, 10%, 60%)", icon: Mail };
+                    return (
+                      <div key={template.id} className="rounded-xl border border-border bg-surface/50 p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: `${meta.color}20` }}>
+                              <meta.icon className="h-4 w-4" style={{ color: meta.color }} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold">{meta.label}</p>
+                              <p className="text-[10px] text-muted-foreground">{template.description}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <button onClick={() => setEmailPreview(emailPreview === template.id ? null : template.id)} className="flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground"><Eye className="h-3 w-3" /> Preview</button>
+                            <button onClick={async () => { await supabase.from("email_templates" as any).update({ active: !template.active } as any).eq("id", template.id); toast.success(template.active ? "Desativado" : "Ativado"); fetchAll(); }}
+                              className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-medium ${template.active ? "border-[hsl(145,63%,42%)]/30 text-[hsl(145,63%,42%)]" : "border-border text-muted-foreground"}`}>
+                              {template.active ? <ToggleRight className="h-3 w-3" /> : <ToggleLeft className="h-3 w-3" />} {template.active ? "Ativo" : "Inativo"}
+                            </button>
+                            {isEditingTpl ? (
+                              <>
+                                <button onClick={() => setEditingTemplate(null)} className="flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-[10px] text-muted-foreground"><X className="h-3 w-3" /> Cancelar</button>
+                                <button onClick={async () => { await supabase.from("email_templates" as any).update({ subject: editTemplateData.subject, body_html: editTemplateData.body_html, description: editTemplateData.description, updated_at: new Date().toISOString() } as any).eq("id", template.id); toast.success("Salvo!"); setEditingTemplate(null); fetchAll(); }}
+                                  className="flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground"><Save className="h-3 w-3" /> Salvar</button>
+                              </>
+                            ) : (
+                              <button onClick={() => { setEditingTemplate(template.id); setEditTemplateData({ subject: template.subject, body_html: template.body_html, description: template.description || "" }); }}
+                                className="flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground"><Edit2 className="h-3 w-3" /> Editar</button>
+                            )}
+                          </div>
+                        </div>
+                        {isEditingTpl && (
+                          <div className="mt-4 space-y-3 border-t border-border pt-4">
+                            <div><label className="text-[10px] font-medium text-muted-foreground">Assunto</label><input value={editTemplateData.subject} onChange={e => setEditTemplateData(d => ({ ...d, subject: e.target.value }))} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" /></div>
+                            <div><label className="text-[10px] font-medium text-muted-foreground">Descrição</label><input value={editTemplateData.description} onChange={e => setEditTemplateData(d => ({ ...d, description: e.target.value }))} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" /></div>
+                            <div><label className="text-[10px] font-medium text-muted-foreground">Corpo (HTML)</label><textarea value={editTemplateData.body_html} onChange={e => setEditTemplateData(d => ({ ...d, body_html: e.target.value }))} rows={8} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs outline-none focus:border-primary" /></div>
+                          </div>
+                        )}
+                        {emailPreview === template.id && (
+                          <div className="mt-4 border-t border-border pt-4">
+                            <p className="text-[10px] font-medium text-muted-foreground mb-2">Preview:</p>
+                            <div className="rounded-xl border border-border bg-[hsl(0,0%,100%)] p-4">
+                              <p className="text-xs font-bold text-[hsl(220,20%,20%)] mb-2">Assunto: {template.subject}</p>
+                              <div className="text-xs text-[hsl(220,10%,40%)] leading-relaxed" dangerouslySetInnerHTML={{ __html: template.body_html.replace(/\{\{nome\}\}/g, "João Silva").replace(/\{\{pedido_id\}\}/g, "ABC123").replace(/\{\{valor\}\}/g, "59.90").replace(/\{\{link_pedido\}\}/g, "#").replace(/\{\{metodo_pagamento\}\}/g, "Pix").replace(/\{\{link_recuperacao\}\}/g, "#") }} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {emailTemplates.length === 0 && <div className="rounded-xl border border-dashed border-border py-8 text-center text-xs text-muted-foreground">Nenhum template encontrado</div>}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-4"><Send className="h-4 w-4 text-primary" /><h3 className="text-sm font-bold sm:text-base">Histórico de Envios</h3><span className="ml-auto text-[10px] text-muted-foreground">{emailLogs.length} registros</span></div>
+                {emailLogs.length > 0 ? (
+                  <div className="space-y-2">
+                    {emailLogs.slice(0, 20).map(log => {
+                      const sc: Record<string, string> = { sent: "hsl(145,63%,42%)", pending: "hsl(32,95%,52%)", failed: "hsl(0,84%,60%)" };
+                      return (
+                        <div key={log.id} className="flex items-center gap-3 rounded-lg border border-border bg-surface/30 px-3 py-2.5">
+                          <div className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: sc[log.status] || "gray" }} />
+                          <div className="flex-1 min-w-0"><p className="text-xs font-medium truncate">{log.recipient_email}</p><p className="text-[10px] text-muted-foreground">{log.template_key.replace(/_/g, " ")}</p></div>
+                          <div className="text-right"><p className="text-[10px] font-medium" style={{ color: sc[log.status] }}>{log.status === "sent" ? "Enviado" : log.status === "pending" ? "Pendente" : "Falha"}</p><p className="text-[9px] text-muted-foreground">{new Date(log.created_at).toLocaleDateString("pt-BR")}</p></div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : <div className="rounded-xl border border-dashed border-border py-8 text-center text-xs text-muted-foreground">Nenhum e-mail enviado ainda</div>}
+              </div>
+
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-3"><FileText className="h-4 w-4 text-primary" /><h3 className="text-sm font-bold">Variáveis Disponíveis</h3></div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {[{ var: "{{nome}}", desc: "Nome do cliente" },{ var: "{{pedido_id}}", desc: "ID do pedido" },{ var: "{{valor}}", desc: "Valor total" },{ var: "{{link_pedido}}", desc: "Link Meus Pedidos" },{ var: "{{metodo_pagamento}}", desc: "Método de pagamento" },{ var: "{{link_recuperacao}}", desc: "Link de recuperação" },{ var: "{{game}}", desc: "Nome do jogo" },{ var: "{{produto}}", desc: "Nome do produto" },{ var: "{{discord}}", desc: "Discord do cliente" }].map(v => (
+                    <div key={v.var} className="rounded-lg border border-border bg-surface/30 px-3 py-2"><code className="text-[10px] font-bold text-primary">{v.var}</code><p className="text-[9px] text-muted-foreground mt-0.5">{v.desc}</p></div>
+                  ))}
                 </div>
               </div>
             </div>

@@ -7,53 +7,53 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 160 20% 14%;
+    --foreground: 220 20% 14%;
 
-    --card: 160 10% 97%;
-    --card-foreground: 160 20% 14%;
+    --card: 220 15% 97%;
+    --card-foreground: 220 20% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 160 20% 14%;
+    --popover-foreground: 220 20% 14%;
 
     --primary: 45 100% 51%;
-    --primary-foreground: 160 20% 10%;
+    --primary-foreground: 220 20% 10%;
 
-    --secondary: 160 12% 91%;
-    --secondary-foreground: 160 20% 20%;
+    --secondary: 220 12% 91%;
+    --secondary-foreground: 220 20% 20%;
 
-    --muted: 160 8% 93%;
-    --muted-foreground: 160 8% 46%;
+    --muted: 220 12% 93%;
+    --muted-foreground: 220 10% 46%;
 
     --accent: 45 100% 51%;
-    --accent-foreground: 160 20% 10%;
+    --accent-foreground: 220 20% 10%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 160 8% 90%;
-    --input: 160 8% 90%;
+    --border: 220 12% 90%;
+    --input: 220 12% 90%;
     --ring: 45 100% 51%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 160 20% 20%;
+    --sidebar-foreground: 220 20% 20%;
     --sidebar-primary: 45 100% 51%;
-    --sidebar-primary-foreground: 160 20% 10%;
-    --sidebar-accent: 160 8% 96%;
-    --sidebar-accent-foreground: 160 20% 20%;
-    --sidebar-border: 160 8% 90%;
+    --sidebar-primary-foreground: 220 20% 10%;
+    --sidebar-accent: 220 10% 96%;
+    --sidebar-accent-foreground: 220 20% 20%;
+    --sidebar-border: 220 10% 90%;
     --sidebar-ring: 45 100% 51%;
 
     /* Custom tokens */
     --gold: 45 100% 51%;
     --gold-light: 45 100% 70%;
     --gold-dark: 45 100% 38%;
-    --dark: 150 25% 6%;
-    --dark-card: 150 20% 10%;
-    --dark-muted: 150 12% 22%;
-    --surface: 160 8% 94%;
-    --surface-hover: 160 8% 90%;
+    --dark: 220 20% 7%;
+    --dark-card: 220 20% 11%;
+    --dark-muted: 220 10% 25%;
+    --surface: 220 12% 94%;
+    --surface-hover: 220 12% 90%;
     --success: 145 63% 42%;
     --success-foreground: 0 0% 100%;
     --warning: 32 95% 52%;
@@ -65,51 +65,51 @@
     --price: 145 70% 38%;
 
     --gradient-gold: linear-gradient(135deg, hsl(45, 100%, 51%), hsl(38, 100%, 45%));
-    --gradient-dark: linear-gradient(180deg, hsl(150, 25%, 8%), hsl(150, 25%, 4%));
+    --gradient-dark: linear-gradient(180deg, hsl(220, 20%, 10%), hsl(220, 20%, 6%));
     --shadow-gold: 0 4px 20px -4px hsl(45 100% 51% / 0.3);
-    --shadow-card: 0 1px 8px -1px hsl(150 15% 50% / 0.08);
+    --shadow-card: 0 1px 8px -1px hsl(220 15% 50% / 0.08);
   }
 
   .dark {
-    --background: 150 25% 6%;
+    --background: 220 20% 7%;
     --foreground: 0 0% 95%;
 
-    --card: 150 20% 10%;
+    --card: 220 20% 11%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 150 20% 10%;
+    --popover: 220 20% 11%;
     --popover-foreground: 0 0% 95%;
 
     --primary: 45 100% 51%;
-    --primary-foreground: 150 25% 8%;
+    --primary-foreground: 220 20% 10%;
 
-    --secondary: 150 15% 15%;
+    --secondary: 220 15% 18%;
     --secondary-foreground: 0 0% 90%;
 
-    --muted: 150 15% 15%;
-    --muted-foreground: 150 8% 55%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 60%;
 
     --accent: 45 100% 51%;
-    --accent-foreground: 150 25% 8%;
+    --accent-foreground: 220 20% 10%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 15% 18%;
-    --input: 150 15% 18%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
     --ring: 45 100% 51%;
 
-    --sidebar-background: 150 25% 7%;
+    --sidebar-background: 220 20% 9%;
     --sidebar-foreground: 0 0% 90%;
     --sidebar-primary: 45 100% 51%;
-    --sidebar-primary-foreground: 150 25% 8%;
-    --sidebar-accent: 150 15% 12%;
+    --sidebar-primary-foreground: 220 20% 10%;
+    --sidebar-accent: 220 15% 14%;
     --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 150 15% 16%;
+    --sidebar-border: 220 15% 18%;
     --sidebar-ring: 45 100% 51%;
 
-    --surface: 150 15% 12%;
-    --surface-hover: 150 15% 16%;
+    --surface: 220 15% 14%;
+    --surface-hover: 220 15% 18%;
     --price: 145 70% 45%;
     --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
   }

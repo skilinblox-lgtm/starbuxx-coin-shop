@@ -39,7 +39,7 @@ const Navbar = () => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? "border-b border-border bg-card/95 shadow-sm backdrop-blur-xl" : "bg-[hsl(150,25%,8%)]/95 backdrop-blur-xl"
+      scrolled ? "border-b border-border bg-card/95 shadow-sm backdrop-blur-xl" : "bg-[hsl(220,20%,10%)]/95 backdrop-blur-xl"
     }`}>
       <div className="container flex h-14 items-center justify-between px-4 sm:h-16">
         <Link to="/" className="flex items-center gap-1.5 sm:gap-2">
@@ -50,9 +50,9 @@ const Navbar = () => {
 
         <div className="hidden items-center gap-6 lg:flex">
           {navLinks.map(item => item.isLink ? (
-            <Link key={item.label} to={item.href} className={`text-sm font-medium transition-colors hover:text-primary ${scrolled ? "text-muted-foreground" : "text-[hsl(150,10%,65%)]"}`}>{item.label}</Link>
+            <Link key={item.label} to={item.href} className={`text-sm font-medium transition-colors hover:text-primary ${scrolled ? "text-muted-foreground" : "text-[hsl(220,10%,70%)]"}`}>{item.label}</Link>
           ) : (
-            <a key={item.label} href={item.href} className={`text-sm font-medium transition-colors hover:text-primary ${scrolled ? "text-muted-foreground" : "text-[hsl(150,10%,65%)]"}`}>{item.label}</a>
+            <a key={item.label} href={item.href} className={`text-sm font-medium transition-colors hover:text-primary ${scrolled ? "text-muted-foreground" : "text-[hsl(220,10%,70%)]"}`}>{item.label}</a>
           ))}
         </div>
 
@@ -61,7 +61,7 @@ const Navbar = () => {
           {user ? (
             <>
               <Link to="/my-orders" className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2 ${
-                scrolled ? "border-border text-foreground hover:bg-muted" : "border-[hsl(150,15%,22%)] text-[hsl(0,0%,100%)] hover:bg-[hsl(150,15%,15%)]"
+                scrolled ? "border-border text-foreground hover:bg-muted" : "border-[hsl(220,15%,25%)] text-[hsl(0,0%,100%)] hover:bg-[hsl(220,15%,18%)]"
               }`}>
                 <ShoppingBag className="h-4 w-4" /> Pedidos
               </Link>
@@ -72,7 +72,7 @@ const Navbar = () => {
           ) : (
             <>
               <Link to="/auth" className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2 ${
-                scrolled ? "border-border text-foreground hover:bg-muted" : "border-[hsl(150,15%,22%)] text-[hsl(0,0%,100%)] hover:bg-[hsl(150,15%,15%)]"
+                scrolled ? "border-border text-foreground hover:bg-muted" : "border-[hsl(220,15%,25%)] text-[hsl(0,0%,100%)] hover:bg-[hsl(220,15%,18%)]"
               }`}>
                 Entrar
               </Link>
