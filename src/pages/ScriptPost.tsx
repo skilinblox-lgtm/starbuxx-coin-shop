@@ -213,8 +213,13 @@ const ScriptPost = () => {
                 </div>
                 <h1 className="font-heading text-2xl font-bold sm:text-3xl uppercase tracking-wide">{post.title}</h1>
                 {post.game_compatible && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-[hsl(var(--success))]/20 bg-[hsl(var(--success))]/5 px-3 py-1.5 text-xs font-medium text-[hsl(var(--success))]">
-                    <Gamepad2 className="h-3.5 w-3.5" /> {post.game_compatible}
+                  <div className="mt-2 inline-flex items-center gap-2 rounded-lg border border-[hsl(var(--success))]/20 bg-[hsl(var(--success))]/5 px-3 py-1.5 text-xs font-medium text-[hsl(var(--success))]">
+                    {GAME_ICONS[post.game_compatible] ? (
+                      <img src={GAME_ICONS[post.game_compatible]} alt={post.game_compatible} className="h-4 w-4 object-contain" />
+                    ) : (
+                      <Gamepad2 className="h-3.5 w-3.5" />
+                    )}
+                    {post.game_compatible}
                   </div>
                 )}
               </motion.div>
