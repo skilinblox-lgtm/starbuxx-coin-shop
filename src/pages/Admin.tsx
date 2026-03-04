@@ -716,6 +716,15 @@ const Admin = () => {
                           <p className="mt-1 flex items-center gap-2 text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)} <span className="text-xs font-normal text-muted-foreground">• Estoque: {post.stock ?? 0}</span></p>
                         </div>
                         <div className="flex flex-col gap-1.5">
+                          <button onClick={async () => {
+                            await supabase.from("brainrot_posts").update({ featured: !post.featured } as any).eq("id", post.id);
+                            toast.success(post.featured ? "Destaque removido" : "Destacado!");
+                            fetchAll();
+                          }} className={`flex items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-medium sm:text-xs ${
+                            post.featured ? "border-primary bg-primary/15 text-primary" : "border-border bg-surface text-muted-foreground hover:border-primary"
+                          }`}>
+                            <Star className={`h-3 w-3 ${post.featured ? "fill-primary" : ""}`} /> {post.featured ? "★" : "Destaque"}
+                          </button>
                           <button onClick={() => {
                             setEditingBrainrot(post.id);
                             setEditBrainrotData({
