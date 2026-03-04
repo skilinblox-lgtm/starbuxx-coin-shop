@@ -254,13 +254,22 @@ const Admin = () => {
     } catch (e: any) { toast.error(e.message); } finally { setBrainrotUploading(false); }
   };
 
-  const updateBrainrotPrice = async (id: string) => {
-    const price = parseFloat(editBrainrotPrice);
-    if (isNaN(price)) return;
+  const saveBrainrotEdit = async (id: string) => {
+    const price = parseFloat(editBrainrotData.current_price);
+    if (isNaN(price) || !editBrainrotData.title) return;
     try {
-      await supabase.from("brainrot_posts").update({ current_price: price }).eq("id", id);
-      await supabase.from("brainrot_price_history").insert({ brainrot_id: id, price });
-      toast.success("Preço atualizado!");
+      const oldPost = brainrotPosts.find(p => p.id === id);
+      await supabase.from("brainrot_posts").update({
+        title: editBrainrotData.title,
+        description: editBrainrotData.description,
+        current_price: price,
+        rarity: editBrainrotData.rarity,
+      } as any).eq("id", id);
+      // Add price history if price changed
+      if (oldPost && Number(oldPost.current_price) !== price) {
+        await supabase.from("brainrot_price_history").insert({ brainrot_id: id, price });
+      }
+      toast.success("Brainrot atualizado!");
       setEditingBrainrot(null);
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
