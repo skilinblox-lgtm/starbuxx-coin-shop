@@ -987,6 +987,38 @@ const Admin = () => {
                   </div>
                 ))}
                 {blogPosts.length === 0 && <EmptyState text="Nenhum post publicado ainda." />}
+              {/* Blog Comments Management */}
+              <div className="mt-6">
+                <h3 className="flex items-center gap-2 font-heading text-base font-bold sm:text-lg">
+                  <MessageSquare className="h-4 w-4 text-primary" /> Comentários dos Posts ({blogComments.length})
+                </h3>
+                <div className="mt-3 space-y-2">
+                  {blogComments.map(c => {
+                    const parentPost = blogPosts.find(p => p.id === c.post_id);
+                    return (
+                      <div key={c.id} className="flex items-start justify-between gap-3 rounded-2xl border border-border bg-background p-3 sm:p-4">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold">{c.author_name}</p>
+                            <div className="flex gap-0.5">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star key={i} className={`h-3 w-3 ${i < c.rating ? "fill-primary text-primary" : "text-muted-foreground/20"}`} />
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            Post: {parentPost?.title || c.post_id.slice(0, 8)} • {new Date(c.created_at).toLocaleDateString("pt-BR")}
+                          </p>
+                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{c.comment}</p>
+                        </div>
+                        <button onClick={() => deleteBlogComment(c.id)} className="flex-shrink-0 rounded-lg border border-destructive/30 px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {blogComments.length === 0 && <EmptyState text="Nenhum comentário nos posts." />}
+                </div>
               </div>
             </div>
           )}
