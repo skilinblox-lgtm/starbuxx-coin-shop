@@ -1004,6 +1004,65 @@ const Admin = () => {
                 ))}
                 {brainrotPosts.length === 0 && <EmptyState text="Nenhum brainrot publicado ainda." />}
               </div>
+
+              {/* Flag Management */}
+              <div className="rounded-2xl border border-border bg-background p-4 sm:p-6">
+                <h3 className="flex items-center gap-2 text-sm font-bold sm:text-base"><Plus className="h-4 w-4 text-primary" /> Gerenciar Bandeiras Especiais</h3>
+                <p className="mt-1 text-xs text-muted-foreground">Crie ícones personalizados que podem ser adicionados ao lado do nome de qualquer brainrot.</p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <input value={newFlagName} onChange={e => setNewFlagName(e.target.value)}
+                    placeholder="Nome da bandeira (ex: Brasil)"
+                    className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+                  <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
+                    <Upload className="h-4 w-4" /> {newFlagImage ? newFlagImage.name : "Ícone da bandeira"}
+                    <input type="file" accept="image/*" className="hidden" onChange={e => setNewFlagImage(e.target.files?.[0] || null)} />
+                  </label>
+                  <button
+                    onClick={async () => {
+                      if (!newFlagName.trim() || !newFlagImage) { toast.error("Preencha nome e selecione um ícone"); return; }
+                      setCreatingFlag(true);
+                      try {
+                        const { data, error } = await supabase.from("brainrot_flags").insert({ name: newFlagName, image_url: "" } as any).select().single();
+                        if (error) throw error;
+                        const ext = newFlagImage.name.split(".").pop();
+                        const path = `flag-${data.id}.${ext}`;
+                        await supabase.storage.from("brainrot-flags").upload(path, newFlagImage, { upsert: true });
+                        const { data: { publicUrl } } = supabase.storage.from("brainrot-flags").getPublicUrl(path);
+                        await supabase.from("brainrot_flags").update({ image_url: publicUrl } as any).eq("id", data.id);
+                        toast.success("Bandeira criada!");
+                        setNewFlagName(""); setNewFlagImage(null);
+                        fetchAll();
+                      } catch (e: any) { toast.error(e.message); }
+                      finally { setCreatingFlag(false); }
+                    }}
+                    disabled={creatingFlag}
+                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+                  >
+                    {creatingFlag ? "Criando..." : "Criar Bandeira"}
+                  </button>
+                </div>
+                {brainrotFlags.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {brainrotFlags.map((flag: any) => (
+                      <div key={flag.id} className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2">
+                        <img src={flag.image_url} alt={flag.name} className="h-6 w-6 object-contain" />
+                        <span className="text-xs font-bold">{flag.name}</span>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Excluir bandeira "${flag.name}"?`)) return;
+                            await supabase.from("brainrot_flags").delete().eq("id", flag.id);
+                            toast.success("Bandeira excluída!");
+                            fetchAll();
+                          }}
+                          className="ml-1 rounded-lg p-1 text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
