@@ -491,6 +491,7 @@ const Admin = () => {
 
   const tabs = [
     { id: "dashboard" as Tab, label: "Dashboard", icon: BarChart3 },
+    { id: "orders" as Tab, label: "Pedidos", icon: ShoppingCart },
     { id: "products" as Tab, label: "Produtos", icon: Package },
     { id: "deliveries" as Tab, label: "Entregas", icon: Truck },
     { id: "brainrot" as Tab, label: "Brainrot", icon: Brain },
