@@ -61,7 +61,7 @@ const GameCatalog = () => {
   }, [gameId]);
 
   const filteredProducts = activeCategory
-    ? products.filter((p) => p.name.toLowerCase().includes(activeCategory.toLowerCase()))
+    ? products.filter((p) => p.currency === activeCategory)
     : products;
 
   const isRoblox = gameId === "roblox";
