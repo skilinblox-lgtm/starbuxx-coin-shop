@@ -357,6 +357,7 @@ const Admin = () => {
         title: newBlog.title, content: newBlog.content, category: newBlog.category,
         script_code: newBlog.script_code || null, video_url: newBlog.video_url || null,
         game_compatible: newBlog.game_compatible || null, author: "skilin",
+        has_key: newBlog.has_key, executors_compatible: newBlog.executors_compatible,
       } as any).select().single();
       if (error) throw error;
       if (newBlogImage && data) {
