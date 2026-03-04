@@ -236,7 +236,12 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
       </div>
 
       <div className="p-4">
-        <p className="truncate font-heading text-sm font-bold sm:text-base">{post.title}</p>
+        <div className="flex items-center gap-1 flex-wrap">
+          <p className="truncate font-heading text-sm font-bold sm:text-base">{post.title}</p>
+          {(post.special_flags || []).map((flag: string) => (
+            <SpecialFlagBadge key={flag} flag={flag} />
+          ))}
+        </div>
         {post.description && (
           <p className="mt-1 line-clamp-2 rounded-lg bg-[hsl(145,63%,42%)]/15 px-2.5 py-1.5 text-[12px] font-bold text-[hsl(145,70%,38%)] shadow-[inset_0_0_8px_hsl(145,63%,42%,0.1)]">{post.description}</p>
         )}
