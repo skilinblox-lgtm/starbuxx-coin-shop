@@ -617,7 +617,7 @@ const Admin = () => {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold sm:text-base">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">{p.currency} • R$ {Number(p.price_per_unit).toFixed(2)}/un • {p.game_id}</p>
+                        <p className="text-xs text-muted-foreground">{p.currency} • {p.game_id === "roblox" ? `${Number(p.price_per_unit).toLocaleString("pt-BR")} Robux` : `R$ ${Number(p.price_per_unit).toFixed(2)}/un`} • {p.game_id}</p>
                       </div>
                       <div className="flex flex-shrink-0 items-center gap-2">
                         <button onClick={() => startEditProduct(p)} className="rounded-lg border border-border p-2 text-muted-foreground hover:border-primary hover:text-primary"><Edit2 className="h-3.5 w-3.5" /></button>
