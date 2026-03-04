@@ -610,6 +610,25 @@ const Admin = () => {
                     ))}
                   </select>
                 </div>
+                {/* Tags (multi-select) */}
+                <div className="mt-3">
+                  <p className="text-xs font-bold text-muted-foreground mb-1.5">Tags adicionais (ex: Ouro + Divino)</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(RARITY_CONFIG).map(([key, cfg]) => (
+                      <button key={key} type="button"
+                        onClick={() => setNewBrainrot(p => ({
+                          ...p,
+                          tags: p.tags.includes(key) ? p.tags.filter(t => t !== key) : [...p.tags, key]
+                        }))}
+                        className={`rounded-full border px-2.5 py-1 text-[10px] font-bold transition-all ${
+                          newBrainrot.tags.includes(key)
+                            ? "border-primary bg-primary/15 text-primary"
+                            : "border-border bg-surface text-muted-foreground hover:border-primary/30"
+                        }`}
+                      >{cfg.label}</button>
+                    ))}
+                  </div>
+                </div>
                 <textarea value={newBrainrot.description} onChange={e => setNewBrainrot(p => ({ ...p, description: e.target.value }))}
                   placeholder="Descrição (opcional)" rows={2}
                   className="mt-3 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
