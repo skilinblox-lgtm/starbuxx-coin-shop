@@ -128,18 +128,18 @@ const ProductPage = () => {
               <div className="mt-4">
                 <label className="text-sm font-medium text-muted-foreground">Quantidade de {product.currency}</label>
                 <div className="mt-2 flex items-center gap-3">
-                  <button onClick={() => setQuantity(q => Math.max(1, q - 100))} className="rounded-xl border border-border bg-card p-2.5 transition-colors hover:border-primary">
+                  <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="rounded-xl border border-border bg-card p-2.5 transition-colors hover:border-primary">
                     <Minus className="h-4 w-4" />
                   </button>
                   <input type="number" min={1} value={quantity}
                     onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                     className="w-32 rounded-xl border border-border bg-card px-4 py-2.5 text-center text-lg font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                  <button onClick={() => setQuantity(q => q + 100)} className="rounded-xl border border-border bg-card p-2.5 transition-colors hover:border-primary">
+                  <button onClick={() => setQuantity(q => q + 1)} className="rounded-xl border border-border bg-card p-2.5 transition-colors hover:border-primary">
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {[100, 500, 1000, 5000, 10000].map(amt => (
+                  {[1, 50, 100, 500, 1000, 5000].map(amt => (
                     <button key={amt} onClick={() => setQuantity(amt)}
                       className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
                         quantity === amt ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"
