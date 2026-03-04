@@ -47,8 +47,14 @@ const GameCatalog = () => {
         .select("*")
         .eq("game_id", gameId || "")
         .eq("active", true)
-        .order("price_per_unit", { ascending: true });
-      setProducts(data || []);
+        .order("display_order", { ascending: true });
+      // Show featured products first, then by display_order
+      const sorted = (data || []).sort((a: any, b: any) => {
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return (a.display_order ?? 0) - (b.display_order ?? 0);
+      });
+      setProducts(sorted);
       setLoading(false);
     };
     fetchProducts();

@@ -584,8 +584,8 @@ const Admin = () => {
               <CreateProductForm onCreated={fetchAll} />
               
               <div className="space-y-2 sm:space-y-3">
-              {products.map(p => (
-                <motion.div key={p.id} layout className="rounded-2xl border border-border bg-background p-3 sm:p-5">
+              {products.map((p, idx) => (
+                <motion.div key={p.id} layout className={`rounded-2xl border bg-background p-3 sm:p-5 ${p.featured ? "border-primary/50 ring-1 ring-primary/20" : "border-border"}`}>
                   {editingProduct === p.id ? (
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
@@ -610,17 +610,74 @@ const Admin = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      {/* Reorder buttons */}
+                      <div className="flex flex-col gap-0.5">
+                        <button
+                          onClick={async () => {
+                            if (idx === 0) return;
+                            const prev = products[idx - 1];
+                            const currOrder = p.display_order ?? idx;
+                            const prevOrder = prev.display_order ?? (idx - 1);
+                            await Promise.all([
+                              supabase.from("products").update({ display_order: prevOrder } as any).eq("id", p.id),
+                              supabase.from("products").update({ display_order: currOrder } as any).eq("id", prev.id),
+                            ]);
+                            fetchAll();
+                          }}
+                          disabled={idx === 0}
+                          className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-20"
+                        >
+                          <ChevronUp className="h-4 w-4" />
+                        </button>
+                        <GripVertical className="mx-auto h-3.5 w-3.5 text-muted-foreground/40" />
+                        <button
+                          onClick={async () => {
+                            if (idx === products.length - 1) return;
+                            const next = products[idx + 1];
+                            const currOrder = p.display_order ?? idx;
+                            const nextOrder = next.display_order ?? (idx + 1);
+                            await Promise.all([
+                              supabase.from("products").update({ display_order: nextOrder } as any).eq("id", p.id),
+                              supabase.from("products").update({ display_order: currOrder } as any).eq("id", next.id),
+                            ]);
+                            fetchAll();
+                          }}
+                          disabled={idx === products.length - 1}
+                          className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-20"
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                        </button>
+                      </div>
+
                       {p.image_url ? (
                         <img src={p.image_url} alt={p.name} className="h-12 w-12 rounded-lg object-contain sm:h-14 sm:w-14" />
                       ) : (
                         <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface text-muted-foreground sm:h-14 sm:w-14"><Image className="h-5 w-5" /></div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold sm:text-base">{p.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="truncate text-sm font-bold sm:text-base">{p.name}</p>
+                          {p.featured && (
+                            <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                              <Sparkles className="h-3 w-3" /> Destaque
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">{p.currency} • {p.game_id === "roblox" ? `${Number(p.price_per_unit).toLocaleString("pt-BR")} Robux` : `R$ ${Number(p.price_per_unit).toFixed(2)}/un`} • {p.game_id}</p>
                       </div>
-                      <div className="flex flex-shrink-0 items-center gap-2">
+                      <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+                        <button
+                          onClick={async () => {
+                            await supabase.from("products").update({ featured: !p.featured } as any).eq("id", p.id);
+                            toast.success(p.featured ? "Destaque removido" : "Produto destacado!");
+                            fetchAll();
+                          }}
+                          className={`rounded-lg border p-2 transition-colors ${p.featured ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}
+                          title={p.featured ? "Remover destaque" : "Destacar produto"}
+                        >
+                          <Star className={`h-3.5 w-3.5 ${p.featured ? "fill-primary" : ""}`} />
+                        </button>
                         <button onClick={() => startEditProduct(p)} className="rounded-lg border border-border p-2 text-muted-foreground hover:border-primary hover:text-primary"><Edit2 className="h-3.5 w-3.5" /></button>
                         <button onClick={() => toggleProduct(p.id, p.active)}
                           className={`rounded-full px-3 py-1 text-[10px] font-bold sm:px-4 sm:py-1.5 sm:text-xs ${p.active ? "bg-[hsl(140,60%,45%)]/10 text-[hsl(140,60%,45%)]" : "bg-[hsl(0,70%,55%)]/10 text-[hsl(0,70%,55%)]"}`}>
