@@ -903,6 +903,27 @@ const Admin = () => {
                             ))}
                           </div>
                         </div>
+                        {/* Edit special flags */}
+                        <div>
+                          <p className="text-xs font-bold text-muted-foreground mb-1">Bandeiras especiais</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {Object.entries(SPECIAL_FLAGS).map(([key, cfg]) => (
+                              <button key={key} type="button"
+                                onClick={() => setEditBrainrotData(p => ({
+                                  ...p,
+                                  special_flags: p.special_flags.includes(key) ? p.special_flags.filter(t => t !== key) : [...p.special_flags, key]
+                                }))}
+                                className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold transition-all ${
+                                  editBrainrotData.special_flags.includes(key)
+                                    ? "border-primary bg-primary/15 text-primary"
+                                    : "border-border bg-surface text-muted-foreground hover:border-primary/30"
+                                }`}
+                              >
+                                <span className="text-sm">{cfg.emoji}</span> {cfg.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                         <div className="flex items-center gap-2">
                           <button onClick={() => saveBrainrotEdit(post.id)} className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground">
                             <Save className="mr-1.5 inline h-3.5 w-3.5" /> Salvar
