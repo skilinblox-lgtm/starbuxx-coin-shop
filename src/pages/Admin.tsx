@@ -703,10 +703,15 @@ const Admin = () => {
                           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-2xl sm:h-16 sm:w-16">🧠</div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
-                          <div className="mt-0.5 flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                            {post.featured && <Star className="h-3.5 w-3.5 fill-primary text-primary" />}
+                          </div>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1">
                             <RarityBadge rarity={post.rarity || 'common'} />
-                            <span className="text-xs text-muted-foreground">{post.description?.slice(0, 40) || "Sem descrição"}</span>
+                            {(post.tags || []).filter((t: string) => t !== post.rarity).map((tag: string) => (
+                              <RarityBadge key={tag} rarity={tag} />
+                            ))}
                           </div>
                           <p className="mt-1 flex items-center gap-2 text-sm font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)} <span className="text-xs font-normal text-muted-foreground">• Estoque: {post.stock ?? 0}</span></p>
                         </div>
