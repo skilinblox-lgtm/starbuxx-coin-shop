@@ -101,6 +101,7 @@ const Admin = () => {
   const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
   const [editTemplateData, setEditTemplateData] = useState({ subject: "", body_html: "", description: "" });
   const [emailPreview, setEmailPreview] = useState<string | null>(null);
+  const [orderFilter, setOrderFilter] = useState("todos");
 
   useEffect(() => {
     const checkAdmin = async () => {
