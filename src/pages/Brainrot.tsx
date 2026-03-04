@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { TrendingDown, TrendingUp, Minus, BarChart3, ShoppingCart, Clock, Flame, Zap, ArrowRight, X, AlertTriangle, Star } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus, BarChart3, ShoppingCart, Clock, Flame, Zap, ArrowRight, X, AlertTriangle, Star, Brain } from "lucide-react";
 import RarityBadge, { RARITY_CONFIG } from "@/components/RarityBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
