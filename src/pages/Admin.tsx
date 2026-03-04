@@ -1365,6 +1365,34 @@ const Admin = () => {
                           placeholder="Descrição" rows={3} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono" />
                         <textarea value={editBlogData.script_code} onChange={e => setEditBlogData(p => ({ ...p, script_code: e.target.value }))}
                           placeholder="Código do Script" rows={2} className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary font-mono text-xs" />
+                        {/* Key + Executors for edit */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <button type="button" onClick={() => setEditBlogData(p => ({ ...p, has_key: !p.has_key }))}
+                            className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all ${
+                              editBlogData.has_key ? "border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]" : "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                            }`}>
+                            {editBlogData.has_key ? "🔑 Com Key" : "🔓 Sem Key"}
+                          </button>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">Executores:</span>
+                            {["Delta", "Volcano", "Solara", "Fluxus", "KRNL", "Arceus X", "Hydrogen"].map(exec => (
+                              <button key={exec} type="button"
+                                onClick={() => setEditBlogData(p => ({
+                                  ...p,
+                                  executors_compatible: p.executors_compatible.includes(exec)
+                                    ? p.executors_compatible.filter(e => e !== exec)
+                                    : [...p.executors_compatible, exec]
+                                }))}
+                                className={`rounded-lg border px-2.5 py-1.5 text-[10px] font-medium transition-all ${
+                                  editBlogData.executors_compatible.includes(exec)
+                                    ? "border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                                    : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                                }`}>
+                                {exec}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                         <div className="flex flex-wrap items-center gap-2">
                           <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary">
                             <Upload className="h-3.5 w-3.5" /> {editBlogImage ? editBlogImage.name : "Trocar Imagem"}
@@ -1393,10 +1421,24 @@ const Admin = () => {
                           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface text-muted-foreground sm:h-16 sm:w-16"><FileText className="h-6 w-6" /></div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                            {post.has_key ? (
+                              <span className="rounded-full bg-[hsl(var(--warning))]/10 px-2 py-0.5 text-[9px] font-bold text-[hsl(var(--warning))]">🔑 Key</span>
+                            ) : (
+                              <span className="rounded-full bg-[hsl(var(--success))]/10 px-2 py-0.5 text-[9px] font-bold text-[hsl(var(--success))]">🔓 No Key</span>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             {post.category === "executor" ? "Executor" : post.category === "tutorial" ? "Tutorial" : "Script"} • {new Date(post.created_at).toLocaleDateString("pt-BR")}
                           </p>
+                          {post.executors_compatible?.length > 0 && (
+                            <div className="mt-0.5 flex flex-wrap gap-1">
+                              {post.executors_compatible.map((e: string) => (
+                                <span key={e} className="rounded bg-[hsl(var(--success))]/10 px-1.5 py-0.5 text-[9px] font-medium text-[hsl(var(--success))]">{e}</span>
+                              ))}
+                            </div>
+                          )}
                           <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{post.content.substring(0, 80)}...</p>
                         </div>
                         <div className="flex flex-col gap-1.5">
