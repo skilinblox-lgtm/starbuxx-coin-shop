@@ -158,7 +158,7 @@ const Brainrot = () => {
 
         <AnimatePresence>
           {selectedPost && (
-            <BrainrotModal post={selectedPost} onClose={() => setSelectedPost(null)} onBuy={handleBuy} />
+            <BrainrotModal post={selectedPost} onClose={() => setSelectedPost(null)} onBuy={handleBuy} flags={flags} />
           )}
         </AnimatePresence>
 
