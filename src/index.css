@@ -6,10 +6,10 @@
 
 @layer base {
   :root {
-    --background: 220 15% 96%;
+    --background: 0 0% 100%;
     --foreground: 220 20% 14%;
 
-    --card: 0 0% 100%;
+    --card: 220 15% 97%;
     --card-foreground: 220 20% 14%;
 
     --popover: 0 0% 100%;
@@ -21,7 +21,7 @@
     --secondary: 220 12% 91%;
     --secondary-foreground: 220 20% 20%;
 
-    --muted: 220 12% 91%;
+    --muted: 220 12% 93%;
     --muted-foreground: 220 10% 46%;
 
     --accent: 45 100% 51%;
@@ -30,8 +30,8 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 12% 88%;
-    --input: 220 12% 88%;
+    --border: 220 12% 90%;
+    --input: 220 12% 90%;
     --ring: 45 100% 51%;
 
     --radius: 0.75rem;
@@ -62,6 +62,7 @@
     --info-foreground: 0 0% 100%;
     --promo: 145 63% 42%;
     --discount: 0 84% 60%;
+    --price: 145 70% 38%;
 
     --gradient-gold: linear-gradient(135deg, hsl(45, 100%, 51%), hsl(38, 100%, 45%));
     --gradient-dark: linear-gradient(180deg, hsl(220, 20%, 10%), hsl(220, 20%, 6%));
@@ -69,7 +70,51 @@
     --shadow-card: 0 1px 8px -1px hsl(220 15% 50% / 0.08);
   }
 
-  /* Admin panel keeps dark theme */
+  .dark {
+    --background: 220 20% 7%;
+    --foreground: 0 0% 95%;
+
+    --card: 220 20% 11%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 220 20% 11%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 45 100% 51%;
+    --primary-foreground: 220 20% 10%;
+
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 45 100% 51%;
+    --accent-foreground: 220 20% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 45 100% 51%;
+
+    --sidebar-background: 220 20% 9%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 45 100% 51%;
+    --sidebar-primary-foreground: 220 20% 10%;
+    --sidebar-accent: 220 15% 14%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 45 100% 51%;
+
+    --surface: 220 15% 14%;
+    --surface-hover: 220 15% 18%;
+    --price: 145 70% 45%;
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
+  }
+
+  /* Admin panel always dark */
   .admin-dark {
     --background: 220 20% 7%;
     --foreground: 0 0% 95%;
@@ -86,25 +131,6 @@
     --surface: 220 15% 14%;
     --surface-hover: 220 15% 18%;
     --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
-  }
-
-  /* Brainrot market dark theme */
-  .brainrot-dark {
-    --background: 250 25% 6%;
-    --foreground: 0 0% 95%;
-    --card: 250 22% 10%;
-    --card-foreground: 0 0% 95%;
-    --popover: 250 22% 10%;
-    --popover-foreground: 0 0% 95%;
-    --secondary: 250 18% 16%;
-    --secondary-foreground: 0 0% 90%;
-    --muted: 250 18% 16%;
-    --muted-foreground: 250 12% 55%;
-    --border: 250 18% 16%;
-    --input: 250 18% 16%;
-    --surface: 250 20% 12%;
-    --surface-hover: 250 20% 16%;
-    --shadow-card: 0 2px 16px -2px hsl(260 60% 30% / 0.15);
   }
 }
 
@@ -132,6 +158,9 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+  .text-price {
+    color: hsl(var(--price));
   }
   .glow-gold {
     box-shadow: 0 0 30px hsl(45 100% 51% / 0.2), 0 0 60px hsl(45 100% 51% / 0.08);

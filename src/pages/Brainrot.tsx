@@ -114,7 +114,7 @@ const Brainrot = () => {
 
   return (
     <PageTransition>
-      <div className="brainrot-dark min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container px-4 pb-12 pt-20 sm:pt-24">
           {/* Hero */}
@@ -211,7 +211,7 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
         </div>
       )}
 
-      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[hsl(260,30%,12%)] to-[hsl(250,25%,8%)]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {post.image_url ? (
           <img src={post.image_url} alt={post.title} className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-105" />
         ) : (
@@ -242,7 +242,7 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
         )}
         <div className="mt-2 flex items-center justify-between">
           <div>
-            <span className="text-lg font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</span>
+            <span className="text-lg font-bold text-price">R$ {Number(post.current_price).toFixed(2)}</span>
             {isDropping && (
               <span className="ml-1.5 text-xs text-muted-foreground line-through">
                 R$ {(Number(post.current_price) * (1 + fakeDiscount / 100)).toFixed(2)}
@@ -298,15 +298,15 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
         exit={{ y: 40, opacity: 0 }}
         transition={{ type: "spring", damping: 25 }}
         onClick={(e) => e.stopPropagation()}
-        className="brainrot-dark w-full max-w-lg overflow-hidden rounded-t-3xl border border-border bg-card shadow-2xl sm:max-h-[90vh] sm:rounded-3xl"
+        className="w-full max-w-lg overflow-hidden rounded-t-3xl border border-border bg-card shadow-2xl sm:max-h-[90vh] sm:rounded-3xl"
       >
-        <div className="relative h-56 overflow-hidden bg-gradient-to-br from-[hsl(260,30%,12%)] to-[hsl(250,25%,8%)] sm:h-64">
+        <div className="relative h-56 overflow-hidden bg-muted sm:h-64">
           {post.image_url ? (
             <img src={post.image_url} alt={post.title} className="h-full w-full object-contain p-3" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-7xl">🧠</div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[hsl(250,22%,10%)] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
           <button onClick={onClose} className="absolute right-3 top-3 rounded-full bg-black/40 p-1.5 backdrop-blur-sm hover:bg-black/60">
             <X className="h-4 w-4 text-white" />
           </button>
@@ -330,7 +330,7 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
           )}
 
           <div className="mt-3 flex items-end gap-3">
-            <span className="text-3xl font-bold text-gradient-gold">R$ {Number(post.current_price).toFixed(2)}</span>
+            <span className="text-3xl font-bold text-price">R$ {Number(post.current_price).toFixed(2)}</span>
             {isDropping && <span className="mb-1 text-sm text-muted-foreground line-through">R$ {peakPrice.toFixed(2)}</span>}
           </div>
 
