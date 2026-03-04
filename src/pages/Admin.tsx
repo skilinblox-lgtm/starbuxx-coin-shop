@@ -216,7 +216,8 @@ const Admin = () => {
         title: newBrainrot.title,
         description: newBrainrot.description,
         current_price: parseFloat(newBrainrot.current_price),
-      }).select().single();
+        rarity: newBrainrot.rarity,
+      } as any).select().single();
       if (error) throw error;
       // Add initial price history
       await supabase.from("brainrot_price_history").insert({
