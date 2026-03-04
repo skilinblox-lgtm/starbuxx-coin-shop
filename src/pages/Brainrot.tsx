@@ -306,7 +306,7 @@ const BrainrotModal = ({ post, onClose, onBuy }: { post: any; onClose: () => voi
           ) : (
             <div className="flex h-full w-full items-center justify-center text-7xl">🧠</div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[hsl(250,22%,10%)] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
           <button onClick={onClose} className="absolute right-3 top-3 rounded-full bg-black/40 p-1.5 backdrop-blur-sm hover:bg-black/60">
             <X className="h-4 w-4 text-white" />
           </button>
