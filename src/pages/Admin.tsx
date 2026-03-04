@@ -220,6 +220,7 @@ const Admin = () => {
         current_price: parseFloat(newBrainrot.current_price),
         rarity: newBrainrot.rarity,
         stock: parseInt(newBrainrot.stock) || 0,
+        tags: newBrainrot.tags,
       } as any).select().single();
       if (error) throw error;
       // Upload image if provided
