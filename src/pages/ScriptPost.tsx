@@ -9,6 +9,13 @@ import DiscordFloat from "@/components/DiscordFloat";
 import PageTransition from "@/components/PageTransition";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+import iconBrainrot from "@/assets/icon-brainrot-game.png";
+import iconBloxFruits from "@/assets/icon-bloxfruits-game.png";
+
+const GAME_ICONS: Record<string, string> = {
+  "Steal a Brainrot": iconBrainrot,
+  "Blox Fruits": iconBloxFruits,
+};
 
 const CREATORS = [
   { name: "skilin", youtube: "https://www.youtube.com/@skilin7" },
