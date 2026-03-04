@@ -25,10 +25,10 @@ const BrainrotBanner = () => {
                 Marketplace
               </span>
               <h2 className="mt-2 font-heading text-xl font-bold text-white sm:text-2xl lg:text-3xl">
-                Colete seus <span className="text-gradient-gold">Brainrots</span>
+                Compre seu <span className="text-gradient-gold">Brainrot</span> com segurança
               </h2>
               <p className="mt-1 max-w-sm text-xs text-white/60 sm:text-sm">
-                O maior marketplace de Brainrots. Confira cotações e tendências em tempo real.
+                Rápido, fácil e 100% seguro. Entrega em até 24h com garantia total.
               </p>
               <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-[var(--shadow-gold)] transition-all group-hover:brightness-110 sm:text-sm">
                 Ver Brainrots <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
