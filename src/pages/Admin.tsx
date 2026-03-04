@@ -617,7 +617,7 @@ const Admin = () => {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold sm:text-base">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">{p.currency} • R$ {Number(p.price_per_unit).toFixed(2)}/un • {p.game_id}</p>
+                        <p className="text-xs text-muted-foreground">{p.currency} • {p.game_id === "roblox" ? `${Number(p.price_per_unit).toLocaleString("pt-BR")} Robux` : `R$ ${Number(p.price_per_unit).toFixed(2)}/un`} • {p.game_id}</p>
                       </div>
                       <div className="flex flex-shrink-0 items-center gap-2">
                         <button onClick={() => startEditProduct(p)} className="rounded-lg border border-border p-2 text-muted-foreground hover:border-primary hover:text-primary"><Edit2 className="h-3.5 w-3.5" /></button>
@@ -1289,6 +1289,15 @@ const CreateProductForm = ({ onCreated }: { onCreated: () => void }) => {
   const [price, setPrice] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [creating, setCreating] = useState(false);
+  const [robuxRate, setRobuxRate] = useState(37);
+
+  useEffect(() => {
+    const fetchRate = async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "robux_price_per_1000").single();
+      if (data) setRobuxRate(parseFloat(data.value));
+    };
+    fetchRate();
+  }, []);
 
   const gameOptions = [
     { id: "roblox", currencies: ["Robux", "Gamepass", "Frutas"] },
@@ -1296,12 +1305,17 @@ const CreateProductForm = ({ onCreated }: { onCreated: () => void }) => {
     { id: "brawl-stars", currencies: ["Gemas"] },
   ];
 
+  const isRoblox = gameId === "roblox";
+  const calculatedPriceR$ = isRoblox ? (parseFloat(price || "0") * robuxRate / 1000) : parseFloat(price || "0");
+
   const handleCreate = async () => {
-    if (!name.trim() || !price) { toast.error("Preencha nome e preço"); return; }
+    if (!name.trim() || !price) { toast.error("Preencha nome e valor"); return; }
     setCreating(true);
     try {
+      // For Roblox products, store the robux amount as price_per_unit (the display price is calculated dynamically)
+      const storedPrice = isRoblox ? parseFloat(price) : parseFloat(price);
       const { data, error } = await supabase.from("products").insert({
-        name, game_id: gameId, currency, price_per_unit: parseFloat(price), active: true,
+        name, game_id: gameId, currency, price_per_unit: storedPrice, active: true,
       }).select().single();
       if (error) throw error;
 
@@ -1335,8 +1349,16 @@ const CreateProductForm = ({ onCreated }: { onCreated: () => void }) => {
           className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary">
           {gameOptions.find(g => g.id === gameId)?.currencies.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="Preço por unidade (R$)"
-          className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+        <div>
+          <input type="number" step={isRoblox ? "1" : "0.01"} value={price} onChange={e => setPrice(e.target.value)}
+            placeholder={isRoblox ? "Quantidade em Robux" : "Preço por unidade (R$)"}
+            className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" />
+          {isRoblox && price && (
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Valor calculado: <strong className="text-primary">R$ {calculatedPriceR$.toFixed(2)}</strong> (base: R$ {robuxRate.toFixed(2)} / 1.000 Robux)
+            </p>
+          )}
+        </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-primary sm:text-sm">
