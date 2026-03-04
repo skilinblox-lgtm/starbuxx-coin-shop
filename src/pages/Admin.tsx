@@ -942,8 +942,11 @@ const Admin = () => {
                           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface sm:h-16 sm:w-16"><Brain className="h-6 w-6 text-muted-foreground" /></div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="truncate text-sm font-bold sm:text-base">{post.title}</p>
+                            {(post.special_flags || []).map((flag: string) => (
+                              <SpecialFlagBadge key={flag} flag={flag} />
+                            ))}
                             {post.featured && <Star className="h-3.5 w-3.5 fill-primary text-primary" />}
                           </div>
                           <div className="mt-0.5 flex flex-wrap items-center gap-1">
