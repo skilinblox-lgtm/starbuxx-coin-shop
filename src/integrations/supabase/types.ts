@@ -354,6 +354,8 @@ export type Database = {
           active: boolean | null
           created_at: string
           currency: string
+          display_order: number
+          featured: boolean
           game_id: string
           id: string
           image_url: string | null
@@ -365,6 +367,8 @@ export type Database = {
           active?: boolean | null
           created_at?: string
           currency: string
+          display_order?: number
+          featured?: boolean
           game_id: string
           id?: string
           image_url?: string | null
@@ -376,6 +380,8 @@ export type Database = {
           active?: boolean | null
           created_at?: string
           currency?: string
+          display_order?: number
+          featured?: boolean
           game_id?: string
           id?: string
           image_url?: string | null

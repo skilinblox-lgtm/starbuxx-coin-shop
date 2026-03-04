@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ArrowLeft, Coins, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Coins, ShoppingCart, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DiscordFloat from "@/components/DiscordFloat";
@@ -47,8 +47,14 @@ const GameCatalog = () => {
         .select("*")
         .eq("game_id", gameId || "")
         .eq("active", true)
-        .order("price_per_unit", { ascending: true });
-      setProducts(data || []);
+        .order("display_order", { ascending: true });
+      // Show featured products first, then by display_order
+      const sorted = (data || []).sort((a: any, b: any) => {
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return (a.display_order ?? 0) - (b.display_order ?? 0);
+      });
+      setProducts(sorted);
       setLoading(false);
     };
     fetchProducts();
@@ -132,8 +138,13 @@ const GameCatalog = () => {
                   >
                     <Link
                       to={`/product/${product.id}`}
-                      className="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-all hover:border-primary/40 hover:shadow-lg sm:p-6"
+                      className={`group relative flex flex-col rounded-2xl border bg-card p-5 shadow-[var(--shadow-card)] transition-all hover:border-primary/40 hover:shadow-lg sm:p-6 ${product.featured ? "border-primary/40 ring-1 ring-primary/20" : "border-border"}`}
                     >
+                      {product.featured && (
+                        <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary">
+                          <Sparkles className="h-3 w-3" /> Destaque
+                        </span>
+                      )}
                       <div className="flex h-32 items-center justify-center sm:h-40">
                         {product.image_url ? (
                           <img
