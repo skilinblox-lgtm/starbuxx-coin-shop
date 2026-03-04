@@ -17,7 +17,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 
-type Tab = "dashboard" | "products" | "deliveries" | "moderation" | "earnings" | "moderators" | "brainrot" | "blog" | "settings";
+type Tab = "dashboard" | "products" | "deliveries" | "moderation" | "earnings" | "moderators" | "brainrot" | "blog" | "settings" | "emails";
 
 const statusOptions = [
   { value: "aguardando_pagamento", label: "Aguardando", color: "hsl(45, 100%, 51%)" },
