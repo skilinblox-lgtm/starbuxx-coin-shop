@@ -180,6 +180,13 @@ const Admin = () => {
     toast.success("Produto atualizado!"); fetchAll();
   };
 
+  const deleteProduct = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este produto permanentemente?")) return;
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Produto excluído!"); fetchAll();
+  };
+
   const uploadProductImage = async (productId: string, file: File) => {
     setUploadingImage(true);
     try {
