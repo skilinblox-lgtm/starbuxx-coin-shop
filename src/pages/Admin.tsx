@@ -1659,6 +1659,7 @@ const Admin = () => {
                       order_delivered: { label: "Pedido Entregue", color: "hsl(210, 80%, 55%)", icon: Truck },
                       order_cancelled: { label: "Pedido Cancelado", color: "hsl(0, 84%, 60%)", icon: XCircle },
                       password_recovery: { label: "Recuperação de Senha", color: "hsl(210, 80%, 55%)", icon: Shield },
+                      promo_new_user: { label: "Promoção - Novo Usuário", color: "hsl(280, 70%, 55%)", icon: Sparkles },
                     };
                     const meta = tplMeta[template.template_key] || { label: template.template_key, color: "hsl(220, 10%, 60%)", icon: Mail };
                     return (
