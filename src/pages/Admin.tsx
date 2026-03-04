@@ -388,6 +388,11 @@ const Admin = () => {
       fetchAll();
     } catch (e: any) { toast.error(e.message); }
   };
+
+  const toggleBlogPublished = async (id: string, published: boolean) => {
+    await supabase.from("blog_posts").update({ published: !published } as any).eq("id", id);
+    toast.success(published ? "Post despublicado" : "Post publicado!");
+    fetchAll();
   };
 
   // Rarity helpers removed - using RarityBadge component instead
