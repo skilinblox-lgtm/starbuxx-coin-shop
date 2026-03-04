@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import {
   ShieldCheck, ArrowLeft, ChevronRight, ChevronLeft, Lock, User,
   CreditCard, CheckCircle, Truck, Users, HelpCircle, Play, Gamepad2,
-  QrCode, Landmark, Zap, Sparkles, BadgeCheck, Shield, Clock, Server
+  QrCode, Landmark, Zap, Sparkles, BadgeCheck, Shield, Clock, Server,
+  Copy, RefreshCw, Loader2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -50,6 +51,11 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
 
+  // PIX payment state
+  const [pixData, setPixData] = useState<{ qrCode?: string; qrCodeBase64?: string; copyPaste?: string; transactionId?: string; orderId?: string } | null>(null);
+  const [pixStatus, setPixStatus] = useState<"idle" | "generating" | "waiting" | "confirmed" | "error">("idle");
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
     if (!order) { navigate("/"); return; }
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -63,6 +69,27 @@ const Checkout = () => {
     });
   }, [order, navigate]);
 
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, []);
+
+  // Poll for payment status
+  const startPolling = (orderId: string) => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
+      try {
+        const { data: orderData } = await supabase.from("orders").select("status").eq("id", orderId).single();
+        if (orderData?.status === "pago") {
+          setPixStatus("confirmed");
+          if (pollRef.current) clearInterval(pollRef.current);
+          toast.success("Pagamento confirmado! 🎉");
+          setTimeout(() => navigate("/my-orders"), 3000);
+        }
+      } catch {}
+    }, 5000); // Check every 5 seconds
+  };
+
   if (!order) return null;
 
   const getPaymentStepIndex = () => (isRobux || isBrainrot) ? 3 : 2;
@@ -71,7 +98,7 @@ const Checkout = () => {
   const canAdvance = () => {
     if (step === 1) return fullName.trim() && gameUsername.trim() && discord.trim();
     if (isRobux && step === 2) return knowsGamepass !== null;
-    if (isBrainrot && step === 2) return true; // just informational
+    if (isBrainrot && step === 2) return true;
     if (step === getPaymentStepIndex()) return !!paymentMethod;
     return true;
   };
@@ -80,17 +107,49 @@ const Checkout = () => {
     if (!user) { toast.error("Você precisa estar logado para comprar."); navigate("/auth"); return; }
     setLoading(true);
     try {
-      const { error } = await supabase.from("orders").insert({
+      // Create the order
+      const { data: newOrder, error } = await supabase.from("orders").insert({
         user_id: user.id, game_id: order.gameId, quantity: order.quantity,
         total_price: order.totalPrice, payment_method: paymentMethod,
         game_username: gameUsername, full_name: fullName, cpf: "N/A", discord_username: discord,
         product_id: order.productId || null,
-      });
+      }).select().single();
       if (error) throw error;
-      toast.success("Pedido criado! Entre no nosso Discord para suporte.");
-      navigate("/my-orders");
+
+      toast.success("Pedido criado! Gerando PIX...");
+
+      // Generate PIX QR Code
+      setPixStatus("generating");
+      try {
+        const { data: pixResult, error: pixError } = await supabase.functions.invoke("pix-create", {
+          body: { orderId: newOrder.id },
+        });
+
+        if (pixError) throw pixError;
+
+        if (pixResult?.success) {
+          setPixData({
+            qrCode: pixResult.qrCode,
+            qrCodeBase64: pixResult.qrCodeBase64,
+            copyPaste: pixResult.copyPaste,
+            transactionId: pixResult.transactionId,
+            orderId: newOrder.id,
+          });
+          setPixStatus("waiting");
+          startPolling(newOrder.id);
+        } else {
+          throw new Error(pixResult?.error || "Erro ao gerar PIX");
+        }
+      } catch (pixErr: any) {
+        console.error("PIX generation error:", pixErr);
+        setPixStatus("error");
+        toast.error("PIX gerado com erro. Vá em Meus Pedidos para tentar novamente.");
+        // Still redirect since order was created
+        setTimeout(() => navigate("/my-orders"), 3000);
+      }
     } catch (error: any) {
       toast.error(error.message || "Erro ao criar pedido");
+      setPixStatus("idle");
     } finally { setLoading(false); }
   };
 
@@ -337,7 +396,7 @@ const Checkout = () => {
               )}
 
               {/* Confirmation step */}
-              {isConfirmStep && (
+              {isConfirmStep && pixStatus === "idle" && (
                 <motion.div key="confirm" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }} className="space-y-4">
                   <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-6 sm:p-8">
                     <div className="flex items-center gap-2.5 mb-5">
@@ -388,11 +447,111 @@ const Checkout = () => {
                   </div>
                 </motion.div>
               )}
+
+              {/* PIX Payment Screen */}
+              {isConfirmStep && (pixStatus === "generating" || pixStatus === "waiting" || pixStatus === "confirmed") && (
+                <motion.div key="pix-payment" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}
+                  className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-6 sm:p-8">
+                  
+                  {pixStatus === "generating" && (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                      <p className="mt-4 text-sm font-bold text-white">Gerando QR Code PIX...</p>
+                      <p className="mt-1 text-xs text-white/40">Aguarde um momento</p>
+                    </div>
+                  )}
+
+                  {pixStatus === "waiting" && pixData && (
+                    <div className="space-y-6">
+                      <div className="text-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+                          <QrCode className="h-6 w-6 text-primary" />
+                        </div>
+                        <h3 className="mt-3 font-heading text-lg font-bold text-white">Pague via PIX</h3>
+                        <p className="mt-1 text-xs text-white/40">Escaneie o QR Code ou copie o código abaixo</p>
+                      </div>
+
+                      {/* QR Code */}
+                      <div className="flex justify-center">
+                        {pixData.qrCodeBase64 ? (
+                          <div className="rounded-2xl border-2 border-white/10 bg-white p-4">
+                            <img src={pixData.qrCodeBase64.startsWith("data:") ? pixData.qrCodeBase64 : `data:image/png;base64,${pixData.qrCodeBase64}`} alt="QR Code PIX" className="h-48 w-48" />
+                          </div>
+                        ) : pixData.qrCode ? (
+                          <div className="rounded-2xl border-2 border-white/10 bg-white p-4">
+                            <img src={pixData.qrCode} alt="QR Code PIX" className="h-48 w-48" />
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {/* Copy paste code */}
+                      {pixData.copyPaste && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-bold text-white/50 text-center">Copia e Cola</p>
+                          <div className="relative">
+                            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 pr-14 overflow-hidden">
+                              <p className="text-xs text-white/60 font-mono break-all line-clamp-3">{pixData.copyPaste}</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(pixData.copyPaste!);
+                                toast.success("Código PIX copiado!");
+                              }}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-[10px] font-bold text-[hsl(var(--dark))] hover:brightness-110"
+                            >
+                              <Copy className="h-3 w-3" /> Copiar
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Value */}
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+                        <p className="text-xs text-white/40">Valor a pagar</p>
+                        <p className="font-heading text-2xl font-bold text-gradient-gold">R$ {order.totalPrice.toFixed(2)}</p>
+                      </div>
+
+                      {/* Status indicator */}
+                      <div className="flex items-center justify-center gap-2 rounded-xl border border-[hsl(var(--warning))]/20 bg-[hsl(var(--warning))]/5 py-3">
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin text-[hsl(var(--warning))]" />
+                        <span className="text-xs font-bold text-[hsl(var(--warning))]">Aguardando pagamento...</span>
+                      </div>
+                      <p className="text-center text-[10px] text-white/25">O status será atualizado automaticamente após a confirmação do pagamento</p>
+                    </div>
+                  )}
+
+                  {pixStatus === "confirmed" && (
+                    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }}>
+                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[hsl(var(--success))]/10 ring-4 ring-[hsl(var(--success))]/20">
+                          <CheckCircle className="h-10 w-10 text-[hsl(var(--success))]" />
+                        </div>
+                      </motion.div>
+                      <h3 className="font-heading text-xl font-bold text-white">Pagamento Confirmado! 🎉</h3>
+                      <p className="text-sm text-white/40 text-center">Seu pagamento foi recebido. A entrega será processada em breve.</p>
+                      <p className="text-xs text-white/25">Redirecionando para Meus Pedidos...</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* PIX Error */}
+              {isConfirmStep && pixStatus === "error" && (
+                <motion.div key="pix-error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center space-y-3">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                    <ShieldCheck className="h-6 w-6 text-destructive" />
+                  </div>
+                  <h3 className="text-sm font-bold text-white">Erro ao gerar PIX</h3>
+                  <p className="text-xs text-white/40">Seu pedido foi criado. Acesse Meus Pedidos para acompanhar.</p>
+                  <p className="text-xs text-white/25">Redirecionando...</p>
+                </motion.div>
+              )}
             </AnimatePresence>
 
             {/* Navigation buttons */}
             <div className="mt-6 flex gap-3">
-              {step > 1 && (
+              {step > 1 && pixStatus === "idle" && (
                 <button onClick={() => setStep(step - 1)}
                   className="flex items-center gap-2 rounded-xl border border-white/[0.08] px-5 py-3.5 text-sm font-medium text-white/50 transition-all hover:border-white/20 hover:text-white hover:bg-white/[0.03]">
                   <ChevronLeft className="h-4 w-4" /> Voltar
@@ -403,15 +562,14 @@ const Checkout = () => {
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-[hsl(var(--dark))] transition-all hover:brightness-110 hover:shadow-[var(--shadow-gold)] disabled:opacity-20 disabled:hover:shadow-none">
                   Continuar <ChevronRight className="h-4 w-4" />
                 </button>
-              ) : (
+              ) : pixStatus === "idle" ? (
                 <button onClick={handleSubmit} disabled={loading}
                   className="group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary py-4 text-sm font-bold text-[hsl(var(--dark))] transition-all hover:brightness-110 hover:shadow-[var(--shadow-gold)] disabled:opacity-50 sm:text-base">
                   <span className="relative z-10 flex items-center gap-2">
-                    {loading ? "Processando..." : "Finalizar Compra"}
-                    {!loading && <Lock className="h-4 w-4" />}
+                    {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando...</> : <>Pagar com PIX <QrCode className="h-4 w-4" /></>}
                   </span>
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
 
