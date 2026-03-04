@@ -987,6 +987,7 @@ const Admin = () => {
                   </div>
                 ))}
                 {blogPosts.length === 0 && <EmptyState text="Nenhum post publicado ainda." />}
+              </div>
               {/* Blog Comments Management */}
               <div className="mt-6">
                 <h3 className="flex items-center gap-2 font-heading text-base font-bold sm:text-lg">
