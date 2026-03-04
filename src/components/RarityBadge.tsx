@@ -1,4 +1,4 @@
-import { Circle, Diamond, Flame, Crown, Coins, Eye, Sparkles } from "lucide-react";
+import { Circle, Diamond, Flame, Crown, Coins, Eye, Sparkles, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const RARITY_CONFIG: Record<string, {
