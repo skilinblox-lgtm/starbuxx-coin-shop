@@ -393,6 +393,7 @@ const Admin = () => {
     { id: "products" as Tab, label: "Produtos", icon: Package },
     { id: "deliveries" as Tab, label: "Entregas", icon: Truck },
     { id: "brainrot" as Tab, label: "Brainrot", icon: Brain },
+    { id: "blog" as Tab, label: "Blog/Scripts", icon: FileText },
     { id: "moderation" as Tab, label: "Moderação", icon: Shield },
     { id: "earnings" as Tab, label: "Ganhos", icon: DollarSign },
     { id: "moderators" as Tab, label: "Moderadores", icon: UserPlus },
