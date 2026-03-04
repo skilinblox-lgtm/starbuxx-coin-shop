@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Code2, Calendar, Tag, Search, Star, Shield, CheckCircle, RefreshCw, Gamepad2 } from "lucide-react";
+import { Code2, Calendar, Tag, Search, Star, Shield, CheckCircle, RefreshCw, Gamepad2, Key, Unlock, Zap, Wifi } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
