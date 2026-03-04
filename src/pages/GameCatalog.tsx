@@ -114,15 +114,15 @@ const GameCatalog = () => {
               </button>
               {config.categories.map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
                   className={`rounded-xl border px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
-                    activeCategory === cat
+                    activeCategory === cat.id
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-card text-muted-foreground hover:border-primary/40"
                   }`}
                 >
-                  {cat}
+                  {cat.label}
                 </button>
               ))}
             </div>
