@@ -215,7 +215,7 @@ const BrainrotCard = ({ post, index, onClick }: { post: any; index: number; onCl
         {post.image_url ? (
           <img src={post.image_url} alt={post.title} className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-105" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-5xl">🧠</div>
+          <div className="flex h-full w-full items-center justify-center"><Brain className="h-12 w-12 text-muted-foreground" /></div>
         )}
         <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
           <RarityBadge rarity={post.rarity || "common"} />
