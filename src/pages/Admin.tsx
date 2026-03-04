@@ -271,26 +271,7 @@ const Admin = () => {
     toast.success("Brainrot removido!"); fetchAll();
   };
 
-  const getRarityStyle = (rarity: string) => {
-    const styles: Record<string, string> = {
-      common: "bg-[hsl(0,0%,25%)] text-[hsl(0,0%,75%)]",
-      rare: "bg-[hsl(210,50%,20%)] text-[hsl(210,80%,65%)]",
-      epic: "bg-[hsl(270,50%,20%)] text-[hsl(270,70%,70%)]",
-      legendary: "bg-[hsl(45,50%,18%)] text-[hsl(45,100%,60%)]",
-      gold: "bg-[hsl(38,60%,18%)] text-[hsl(38,90%,55%)]",
-      secret: "bg-[hsl(180,50%,15%)] text-[hsl(180,80%,60%)]",
-      divine: "bg-[hsl(330,50%,18%)] text-[hsl(330,80%,65%)]",
-    };
-    return styles[rarity] || styles.common;
-  };
-
-  const getRarityLabel = (rarity: string) => {
-    const labels: Record<string, string> = {
-      common: "⚪ Comum", rare: "🔵 Raro", epic: "🟣 Épico",
-      legendary: "🟡 Lendário", gold: "✨ Ouro", secret: "🔮 Secreto", divine: "💎 Divino",
-    };
-    return labels[rarity] || labels.common;
-  };
+  // Rarity helpers removed - using RarityBadge component instead
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center bg-dark">
