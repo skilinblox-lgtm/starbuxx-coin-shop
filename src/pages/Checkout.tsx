@@ -68,6 +68,7 @@ const Checkout = () => {
   const canAdvance = () => {
     if (step === 1) return fullName.trim() && gameUsername.trim() && discord.trim();
     if (isRobux && step === 2) return knowsGamepass !== null;
+    if (isBrainrot && step === 2) return true; // just informational
     if (step === getPaymentStepIndex()) return !!paymentMethod;
     return true;
   };
