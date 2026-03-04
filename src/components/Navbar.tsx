@@ -52,7 +52,7 @@ const Navbar = () => {
           {navLinks.map(item => item.isLink ? (
             <Link key={item.label} to={item.href} className={`text-sm font-medium transition-colors hover:text-primary ${scrolled ? "text-muted-foreground" : "text-[hsl(220,10%,70%)]"}`}>{item.label}</Link>
           ) : (
-            <a key={item.label} href={item.href} className={`text-sm font-medium transition-colors hover:text-primary ${scrolled ? "text-muted-foreground" : "text-[hsl(150,10%,65%)]"}`}>{item.label}</a>
+            <a key={item.label} href={item.href} className={`text-sm font-medium transition-colors hover:text-primary ${scrolled ? "text-muted-foreground" : "text-[hsl(220,10%,70%)]"}`}>{item.label}</a>
           ))}
         </div>
 
