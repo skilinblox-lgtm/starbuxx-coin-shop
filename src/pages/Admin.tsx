@@ -118,7 +118,7 @@ const Admin = () => {
   }, [navigate]);
 
   const fetchAll = useCallback(async () => {
-    const [o, p, r, u, roles, perms, br, bl, bc, flags] = await Promise.all([
+    const [o, p, r, u, roles, perms, br, bl, bc, flags, et, el] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("display_order", { ascending: true }),
       supabase.from("reviews").select("*").order("created_at", { ascending: false }),
@@ -129,6 +129,8 @@ const Admin = () => {
       supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
       supabase.from("blog_comments").select("*").order("created_at", { ascending: false }),
       supabase.from("brainrot_flags").select("*").order("created_at", { ascending: true }),
+      supabase.from("email_templates" as any).select("*").order("created_at", { ascending: true }),
+      supabase.from("email_logs" as any).select("*").order("created_at", { ascending: false }).limit(50),
     ]);
     setOrders(o.data || []);
     setProducts(p.data || []);
@@ -140,6 +142,8 @@ const Admin = () => {
     setBlogPosts(bl.data || []);
     setBlogComments(bc.data || []);
     setBrainrotFlags(flags.data || []);
+    setEmailTemplates(et.data || []);
+    setEmailLogs(el.data || []);
   }, []);
 
   const fetchSettings = async () => {
