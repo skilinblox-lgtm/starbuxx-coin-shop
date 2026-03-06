@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.pix-check]
 verify_jwt = false
+
+[functions.discord-review]
+verify_jwt = false

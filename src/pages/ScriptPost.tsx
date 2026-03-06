@@ -126,6 +126,19 @@ const ScriptPost = () => {
         rating: newRating,
       });
       if (error) throw error;
+      
+      // Send to Discord
+      const authorName = profile?.full_name || currentUser.email?.split("@")[0] || "Anônimo";
+      supabase.functions.invoke("discord-review", {
+        body: {
+          author_name: authorName,
+          rating: newRating,
+          comment: newComment.trim(),
+          game_id: "Scripts",
+          type: "script",
+        },
+      }).catch((err) => console.error("Discord webhook error:", err));
+
       toast.success("Comentário enviado!");
       setNewComment("");
       setNewRating(5);
