@@ -4,7 +4,8 @@ import {
   ArrowLeft, Package, Gamepad2, Clock, CheckCircle, Truck, XCircle,
   CreditCard, RefreshCw, Send, MessageCircle, ChevronDown, ChevronUp,
   Link2, Timer, AlertCircle, CalendarClock, Star, ExternalLink,
-  Image as ImageIcon, X, Eye
+  Image as ImageIcon, X, Eye, ShieldCheck, Wifi, WifiOff, Play,
+  Zap, Users, Info, Hash, User
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -50,6 +51,9 @@ const TUTORIAL_STEPS = [
   },
 ];
 
+// VIDEO_TUTORIAL_URL - placeholder until user provides real video
+const VIDEO_TUTORIAL_URL = "/videos/starbuxx-promo.mp4";
+
 const MyOrders = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +64,8 @@ const MyOrders = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState<string | null>(null);
   const [gamepassSent, setGamepassSent] = useState<Record<string, boolean>>({});
+  const [adminOnline, setAdminOnline] = useState(false);
+  const [lastAdminActivity, setLastAdminActivity] = useState<string | null>(null);
   // Review state
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
@@ -67,6 +73,22 @@ const MyOrders = () => {
   const [reviewedOrders, setReviewedOrders] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  // Detect admin online status based on recent admin messages
+  const checkAdminOnline = async () => {
+    const { data } = await supabase
+      .from("chat_messages")
+      .select("created_at")
+      .eq("sender_role", "admin")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (data && data.length > 0) {
+      const lastMsg = new Date(data[0].created_at);
+      const diffMin = (Date.now() - lastMsg.getTime()) / 60000;
+      setAdminOnline(diffMin < 30); // online if admin replied within 30 min
+      setLastAdminActivity(data[0].created_at);
+    }
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -76,15 +98,11 @@ const MyOrders = () => {
       const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
       setOrders(data || []);
       
-      // Check which orders already have reviews
-      const { data: reviews } = await supabase.from("reviews").select("id").eq("user_id", session.user.id);
-      // Also check brainrot reviews
       const { data: brReviews } = await supabase.from("brainrot_reviews").select("order_id").eq("user_id", session.user.id);
       const reviewedSet = new Set<string>();
       brReviews?.forEach(r => { if (r.order_id) reviewedSet.add(r.order_id); });
       setReviewedOrders(reviewedSet);
 
-      // Check if gamepass link was already sent for robux orders
       if (data) {
         const sentMap: Record<string, boolean> = {};
         for (const o of data) {
@@ -99,6 +117,9 @@ const MyOrders = () => {
       setLoading(false);
     };
     fetchOrders();
+    checkAdminOnline();
+    const interval = setInterval(checkAdminOnline, 60000);
+    return () => clearInterval(interval);
   }, [navigate]);
 
   useEffect(() => {
@@ -130,6 +151,15 @@ const MyOrders = () => {
     const diff = new Date(order.payment_approved_at).getTime() + 48 * 3600000 - Date.now();
     if (diff <= 0) return null;
     return `${Math.floor(diff / 3600000)}h ${Math.floor((diff % 3600000) / 60000)}min`;
+  };
+
+  const getEstimatedDelivery = (order: any) => {
+    if (order.status === "entregue" || order.status === "cancelado") return null;
+    const category = getOrderCategory(order);
+    if (category === "robux") {
+      return adminOnline ? "Estimativa: 2-6 horas" : "Estimativa: até 24 horas";
+    }
+    return adminOnline ? "Estimativa: 1-4 horas" : "Estimativa: até 24 horas";
   };
 
   const requestRefund = async (orderId: string) => {
@@ -173,6 +203,8 @@ const MyOrders = () => {
       return;
     }
 
+    // Valid link - hide tutorial and send
+    setShowTutorial(null);
     await supabase.from("chat_messages").insert({ 
       order_id: orderId, sender_id: userId, sender_role: "customer", 
       message: `✅ Link do Gamepass: ${gamepassLink.trim()}` 
@@ -180,7 +212,6 @@ const MyOrders = () => {
     setGamepassSent(prev => ({ ...prev, [orderId]: true }));
     toast.success("Link enviado com sucesso! 🎉");
     setGamepassLink("");
-    setShowTutorial(null);
   };
 
   const submitReview = async (order: any) => {
@@ -188,7 +219,6 @@ const MyOrders = () => {
     setReviewSubmitting(true);
     try {
       const gameId = order.game_id?.toLowerCase() || "";
-      // Get user name
       const { data: profile } = await supabase.from("profiles").select("full_name").eq("user_id", userId).single();
       const authorName = profile?.full_name || order.full_name || "Cliente";
 
@@ -228,6 +258,18 @@ const MyOrders = () => {
   };
 
   const isPaid = (order: any) => order.status !== "aguardando_pagamento";
+
+  // Admin online indicator component
+  const AdminStatusBadge = () => (
+    <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold ${
+      adminOnline 
+        ? "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" 
+        : "bg-muted text-muted-foreground"
+    }`}>
+      <span className={`h-2 w-2 rounded-full ${adminOnline ? "bg-[hsl(var(--success))] animate-pulse" : "bg-muted-foreground"}`} />
+      {adminOnline ? "Vendedor Online" : "Vendedor Offline"}
+    </div>
+  );
 
   const ChatMessages = ({ msgs }: { msgs: any[] }) => (
     <>
@@ -284,6 +326,92 @@ const MyOrders = () => {
                 : "bg-muted"
             }`} />
           ))}
+        </div>
+        {/* Estimated delivery */}
+        {getEstimatedDelivery(order) && (
+          <div className="mt-2 flex items-center justify-center gap-1.5">
+            <Zap className="h-3 w-3 text-primary" />
+            <span className="text-[10px] font-bold text-muted-foreground">{getEstimatedDelivery(order)}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Video tutorial section - always visible for Robux orders
+  const VideoTutorialSection = () => (
+    <div className="rounded-xl border border-border bg-background overflow-hidden">
+      <div className="flex items-center gap-2 bg-muted/30 px-3 py-2 border-b border-border">
+        <Play className="h-3.5 w-3.5 text-primary" />
+        <span className="text-[11px] font-bold">📹 Vídeo Tutorial - Como copiar o link</span>
+      </div>
+      <video
+        src={VIDEO_TUTORIAL_URL}
+        controls
+        className="w-full max-h-[200px] object-contain bg-black/5"
+        preload="metadata"
+        playsInline
+      />
+    </div>
+  );
+
+  // Detailed order info card
+  const OrderDetailCard = ({ order }: { order: any }) => {
+    const category = getOrderCategory(order);
+    const createdDate = new Date(order.created_at);
+    const paidDate = order.payment_approved_at ? new Date(order.payment_approved_at) : null;
+
+    return (
+      <div className="rounded-xl border border-border bg-background overflow-hidden">
+        <div className="flex items-center justify-between bg-muted/30 px-3 py-2 border-b border-border">
+          <span className="text-[11px] font-bold flex items-center gap-1.5">
+            <Info className="h-3.5 w-3.5 text-primary" /> Detalhes do Pedido
+          </span>
+          <AdminStatusBadge />
+        </div>
+        <div className="grid grid-cols-2 gap-0 divide-x divide-y divide-border sm:grid-cols-3">
+          <div className="p-3">
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><Hash className="h-3 w-3" /> ID do Pedido</span>
+            <p className="mt-0.5 text-xs font-mono font-bold truncate">{order.id.slice(0, 8)}...</p>
+          </div>
+          <div className="p-3">
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><User className="h-3 w-3" /> Jogador</span>
+            <p className="mt-0.5 text-xs font-bold">{order.game_username}</p>
+          </div>
+          <div className="p-3">
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><MessageCircle className="h-3 w-3" /> Discord</span>
+            <p className="mt-0.5 text-xs font-bold text-[hsl(235,86%,65%)]">{order.discord_username}</p>
+          </div>
+          <div className="p-3">
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><Package className="h-3 w-3" /> Quantidade</span>
+            <p className="mt-0.5 text-xs font-bold">{order.quantity.toLocaleString("pt-BR")} {category === "robux" ? "Robux" : "un"}</p>
+          </div>
+          <div className="p-3">
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><CreditCard className="h-3 w-3" /> Total</span>
+            <p className="mt-0.5 text-xs font-bold text-gradient-gold">R$ {Number(order.total_price).toFixed(2)}</p>
+          </div>
+          <div className="p-3">
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><Clock className="h-3 w-3" /> Criado em</span>
+            <p className="mt-0.5 text-xs font-bold">{createdDate.toLocaleDateString("pt-BR")} {createdDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
+          </div>
+          {paidDate && (
+            <div className="p-3 col-span-2 sm:col-span-1">
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><CheckCircle className="h-3 w-3" /> Pago em</span>
+              <p className="mt-0.5 text-xs font-bold text-[hsl(var(--success))]">{paidDate.toLocaleDateString("pt-BR")} {paidDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
+            </div>
+          )}
+        </div>
+        {/* Trust badges */}
+        <div className="flex items-center gap-3 border-t border-border px-3 py-2 bg-muted/20">
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <ShieldCheck className="h-3 w-3 text-[hsl(var(--success))]" /> Pagamento Seguro
+          </div>
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Zap className="h-3 w-3 text-primary" /> Entrega Rápida
+          </div>
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Users className="h-3 w-3 text-[hsl(var(--info))]" /> +2.000 entregas
+          </div>
         </div>
       </div>
     );
@@ -346,25 +474,19 @@ const MyOrders = () => {
           <Star className="h-4 w-4 text-primary" /> Avalie sua compra
         </h4>
         <p className="mt-1 text-xs text-muted-foreground">Conte como foi sua experiência!</p>
-        
-        {/* Stars */}
         <div className="mt-3 flex gap-1">
           {[1, 2, 3, 4, 5].map(star => (
-            <button key={star} onClick={() => setReviewRating(star)}
-              className="transition-transform hover:scale-110">
+            <button key={star} onClick={() => setReviewRating(star)} className="transition-transform hover:scale-110">
               <Star className={`h-6 w-6 ${star <= reviewRating ? "fill-primary text-primary" : "text-muted-foreground"}`} />
             </button>
           ))}
         </div>
-
-        {/* Text */}
         <textarea
           value={reviewText}
           onChange={e => setReviewText(e.target.value)}
           placeholder="Conte como foi sua experiência de compra..."
           className="mt-3 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[80px] resize-none"
         />
-
         <button onClick={() => submitReview(order)} disabled={reviewSubmitting || !reviewText.trim()}
           className="mt-3 flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground transition-all hover:brightness-110 disabled:opacity-50">
           {reviewSubmitting ? "Enviando..." : "Enviar Avaliação"} <Star className="h-3.5 w-3.5" />
@@ -373,7 +495,7 @@ const MyOrders = () => {
     );
   };
 
-  // Robux order section with gamepass link + chat
+  // Robux order section - tutorial ONLY on error
   const RobuxOrderSection = ({ order, orderMessages }: { order: any; orderMessages: any[] }) => {
     const paid = isPaid(order);
     const linkSent = gamepassSent[order.id];
@@ -395,9 +517,11 @@ const MyOrders = () => {
       </div>
     );
 
-    // Paid - show gamepass link section + chat
     return (
       <div className="mt-4 space-y-4">
+        {/* Order details */}
+        <OrderDetailCard order={order} />
+
         {/* Gamepass link sent success */}
         {linkSent ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -429,6 +553,7 @@ const MyOrders = () => {
               </p>
               <div className="mt-3 flex gap-2">
                 <input type="url" value={gamepassLink} onChange={(e) => setGamepassLink(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && sendGamepassLink(order.id)}
                   placeholder="https://www.roblox.com/pt/game-pass/..."
                   className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[hsl(var(--success))] focus:ring-2 focus:ring-[hsl(var(--success))]/20" />
                 <button onClick={() => sendGamepassLink(order.id)} disabled={!gamepassLink.trim()}
@@ -438,39 +563,53 @@ const MyOrders = () => {
               </div>
             </div>
 
-            {/* Tutorial (shown on error or by default) */}
-            {(showTutorial === order.id || !linkSent) && (
-              <div className="rounded-xl border border-[hsl(var(--info))]/15 bg-[hsl(var(--info))]/5 p-4">
-                <h4 className="text-sm font-bold text-[hsl(var(--info))] flex items-center gap-2">
-                  <Eye className="h-4 w-4" /> 📸 Passo a passo: Como copiar o link correto
-                </h4>
-
-                {showTutorial === order.id && (
-                  <div className="mt-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive font-bold">
-                    ⚠️ O link que você enviou está incorreto! Siga o passo a passo abaixo para copiar o link correto.
-                  </div>
-                )}
-
-                <div className="mt-3 space-y-4">
-                  {TUTORIAL_STEPS.map((step, i) => (
-                    <div key={i} className="rounded-xl border border-border bg-background overflow-hidden">
-                      <div className="p-3">
-                        <p className="text-xs font-bold text-foreground">{step.title}</p>
-                        <p className="mt-0.5 text-[11px] text-muted-foreground">{step.desc}</p>
-                      </div>
-                      <img src={step.image} alt={step.title} className="w-full border-t border-border" loading="lazy" />
+            {/* Tutorial ONLY on error */}
+            <AnimatePresence>
+              {showTutorial === order.id && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-bold text-destructive flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" /> ⚠️ Link incorreto! Siga o passo a passo:
+                      </h4>
+                      <button onClick={() => setShowTutorial(null)} className="text-muted-foreground hover:text-foreground">
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
-                  ))}
-                </div>
+                    <div className="rounded-lg border border-destructive/10 bg-background p-3 mb-3">
+                      <p className="text-xs text-destructive font-bold">❌ Links como <code className="bg-destructive/10 px-1 rounded">create.roblox.com/dashboard/...</code> estão ERRADOS!</p>
+                      <p className="text-xs text-muted-foreground mt-1">✅ O link correto é: <code className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] px-1 rounded">roblox.com/pt/game-pass/...</code></p>
+                    </div>
 
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Após copiar a URL correta, cole no campo acima e clique em <strong className="text-foreground">Enviar</strong>. 
-                  Depois disso, é só aguardar as <strong className="text-foreground">48h úteis</strong> para a entrega.
-                </p>
-              </div>
-            )}
+                    <div className="space-y-3">
+                      {TUTORIAL_STEPS.map((step, i) => (
+                        <div key={i} className="rounded-xl border border-border bg-background overflow-hidden">
+                          <div className="p-3">
+                            <p className="text-xs font-bold text-foreground">{step.title}</p>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">{step.desc}</p>
+                          </div>
+                          <img src={step.image} alt={step.title} className="w-full border-t border-border" loading="lazy" />
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Após copiar a URL correta, cole no campo acima e clique em <strong className="text-foreground">Enviar</strong>.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </>
         )}
+
+        {/* Small video tutorial - always visible */}
+        <VideoTutorialSection />
 
         {/* Robux delivery info */}
         <div className="rounded-xl border border-[hsl(var(--warning))]/20 bg-[hsl(var(--warning))]/5 p-3">
@@ -483,10 +622,11 @@ const MyOrders = () => {
           </div>
         </div>
 
-        {/* Chat - open until gamepass link sent */}
+        {/* Chat */}
         <div>
           <h4 className="flex items-center gap-2 text-sm font-bold">
             <MessageCircle className="h-4 w-4 text-[hsl(var(--info))]" /> Chat com a StarBuxx
+            <AdminStatusBadge />
           </h4>
           <div className="mt-2 flex max-h-48 min-h-[100px] flex-col gap-2 overflow-y-auto rounded-xl border border-border bg-background p-3">
             {orderMessages.length === 0 ? (
@@ -531,6 +671,9 @@ const MyOrders = () => {
 
     return (
       <div className="mt-4 space-y-4">
+        {/* Order details */}
+        <OrderDetailCard order={order} />
+
         {/* Highlight discord + game username */}
         <div className="rounded-xl border border-[hsl(var(--info))]/20 bg-[hsl(var(--info))]/5 p-3">
           <p className="text-xs font-bold text-[hsl(var(--info))] mb-2">📋 Informações para entrega</p>
@@ -544,12 +687,16 @@ const MyOrders = () => {
               <p className="mt-0.5 text-sm font-bold text-[hsl(235,86%,65%)]">{order.discord_username}</p>
             </div>
           </div>
+          <p className="mt-2 text-[10px] text-muted-foreground">
+            Nosso entregador vai te adicionar no jogo. Fique atento às solicitações de amizade!
+          </p>
         </div>
 
         {/* Chat fully open */}
         <div>
           <h4 className="flex items-center gap-2 text-sm font-bold">
             <MessageCircle className="h-4 w-4 text-[hsl(var(--info))]" /> Chat com a StarBuxx
+            <AdminStatusBadge />
           </h4>
           <p className="mt-1 text-xs text-muted-foreground">Converse conosco para combinar a entrega do seu item</p>
           <div className="mt-2 flex max-h-64 min-h-[120px] flex-col gap-2 overflow-y-auto rounded-xl border border-border bg-background p-3">
@@ -652,17 +799,9 @@ const MyOrders = () => {
                             {/* Progress bar */}
                             <ProgressBar order={o} />
 
-                            {/* Details */}
-                            <div className="grid grid-cols-2 gap-3 rounded-xl border border-border bg-background p-3 text-xs sm:grid-cols-4 sm:p-4">
-                              <div><span className="text-muted-foreground">Jogador</span><p className="mt-0.5 font-bold">{o.game_username}</p></div>
-                              <div><span className="text-muted-foreground">Discord</span><p className="mt-0.5 font-bold text-[hsl(235,86%,65%)]">{o.discord_username}</p></div>
-                              <div><span className="text-muted-foreground">Quantidade</span><p className="mt-0.5 font-bold">{o.quantity.toLocaleString("pt-BR")}</p></div>
-                              <div><span className="text-muted-foreground">Total</span><p className="mt-0.5 font-bold text-gradient-gold">R$ {Number(o.total_price).toFixed(2)}</p></div>
-                            </div>
-
                             {/* Refund */}
                             {o.status !== "cancelado" && (
-                              <div className="mt-3 flex items-center gap-3">
+                              <div className="mb-3 flex items-center gap-3">
                                 {showRefund ? (
                                   <button onClick={() => requestRefund(o.id)}
                                     className="flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-destructive/90">
