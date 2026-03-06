@@ -240,6 +240,18 @@ const MyOrders = () => {
           rating: reviewRating,
         });
       }
+
+      // Send to Discord webhook
+      const reviewType = (gameId === "brainrot") ? "brainrot" : "game";
+      supabase.functions.invoke("discord-review", {
+        body: {
+          author_name: authorName,
+          rating: reviewRating,
+          comment: reviewText.trim(),
+          game_id: order.game_id,
+          type: reviewType,
+        },
+      }).catch((err) => console.error("Discord webhook error:", err));
       
       setReviewedOrders(prev => new Set(prev).add(order.id));
       setReviewText("");
